@@ -87,7 +87,7 @@ class Game {
         }
 
         const [playerIndex, cardIndex] = this.selectedCards[0].split('-').map(Number);
-        const card = this.players[playerIndex].hand.removeCard(cardIndex);
+        const card = this.getCurrentPlayer().hand.removeCard(cardIndex);
         this.discardPile.addCard(card);
         this.selectedCards = [];
         this.hasDrawnCard = false;
@@ -95,5 +95,9 @@ class Game {
         this.renderHands();
         this.renderDiscardPile();
         this.checkButtons();
+    }
+
+    getCurrentPlayer() {
+        return this.players[this.currentPlayerIndex];
     }
 }

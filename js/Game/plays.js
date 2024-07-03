@@ -46,19 +46,16 @@ Game.prototype.playSet = function() {
     }
 
     const selectedCards = this.getSelectedCards();
-
-    const playerIndex = this.currentPlayerIndex;
-
-    const player = this.players[playerIndex];
-    const newHand = player.hand.cards.filter(card => !selectedCards.includes(card));
+    const currentPlayer = this.getCurrentPlayer();
+    const newHand = currentPlayer.hand.cards.filter(card => !selectedCards.includes(card));
     const setCards = selectedCards.slice(0);
 
-    this.players[playerIndex].hand.cards = newHand;
-    this.players[playerIndex].sets.push(setCards);
+    currentPlayer.hand.cards = newHand;
+    currentPlayer.sets.push(setCards);
 
     // Calculate and update score
     const points = setCards.reduce((total, card) => total + CONFIG.points[card.rank], 0);
-    this.players[playerIndex].score += points;
+    currentPlayer.adjustScoreBy(points);
 
     this.selectedCards = [];
     this.renderHands();

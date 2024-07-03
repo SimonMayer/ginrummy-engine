@@ -9,8 +9,7 @@ Game.prototype.drawFromStock = function() {
     }
 
     const card = this.deck.draw();
-    const player = this.players[this.currentPlayerIndex];
-    player.hand.addCard(card);
+    this.getCurrentPlayer().hand.addCard(card);
     this.hasDrawnCard = true;
     this.drawnCard = card; // Store the drawn card reference
     this.renderHands();
@@ -29,8 +28,7 @@ Game.prototype.drawFromDiscardPile = function() {
     }
 
     const card = this.discardPile.cards.pop();
-    const player = this.players[this.currentPlayerIndex];
-    player.hand.addCard(card);
+    this.getCurrentPlayer().hand.addCard(card);
     this.hasDrawnCard = true;
     this.drawnCard = card; // Store the drawn card reference
     this.renderHands();
@@ -42,7 +40,7 @@ Game.prototype.drawFromDiscardPile = function() {
 Game.prototype.highlightDrawnCard = function() {
     const handElement = document.getElementById(`hand${this.currentPlayerIndex + 1}`);
     Array.from(handElement.children).forEach((cardElement, index) => {
-        const cardData = this.players[this.currentPlayerIndex].hand.cards[index];
+        const cardData = this.getCurrentPlayer().hand.cards[index];
         if (cardData === this.drawnCard) {
             cardElement.classList.add('highlight');
             setTimeout(() => {
