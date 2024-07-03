@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, create_refresh_token
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 import mysql.connector
@@ -17,13 +17,14 @@ def authenticate_user(username, password):
             user_id, password_hash = user
             if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
                 access_token = create_access_token(identity=user_id)
-                return access_token
+                refresh_token = create_refresh_token(identity=user_id)
+                return access_token, refresh_token
     except mysql.connector.Error as err:
         print(f"Database error: {err}")
     finally:
         cursor.close()
         connection.close()
-    return None
+    return None, None
 
 def init_auth_routes(app):
     """Initialize authentication routes for the app."""
@@ -31,8 +32,15 @@ def init_auth_routes(app):
     def sign_in():
         username = request.json.get('username', None)
         password = request.json.get('password', None)
-        token = authenticate_user(username, password)
-        if token:
-            return jsonify({'token': token}), 200
+        access_token, refresh_token = authenticate_user(username, password)
+        if access_token:
+            return jsonify({'access_token': access_token, 'refresh_token': refresh_token}), 200
         else:
             return jsonify({"msg": "Bad username or password"}), 401
+
+    @app.route('/refresh', methods=['POST'])
+    @jwt_required(refresh=True)
+    def refresh():
+        identity = get_jwt_identity()
+        access_token = create_access_token(identity=identity)
+        return jsonify(access_token=access_token), 200

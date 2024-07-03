@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '../api/axios';
 
 export default {
   name: 'SignIn',
@@ -23,11 +23,12 @@ export default {
   methods: {
     async signIn() {
       try {
-        const response = await axios.post('http://localhost:5000/sign-in', {
+        const response = await apiClient.post('/sign-in', {
           username: this.username,
           password: this.password
         });
-        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('refresh_token', response.data.refresh_token);
         this.$emit('auth-success');
       } catch (error) {
         alert('Sign in failed!');

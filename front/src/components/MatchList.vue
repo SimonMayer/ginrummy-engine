@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
 
 export default {
@@ -24,10 +24,7 @@ export default {
   },
   async created() {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/matches', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiClient.get('/matches');
       this.matches = response.data;
     } catch (error) {
       alert('Failed to fetch matches!');
@@ -36,9 +33,7 @@ export default {
   },
   computed: {
     sortedMatches() {
-      return this.matches.slice().sort((a, b) => {
-        return new Date(b.start_time) - new Date(a.start_time);
-      });
+      return this.matches.slice().sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
     }
   },
   methods: {
