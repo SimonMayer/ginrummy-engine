@@ -4,8 +4,8 @@
     <ul>
       <li v-for="match in matches" :key="match.match_id">
         <p>Match ID: {{ match.match_id }}</p>
-        <p>Start Time: {{ match.start_time }}</p>
-        <p>End Time: {{ match.end_time }}</p>
+        <p>Start Time: {{ formatDateTime(match.start_time) }}</p>
+        <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       </li>
     </ul>
   </div>
@@ -13,8 +13,10 @@
 
 <script>
 import axios from 'axios';
+import { formatDateTime } from '../utils/dateFormatter';
 
 export default {
+  name: 'MatchList',
   data() {
     return {
       matches: [],
@@ -31,6 +33,9 @@ export default {
       alert('Failed to fetch matches!');
       console.error(error);
     }
+  },
+  methods: {
+    formatDateTime
   }
 }
 </script>
