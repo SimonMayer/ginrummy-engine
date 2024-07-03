@@ -13,6 +13,7 @@
 import axios from 'axios';
 
 export default {
+  name: 'SignIn',
   data() {
     return {
       username: '',
@@ -21,7 +22,6 @@ export default {
   },
   methods: {
     async signIn() {
-      console.log("Attempting to sign in with:", this.username, this.password); // Check what's being sent
       try {
         const response = await axios.post('http://localhost:5000/sign-in', {
           username: this.username,

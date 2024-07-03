@@ -1,43 +1,48 @@
 <template>
   <div id="app">
-    <sign-in v-if="!isAuthenticated" @auth-success="handleAuthSuccess" />
-    <div v-else class="authenticated">
-      <create-match />
-      <button @click="signOut">Sign Out</button>
-    </div>
+    <nav>
+      <router-link to="/">Sign In</router-link>
+      <router-link v-if="isAuthenticated" to="/create-match">Create Match</router-link>
+      <router-link v-if="isAuthenticated" to="/matches">Your Matches</router-link>
+      <button v-if="isAuthenticated" @click="signOut">Sign Out</button>
+    </nav>
+    <router-view @auth-success="handleAuthSuccess" />
   </div>
 </template>
 
 <script>
-import SignIn from './components/SignIn.vue';
-import CreateMatch from './components/CreateMatch.vue';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
-  components: {
-    SignIn,
-    CreateMatch
-  },
-  data() {
-    return {
-      isAuthenticated: false,
+  setup() {
+    const isAuthenticated = ref(false);
+    const router = useRouter();
+
+    const handleAuthSuccess = () => {
+      isAuthenticated.value = true;
+      router.push('/matches');
     };
-  },
-  methods: {
-    handleAuthSuccess() {
-      this.isAuthenticated = true;
-    },
-    signOut() {
+
+    const signOut = () => {
       localStorage.removeItem('token');
-      this.isAuthenticated = false;
-    }
-  },
-  created() {
-    // Check if the token exists in localStorage when the app is created
-    if (localStorage.getItem('token')) {
-      this.isAuthenticated = true;
-    }
+      isAuthenticated.value = false;
+      router.push('/');
+    };
+
+    onMounted(() => {
+      if (localStorage.getItem('token')) {
+        isAuthenticated.value = true;
+      }
+    });
+
+    return {
+      isAuthenticated,
+      handleAuthSuccess,
+      signOut
+    };
   }
-}
+};
 </script>
 
 <style scoped>
@@ -48,15 +53,13 @@ export default {
   margin-top: 50px;
 }
 
-.authenticated {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+nav {
+  margin-bottom: 20px;
 }
 
 button {
-  margin-top: 20px;
-  padding: 10px 20px;
+  margin-left: 10px;
+  padding: 5px 10px;
   font-size: 16px;
   background-color: #f44336;
   color: white;

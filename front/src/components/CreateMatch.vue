@@ -14,7 +14,7 @@ export default {
       const token = localStorage.getItem('token');
       try {
         const response = await axios.post('http://localhost:5000/matches', {}, {
-          headers: {Authorization: `Bearer ${token}`}
+          headers: { Authorization: `Bearer ${token}` }
         });
         alert(`Match created! Match ID: ${response.data.match_id}`);
       } catch (error) {
