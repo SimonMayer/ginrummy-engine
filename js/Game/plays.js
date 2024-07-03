@@ -45,10 +45,7 @@ Game.prototype.playSet = function() {
         return;
     }
 
-    const selectedCards = this.selectedCards.map(cardKey => {
-        const [playerIndex, cardIndex] = cardKey.split('-').map(Number);
-        return this.players[playerIndex].getCards()[cardIndex];
-    });
+    const selectedCards = this.getSelectedCards();
 
     const playerIndex = this.currentPlayer;
 
@@ -76,10 +73,7 @@ Game.prototype.playRun = function() {
         return;
     }
 
-    const selectedCards = this.selectedCards.map(cardKey => {
-        const [playerIndex, cardIndex] = cardKey.split('-').map(Number);
-        return this.players[playerIndex].getCards()[cardIndex];
-    });
+    const selectedCards = this.getSelectedCards();
 
     const playerIndex = this.currentPlayer;
     const suit = selectedCards[0].suit;

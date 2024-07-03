@@ -43,10 +43,7 @@ class Game {
     }
 
     checkButtons() {
-        const selectedCards = this.selectedCards.map(cardKey => {
-            const [playerIndex, cardIndex] = cardKey.split('-').map(Number);
-            return this.players[playerIndex].getCards()[cardIndex];
-        });
+        const selectedCards = this.getSelectedCards();
 
         const enoughCardsSelectedForSet = selectedCards.length >= 3 && selectedCards.length <= 4;
         const allSameRank = selectedCards.every(card => card.rank === selectedCards[0]?.rank);

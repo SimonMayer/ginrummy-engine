@@ -17,3 +17,10 @@ Game.prototype.selectCard = function(playerIndex, cardIndex) {
 
     this.checkButtons();
 };
+
+Game.prototype.getSelectedCards = function() {
+    return this.selectedCards.map(cardKey => {
+        const [playerIndex, cardIndex] = cardKey.split('-').map(Number);
+        return this.players[playerIndex].getCards()[cardIndex];
+    });
+};
