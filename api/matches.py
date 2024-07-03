@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 import mysql.connector
@@ -133,6 +133,50 @@ def init_matches(app):
                 for player in players
             ]
             return jsonify(formatted_players), 200
+        except mysql.connector.Error as err:
+            return jsonify({"error": str(err)}), 400
+        finally:
+            cursor.close()
+            connection.close()
+
+    @app.route('/matches/<int:match_id>/start', methods=['POST'])
+    @jwt_required()
+    def start_match(match_id):
+        config = load_database_config()
+        connection = connect_to_database(config)
+        cursor = connection.cursor()
+        try:
+            # Check if the match has already started
+            cursor.execute(
+                "SELECT start_time FROM Matches WHERE match_id = %s",
+                (match_id,)
+            )
+            match = cursor.fetchone()
+            if not match:
+                return jsonify({"error": "Match not found"}), 404
+            if match[0] is not None:
+                return jsonify({"error": "Match has already started"}), 400
+
+            # Get the number of players in the match
+            cursor.execute(
+                "SELECT COUNT(*) FROM Match_Players WHERE match_id = %s",
+                (match_id,)
+            )
+            player_count = cursor.fetchone()[0]
+
+            # Check if the number of players is within the allowed range
+            min_players = current_app.config['MIN_PLAYERS']
+            max_players = current_app.config['MAX_PLAYERS']
+            if player_count < min_players or player_count > max_players:
+                return jsonify({"error": f"Number of players must be between {min_players} and {max_players}"}), 400
+
+            # Start the match
+            cursor.execute(
+                "UPDATE Matches SET start_time = %s WHERE match_id = %s",
+                (datetime.now(), match_id)
+            )
+            connection.commit()
+            return jsonify({"message": "Match started successfully"}), 200
         except mysql.connector.Error as err:
             return jsonify({"error": str(err)}), 400
         finally:

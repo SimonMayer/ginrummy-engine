@@ -9,6 +9,9 @@ app.config['JWT_SECRET_KEY'] = 'your-very-secret-key'  # Change this to a real s
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 600 # seconds
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 2419200 # seconds
 
+app.config['MIN_PLAYERS'] = 2
+app.config['MAX_PLAYERS'] = 4
+
 CORS(app)
 
 jwt = JWTManager(app)
