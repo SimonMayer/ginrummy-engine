@@ -3,9 +3,11 @@
     <h1>Your Matches</h1>
     <ul>
       <li v-for="match in sortedMatches" :key="match.match_id">
-        <p>Match ID: {{ match.match_id }}</p>
-        <p>Start Time: {{ formatDateTime(match.start_time) }}</p>
-        <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
+        <router-link :to="`/matches/${match.match_id}`">
+          <p>Match ID: {{ match.match_id }}</p>
+          <p>Start Time: {{ formatDateTime(match.start_time) }}</p>
+          <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
+        </router-link>
       </li>
     </ul>
   </div>
@@ -64,5 +66,10 @@ li {
 
 p {
   margin: 5px 0;
+}
+
+router-link {
+  text-decoration: none;
+  color: inherit;
 }
 </style>
