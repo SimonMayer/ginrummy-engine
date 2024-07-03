@@ -5,7 +5,8 @@
       <li v-for="match in sortedMatches" :key="match.match_id">
         <router-link :to="`/matches/${match.match_id}`">
           <p>Match ID: {{ match.match_id }}</p>
-          <p>Start Time: {{ formatDateTime(match.start_time) }}</p>
+          <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
+          <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
           <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
         </router-link>
       </li>
@@ -35,7 +36,7 @@ export default {
   },
   computed: {
     sortedMatches() {
-      return this.matches.slice().sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+      return this.matches.slice().sort((a, b) => new Date(b.create_time) - new Date(a.create_time));
     }
   },
   methods: {
