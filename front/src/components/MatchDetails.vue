@@ -7,7 +7,7 @@
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       <h2>Players</h2>
       <ul>
-        <li v-for="player in match.players" :key="player.user_id">{{ player.username }}</li>
+        <li v-for="player in players" :key="player.user_id">{{ player.username }}</li>
       </ul>
     </div>
     <div v-else>
@@ -26,10 +26,12 @@ export default {
     return {
       matchId: this.$route.params.id,
       match: null,
+      players: [],
     };
   },
   async created() {
     await this.loadMatchDetails();
+    await this.loadPlayers();
   },
   methods: {
     async loadMatchDetails() {
@@ -38,6 +40,15 @@ export default {
         this.match = response.data;
       } catch (error) {
         alert('Failed to fetch match details!');
+        console.error(error);
+      }
+    },
+    async loadPlayers() {
+      try {
+        const response = await apiClient.get(`/matches/${this.matchId}/players`);
+        this.players = response.data;
+      } catch (error) {
+        alert('Failed to fetch players!');
         console.error(error);
       }
     },
