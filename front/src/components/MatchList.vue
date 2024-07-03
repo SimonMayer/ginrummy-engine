@@ -2,7 +2,7 @@
   <div class="match-list">
     <h1>Your Matches</h1>
     <ul>
-      <li v-for="match in matches" :key="match.match_id">
+      <li v-for="match in sortedMatches" :key="match.match_id">
         <p>Match ID: {{ match.match_id }}</p>
         <p>Start Time: {{ formatDateTime(match.start_time) }}</p>
         <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
@@ -32,6 +32,13 @@ export default {
     } catch (error) {
       alert('Failed to fetch matches!');
       console.error(error);
+    }
+  },
+  computed: {
+    sortedMatches() {
+      return this.matches.slice().sort((a, b) => {
+        return new Date(b.start_time) - new Date(a.start_time);
+      });
     }
   },
   methods: {
