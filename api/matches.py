@@ -65,7 +65,16 @@ def init_matches(app):
                 (user_id,)
             )
             matches = cursor.fetchall()
-            return jsonify(matches), 200
+            formatted_matches = [
+                {
+                    "match_id": match[0],
+                    "created_by": match[1],
+                    "start_time": match[2].isoformat() if match[2] else None,
+                    "end_time": match[3].isoformat() if match[3] else None
+                }
+                for match in matches
+            ]
+            return jsonify(formatted_matches), 200
         except mysql.connector.Error as err:
             return jsonify({"error": str(err)}), 400
         finally:
