@@ -82,6 +82,35 @@ def init_matches(app):
             cursor.close()
             connection.close()
 
+    @app.route('/matches/<int:match_id>', methods=['GET'])
+    @jwt_required()
+    def get_match(match_id):
+        config = load_database_config()
+        connection = connect_to_database(config)
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                "SELECT match_id, created_by, create_time, start_time, end_time FROM Matches WHERE match_id = %s",
+                (match_id,)
+            )
+            match = cursor.fetchone()
+            if match:
+                formatted_match = {
+                    "match_id": match[0],
+                    "created_by": match[1],
+                    "create_time": match[2].isoformat() if match[2] else None,
+                    "start_time": match[3].isoformat() if match[3] else None,
+                    "end_time": match[4].isoformat() if match[4] else None
+                }
+                return jsonify(formatted_match), 200
+            else:
+                return jsonify({"error": "Match not found"}), 404
+        except mysql.connector.Error as err:
+            return jsonify({"error": str(err)}), 400
+        finally:
+            cursor.close()
+            connection.close()
+
     @app.route('/matches/<int:match_id>/players', methods=['GET'])
     @jwt_required()
     def get_match_players(match_id):
