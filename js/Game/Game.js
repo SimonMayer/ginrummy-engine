@@ -3,7 +3,7 @@ class Game {
         this.deck = new Deck();
         this.players = [new Player(1), new Player(2)];
         this.discardPile = new DiscardPile();
-        this.currentPlayer = 0;
+        this.currentPlayerIndex = 0;
         this.round = 1; // Initialize the round count
         this.selectedCards = [];
         this.hasDrawnCard = false;
@@ -29,12 +29,12 @@ class Game {
     }
 
     switchTurn() {
-        this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         this.hasDrawnCard = false;
         this.selectedCards = [];
         this.drawnCard = null; // Reset the drawn card reference
 
-        if (this.currentPlayer === 0) {
+        if (this.currentPlayerIndex === 0) {
             this.round++; // Increment the round count when all players have had their turn
         }
 

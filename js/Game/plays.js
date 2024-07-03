@@ -47,7 +47,7 @@ Game.prototype.playSet = function() {
 
     const selectedCards = this.getSelectedCards();
 
-    const playerIndex = this.currentPlayer;
+    const playerIndex = this.currentPlayerIndex;
 
     const player = this.players[playerIndex];
     const newHand = player.getCards().filter(card => !selectedCards.includes(card));
@@ -75,7 +75,7 @@ Game.prototype.playRun = function() {
 
     const selectedCards = this.getSelectedCards();
 
-    const playerIndex = this.currentPlayer;
+    const playerIndex = this.currentPlayerIndex;
     const suit = selectedCards[0].suit;
 
     const player = this.players[playerIndex];
