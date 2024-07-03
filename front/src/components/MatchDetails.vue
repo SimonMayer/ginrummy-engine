@@ -9,6 +9,7 @@
       <ul>
         <li v-for="player in players" :key="player.user_id">{{ player.username }}</li>
       </ul>
+      <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
     <div v-else>
       <p>Loading match details...</p>
@@ -27,6 +28,8 @@ export default {
       matchId: this.$route.params.id,
       match: null,
       players: [],
+      minPlayers: 2,
+      maxPlayers: 4
     };
   },
   async created() {
@@ -52,7 +55,22 @@ export default {
         console.error(error);
       }
     },
+    async startMatch() {
+      try {
+        await apiClient.post(`/matches/${this.matchId}/start`);
+        // Reload match details to get the updated start time
+        await this.loadMatchDetails();
+      } catch (error) {
+        alert('Failed to start match!');
+        console.error(error);
+      }
+    },
     formatDateTime
+  },
+  computed: {
+    canStartMatch() {
+      return this.players.length >= this.minPlayers && this.players.length <= this.maxPlayers && !this.match.start_time;
+    }
   }
 };
 </script>
@@ -83,5 +101,20 @@ li {
 
 p {
   margin: 5px 0;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
 }
 </style>
