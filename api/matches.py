@@ -1,4 +1,4 @@
-from flask import request, jsonify, g
+from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 import mysql.connector
@@ -75,6 +75,34 @@ def init_matches(app):
                 for match in matches
             ]
             return jsonify(formatted_matches), 200
+        except mysql.connector.Error as err:
+            return jsonify({"error": str(err)}), 400
+        finally:
+            cursor.close()
+            connection.close()
+
+    @app.route('/matches/<int:match_id>/players', methods=['GET'])
+    @jwt_required()
+    def get_match_players(match_id):
+        config = load_database_config()
+        connection = connect_to_database(config)
+        cursor = connection.cursor()
+        try:
+            cursor.execute(
+                "SELECT Users.user_id, Users.username FROM Match_Players "
+                "JOIN Users ON Match_Players.user_id = Users.user_id "
+                "WHERE Match_Players.match_id = %s",
+                (match_id,)
+            )
+            players = cursor.fetchall()
+            formatted_players = [
+                {
+                    "user_id": player[0],
+                    "username": player[1]
+                }
+                for player in players
+            ]
+            return jsonify(formatted_players), 200
         except mysql.connector.Error as err:
             return jsonify({"error": str(err)}), 400
         finally:
