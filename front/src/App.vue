@@ -1,11 +1,6 @@
 <template>
   <div id="app">
-    <nav>
-      <router-link to="/">Sign In</router-link>
-      <router-link v-if="isAuthenticated" to="/create-match">Create Match</router-link>
-      <router-link v-if="isAuthenticated" to="/matches">Your Matches</router-link>
-      <button v-if="isAuthenticated" @click="signOut">Sign Out</button>
-    </nav>
+    <NavigationMenu :isAuthenticated="isAuthenticated" :signOut="signOut" />
     <router-view @auth-success="handleAuthSuccess" />
   </div>
 </template>
@@ -13,8 +8,12 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import NavigationMenu from './components/NavigationMenu.vue';
 
 export default {
+  components: {
+    NavigationMenu
+  },
   setup() {
     const isAuthenticated = ref(false);
     const router = useRouter();
@@ -51,23 +50,5 @@ export default {
   flex-direction: column;
   align-items: center;
   margin-top: 50px;
-}
-
-nav {
-  margin-bottom: 20px;
-}
-
-button {
-  margin-left: 10px;
-  padding: 5px 10px;
-  font-size: 16px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #e53935;
 }
 </style>
