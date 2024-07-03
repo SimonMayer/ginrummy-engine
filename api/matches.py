@@ -15,7 +15,7 @@ def init_matches(app):
         cursor = connection.cursor()
         try:
             cursor.execute(
-                "INSERT INTO Matches (created_by, start_time, end_time) VALUES (%s, %s, NULL)",
+                "INSERT INTO Matches (created_by, create_time, start_time, end_time) VALUES (%s, %s, NULL, NULL)",
                 (user_id, datetime.now())
             )
             connection.commit()
@@ -61,7 +61,7 @@ def init_matches(app):
         cursor = connection.cursor()
         try:
             cursor.execute(
-                "SELECT match_id, created_by, start_time, end_time FROM Matches WHERE created_by = %s",
+                "SELECT match_id, created_by, create_time, start_time, end_time FROM Matches WHERE created_by = %s",
                 (user_id,)
             )
             matches = cursor.fetchall()
@@ -69,8 +69,9 @@ def init_matches(app):
                 {
                     "match_id": match[0],
                     "created_by": match[1],
-                    "start_time": match[2].isoformat() if match[2] else None,
-                    "end_time": match[3].isoformat() if match[3] else None
+                    "create_time": match[2].isoformat() if match[2] else None,
+                    "start_time": match[3].isoformat() if match[3] else None,
+                    "end_time": match[4].isoformat() if match[4] else None
                 }
                 for match in matches
             ]

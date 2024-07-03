@@ -39,7 +39,8 @@ def create_database_and_tables(connection, database_name):
                 CREATE TABLE IF NOT EXISTS `Matches` (
                     `match_id` INT AUTO_INCREMENT PRIMARY KEY,
                     `created_by` INT NOT NULL,
-                    `start_time` DATETIME NOT NULL,
+                    `create_time` DATETIME NOT NULL,
+                    `start_time` DATETIME,
                     `end_time` DATETIME,
                     FOREIGN KEY (`created_by`) REFERENCES `Users`(`user_id`)
                 );
