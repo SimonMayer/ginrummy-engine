@@ -27,9 +27,9 @@ def init_matches(app):
             cursor.close()
             connection.close()
 
-    @app.route('/matches/<int:match_id>/participants', methods=['POST'])
+    @app.route('/matches/<int:match_id>/players', methods=['POST'])
     @jwt_required()
-    def add_participants(match_id):
+    def add_players(match_id):
         user_ids = request.json.get('user_ids', [])
         if not user_ids:
             return jsonify({"error": "User IDs are required"}), 400
@@ -40,11 +40,11 @@ def init_matches(app):
         try:
             for user_id in user_ids:
                 cursor.execute(
-                    "INSERT INTO Match_Participants (match_id, user_id) VALUES (%s, %s)",
+                    "INSERT INTO Match_Players (match_id, user_id) VALUES (%s, %s)",
                     (match_id, user_id)
                 )
             connection.commit()
-            return jsonify({"message": "Participants added successfully"}), 201
+            return jsonify({"message": "Players added successfully"}), 201
         except mysql.connector.Error as err:
             connection.rollback()  # Roll back in case of error
             return jsonify({"error": str(err)}), 400

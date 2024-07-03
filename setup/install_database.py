@@ -45,7 +45,7 @@ def create_database_and_tables(connection, database_name):
                 );
                 """,
                 """
-                CREATE TABLE IF NOT EXISTS `Match_Participants` (
+                CREATE TABLE IF NOT EXISTS `Match_Players` (
                     `match_id` INT NOT NULL,
                     `user_id` INT NOT NULL,
                     PRIMARY KEY (`match_id`, `user_id`),
