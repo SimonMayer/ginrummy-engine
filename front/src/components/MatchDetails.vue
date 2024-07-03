@@ -1,22 +1,31 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
-    <h2>Players</h2>
-    <ul>
-      <li v-for="player in players" :key="player.user_id">{{ player.username }}</li>
-    </ul>
+    <div v-if="match">
+      <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
+      <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
+      <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
+      <h2>Players</h2>
+      <ul>
+        <li v-for="player in match.players" :key="player.user_id">{{ player.username }}</li>
+      </ul>
+    </div>
+    <div v-else>
+      <p>Loading match details...</p>
+    </div>
   </div>
 </template>
 
 <script>
 import apiClient from '../api/axios';
+import { formatDateTime } from '../utils/dateFormatter';
 
 export default {
   name: 'MatchDetails',
   data() {
     return {
       matchId: this.$route.params.id,
-      players: [],
+      match: null,
     };
   },
   async created() {
@@ -25,13 +34,14 @@ export default {
   methods: {
     async loadMatchDetails() {
       try {
-        const response = await apiClient.get(`/matches/${this.matchId}/players`);
-        this.players = response.data;
+        const response = await apiClient.get(`/matches/${this.matchId}`);
+        this.match = response.data;
       } catch (error) {
         alert('Failed to fetch match details!');
         console.error(error);
       }
-    }
+    },
+    formatDateTime
   }
 };
 </script>
