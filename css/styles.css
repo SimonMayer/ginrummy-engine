@@ -1,0 +1,25 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.deck, .hand, .discard-pile {
+    margin: 20px;
+    position: relative;
+}
+
+/* Add this to css/styles.css or a new CSS file */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.players {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+}
+.player {
+    width: 45%;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gin Rummy Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/card-ranks.css">
+</head>
+<body>
+<h1>Gin Rummy</h1>
+<div id="roundNumber">Round: 1</div>
+<div class="deck">
+    <button id="drawButton" onclick="drawFromStock()">Draw from stock</button>
+    <button id="takeFromDiscardPileButton" onclick="drawFromDiscardPile()">Draw from top of discard pile</button>
+    <button id="discardButton" onclick="discardCard()">Discard card</button>
+    <button id="playSetButton" onclick="playSet()">Play set</button>
+    <button id="playRunButton" onclick="playRun()">Play run</button>
+</div>
+<div class="game-container">
+    <div class="discard-pile">
+        <h2>Discard Pile</h2>
+        <div id="discardPile"></div>
+    </div>
+    <div class="players">
+        <div class="player" id="player1">
+            <h2>Player 1</h2>
+            <div class="hand" id="hand1"></div>
+            <div class="sets" id="sets1"></div>
+            <div id="score1">Score: 0</div> <!-- Score display for Player 1 -->
+        </div>
+        <div class="player" id="player2">
+            <h2>Player 2</h2>
+            <div class="hand" id="hand2"></div>
+            <div class="sets" id="sets2"></div>
+            <div id="score2">Score: 0</div> <!-- Score display for Player 2 -->
+        </div>
+    </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/Card.js"></script>
+<script src="js/Deck.js"></script>
+<script src="js/Hand.js"></script>
+<script src="js/Player.js"></script>
+<script src="js/DiscardPile.js"></script>
+<script src="js/Game/Game.js"></script>
+<script src="js/Game/selection.js"></script>
+<script src="js/Game/rendering.js"></script>
+<script src="js/Game/drawing.js"></script>
+<script src="js/Game/plays.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
