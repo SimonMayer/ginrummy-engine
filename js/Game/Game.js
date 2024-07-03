@@ -23,7 +23,7 @@ class Game {
     dealCards() {
         this.players.forEach(player => {
             for (let i = 0; i < CONFIG.cardsDealt; i++) {
-                player.addCard(this.deck.draw());
+                player.hand.addCard(this.deck.draw());
             }
         });
     }
@@ -87,7 +87,7 @@ class Game {
         }
 
         const [playerIndex, cardIndex] = this.selectedCards[0].split('-').map(Number);
-        const card = this.players[playerIndex].removeCard(cardIndex);
+        const card = this.players[playerIndex].hand.removeCard(cardIndex);
         this.discardPile.addCard(card);
         this.selectedCards = [];
         this.hasDrawnCard = false;

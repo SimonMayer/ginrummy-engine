@@ -6,18 +6,6 @@ class Player {
         this.score = 0;
     }
 
-    addCard(card) {
-        this.hand.addCard(card);
-    }
-
-    removeCard(cardIndex) {
-        return this.hand.cards.splice(cardIndex, 1)[0];
-    }
-
-    getCards() {
-        return this.hand.cards;
-    }
-
     addSet(cards) {
         this.sets.push(cards);
         this.updateScore(cards);

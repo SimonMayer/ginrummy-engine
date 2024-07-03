@@ -10,7 +10,7 @@ Game.prototype.drawFromStock = function() {
 
     const card = this.deck.draw();
     const player = this.players[this.currentPlayerIndex];
-    player.addCard(card);
+    player.hand.addCard(card);
     this.hasDrawnCard = true;
     this.drawnCard = card; // Store the drawn card reference
     this.renderHands();
@@ -30,7 +30,7 @@ Game.prototype.drawFromDiscardPile = function() {
 
     const card = this.discardPile.cards.pop();
     const player = this.players[this.currentPlayerIndex];
-    player.addCard(card);
+    player.hand.addCard(card);
     this.hasDrawnCard = true;
     this.drawnCard = card; // Store the drawn card reference
     this.renderHands();

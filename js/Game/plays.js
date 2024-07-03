@@ -50,7 +50,7 @@ Game.prototype.playSet = function() {
     const playerIndex = this.currentPlayerIndex;
 
     const player = this.players[playerIndex];
-    const newHand = player.getCards().filter(card => !selectedCards.includes(card));
+    const newHand = player.hand.cards.filter(card => !selectedCards.includes(card));
     const setCards = selectedCards.slice(0);
 
     this.players[playerIndex].hand.cards = newHand;
@@ -79,7 +79,7 @@ Game.prototype.playRun = function() {
     const suit = selectedCards[0].suit;
 
     const player = this.players[playerIndex];
-    const newHand = player.getCards().filter(card => card.suit !== suit || !selectedCards.includes(card));
+    const newHand = player.hand.cards.filter(card => card.suit !== suit || !selectedCards.includes(card));
     const runCards = selectedCards.slice(0);
 
     this.players[playerIndex].hand.cards = newHand;
