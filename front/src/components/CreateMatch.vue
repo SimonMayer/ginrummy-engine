@@ -6,16 +6,13 @@
 </template>
 
 <script>
-import axios from 'axios';
+import apiClient from '../api/axios';
 
 export default {
   methods: {
     async createMatch() {
-      const token = localStorage.getItem('token');
       try {
-        const response = await axios.post('http://localhost:5000/matches', {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await apiClient.post('/matches');
         alert(`Match created! Match ID: ${response.data.match_id}`);
       } catch (error) {
         alert('Failed to create match!');
