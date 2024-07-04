@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from api.matches import init_matches
+from api.matches.matches import init_matches
 from api.sign_in import init_auth_routes
 
 app = Flask(__name__)
