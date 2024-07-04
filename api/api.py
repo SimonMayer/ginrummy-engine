@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from api.matches.matches import init_matches
 from api.matches.players import init_match_players
 from api.sign_in import init_auth_routes
+from api.hands import init_hand_routes
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'your-very-secret-key'  # Change this to a real secret in production
@@ -33,10 +34,10 @@ CORS(app)
 
 jwt = JWTManager(app)
 
-# Initialize authentication and match routes
 init_auth_routes(app)
 init_matches(app)
 init_match_players(app)
+init_hand_routes(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
