@@ -1,29 +1,28 @@
 <template>
   <div class="playing-card">
     <div :class="['card-content', rankClass, suitClass]">
-      <div class="corner top-left">
-        <div>{{ displayRank }}</div>
-        <div>{{ suitEmoji }}</div>
-      </div>
+      <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
       <div class="suits">
         <div v-for="n in suitRepeat" :key="n" class="suit-symbol">{{ suitEmoji }}</div>
       </div>
-      <div class="corner bottom-right">
-        <div>{{ displayRank }}</div>
-        <div>{{ suitEmoji }}</div>
-      </div>
+      <CardCorner class="bottom-right" :rank="displayRank" :suit="suitEmoji" />
     </div>
   </div>
 </template>
 
 <script>
+import CardCorner from './CardCorner.vue';
+
 export default {
   name: 'PlayingCard',
+  components: {
+    CardCorner,
+  },
   props: {
     card: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   computed: {
     suitEmoji() {
@@ -58,8 +57,8 @@ export default {
     },
     suitClass() {
       return this.card.suit.toLowerCase();
-    }
-  }
+    },
+  },
 };
 </script>
 
