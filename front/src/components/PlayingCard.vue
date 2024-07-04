@@ -2,7 +2,7 @@
   <div class="playing-card">
     <div :class="['card-content', rankClass, suitClass]">
       <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
-      <div class="suits">
+      <div class="pattern">
         <div v-for="n in suitRepeat" :key="n" class="suit-symbol">{{ suitEmoji }}</div>
       </div>
       <CardCorner class="bottom-right" :rank="displayRank" :suit="suitEmoji" />
@@ -27,28 +27,28 @@ export default {
   computed: {
     suitEmoji() {
       const suitEmojis = {
-        'Hearts': '♥️',
-        'Diamonds': '♦️',
-        'Clubs': '♣️',
-        'Spades': '♠️'
+        Hearts: '♥️',
+        Diamonds: '♦️',
+        Clubs: '♣️',
+        Spades: '♠️',
       };
       return suitEmojis[this.card.suit];
     },
     displayRank() {
       const faceCards = {
-        'J': 'J',
-        'Q': 'Q',
-        'K': 'K',
-        'A': 'A'
+        J: 'J',
+        Q: 'Q',
+        K: 'K',
+        A: 'A',
       };
       return faceCards[this.card.rank] || this.card.rank;
     },
     suitRepeat() {
       const faceCards = {
-        'J': 1,
-        'Q': 1,
-        'K': 1,
-        'A': 1
+        J: 1,
+        Q: 1,
+        K: 1,
+        A: 1,
       };
       return faceCards[this.card.rank] || parseInt(this.card.rank, 10);
     },
@@ -78,12 +78,6 @@ export default {
   text-align: center;
 }
 
-.corner {
-  position: absolute;
-  width: 20px;
-  font-size: 12px;
-}
-
 .top-left {
   top: 4px;
   left: 0px;
@@ -95,7 +89,7 @@ export default {
   transform: rotate(180deg);
 }
 
-.suits {
+.pattern {
   position: absolute;
   top: 10px;
   bottom: 10px;

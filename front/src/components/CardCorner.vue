@@ -23,8 +23,8 @@ export default {
 
 <style scoped>
 .corner {
+  position: absolute;
   width: 20px;
   font-size: 12px;
-  position: absolute;
 }
 </style>
