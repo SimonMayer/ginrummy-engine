@@ -11,7 +11,7 @@
           {{ player.username }}
           <ul class="hand">
             <li v-for="card in player.hands" :key="card.card_id" class="card-item">
-              <PlayingCard :card="card" />
+              <VisibleCard :card="card" />
             </li>
           </ul>
         </li>
@@ -29,13 +29,13 @@
 <script>
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
-import PlayingCard from './PlayingCard.vue';
+import VisibleCard from './VisibleCard.vue';
 import StockPile from './StockPile.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
-    PlayingCard,
+    VisibleCard,
     StockPile
   },
   data() {

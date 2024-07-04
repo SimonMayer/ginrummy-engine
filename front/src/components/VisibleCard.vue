@@ -1,5 +1,5 @@
 <template>
-  <div class="playing-card">
+  <div class="visible-card">
     <div :class="['card-content', rankClass, suitClass]">
       <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
       <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat" />
@@ -14,7 +14,7 @@ import CardPattern from './CardPattern.vue';
 import { getSuitEmoji, getDisplayRank, getSuitRepeat } from '../utils/cardUtils';
 
 export default {
-  name: 'PlayingCard',
+  name: 'VisibleCard',
   components: {
     CardCorner,
     CardPattern,
@@ -46,7 +46,7 @@ export default {
 </script>
 
 <style scoped>
-.playing-card {
+.visible-card {
   display: inline-block;
   margin: 10px;
 }
