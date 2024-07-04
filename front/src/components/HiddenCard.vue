@@ -1,5 +1,5 @@
 <template>
-  <div class="hidden-card"></div>
+  <div class="card hidden-card"></div>
 </template>
 
 <script>
@@ -9,12 +9,9 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/cardStyles.css';
+
 .hidden-card {
-  width: 100px;
-  height: 150px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
   background: linear-gradient(45deg, #3b3b3b, #696969);
-  text-align: center;
 }
 </style>

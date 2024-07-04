@@ -1,5 +1,5 @@
 <template>
-  <div class="visible-card">
+  <div class="card visible-card">
     <div :class="['card-content', rankClass, suitClass]">
       <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
       <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat" />
@@ -46,14 +46,10 @@ export default {
 </script>
 
 <style scoped>
-.visible-card {
-  display: inline-block;
-  margin: 10px;
-}
+@import '../assets/cardStyles.css';
 
 .card-content {
   position: relative;
-  width: 100px;
   height: 150px;
   border: 1px solid #ddd;
   border-radius: 10px;
