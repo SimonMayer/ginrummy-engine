@@ -11,6 +11,7 @@
 <script>
 import CardCorner from './CardCorner.vue';
 import CardPattern from './CardPattern.vue';
+import { getSuitEmoji, getDisplayRank, getSuitRepeat } from '../utils/cardUtils';
 
 export default {
   name: 'PlayingCard',
@@ -26,31 +27,13 @@ export default {
   },
   computed: {
     suitEmoji() {
-      const suitEmojis = {
-        Hearts: '♥️',
-        Diamonds: '♦️',
-        Clubs: '♣️',
-        Spades: '♠️',
-      };
-      return suitEmojis[this.card.suit];
+      return getSuitEmoji(this.card.suit);
     },
     displayRank() {
-      const faceCards = {
-        J: 'J',
-        Q: 'Q',
-        K: 'K',
-        A: 'A',
-      };
-      return faceCards[this.card.rank] || this.card.rank;
+      return getDisplayRank(this.card.rank);
     },
     suitRepeat() {
-      const faceCards = {
-        J: 1,
-        Q: 1,
-        K: 1,
-        A: 1,
-      };
-      return faceCards[this.card.rank] || parseInt(this.card.rank, 10);
+      return getSuitRepeat(this.card.rank);
     },
     rankClass() {
       return `rank-${this.card.rank}`;
