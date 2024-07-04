@@ -7,7 +7,14 @@
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       <h2>Players</h2>
       <ul>
-        <li v-for="player in players" :key="player.user_id">{{ player.username }}</li>
+        <li v-for="player in players" :key="player.user_id">
+          {{ player.username }}
+          <ul>
+            <li v-for="card in player.hands" :key="card.card_id">
+              {{ card.rank }} of {{ card.suit }} (Points: {{ card.point_value }})
+            </li>
+          </ul>
+        </li>
       </ul>
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
@@ -35,6 +42,7 @@ export default {
   async created() {
     await this.loadMatchDetails();
     await this.loadPlayers();
+    await this.loadHandsForPlayers();
   },
   methods: {
     async loadMatchDetails() {
@@ -52,6 +60,24 @@ export default {
         this.players = response.data;
       } catch (error) {
         alert('Failed to fetch players!');
+        console.error(error);
+      }
+    },
+    async loadHandsForPlayers() {
+      try {
+        if (this.match && this.match.current_round_id) {
+          for (let player of this.players) {
+            const response = await apiClient.get('/hands', {
+              params: {
+                round_id: this.match.current_round_id,
+                user_id: player.user_id
+              }
+            });
+            player.hands = response.data.cards;
+          }
+        }
+      } catch (error) {
+        alert('Failed to fetch hands!');
         console.error(error);
       }
     },
