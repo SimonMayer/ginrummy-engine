@@ -4,7 +4,6 @@ from flask_jwt_extended import JWTManager
 from api.matches.matches import init_matches
 from api.matches.players import init_match_players
 from api.sign_in import init_auth_routes
-from api.hands import init_hand_routes
 from api.rounds import init_round_routes
 
 app = Flask(__name__)
@@ -38,7 +37,6 @@ jwt = JWTManager(app)
 init_auth_routes(app)
 init_matches(app)
 init_match_players(app)
-init_hand_routes(app)
 init_round_routes(app)
 
 if __name__ == '__main__':

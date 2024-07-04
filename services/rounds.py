@@ -29,7 +29,7 @@ def create_round(match_id, players):
         stock_pile_id = cursor.lastrowid
 
         # Generate and shuffle cards
-        ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'J', 'Q', 'K']
+        ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
         suits = ['Spades', 'Hearts', 'Clubs', 'Diamonds']
         cards = [{'rank': rank, 'suit': suit} for rank in ranks for suit in suits]
         random.shuffle(cards)
