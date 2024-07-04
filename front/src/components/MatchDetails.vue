@@ -16,6 +16,10 @@
           </ul>
         </li>
       </ul>
+      <h2>Stock Pile</h2>
+      <div class="stock-pile">
+        <HiddenCard v-for="n in match.stock_pile_size" :key="n" />
+      </div>
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
     <div v-else>
@@ -28,11 +32,13 @@
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
 import PlayingCard from './PlayingCard.vue';
+import HiddenCard from './HiddenCard.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
-    PlayingCard
+    PlayingCard,
+    HiddenCard
   },
   data() {
     return {
@@ -76,6 +82,8 @@ export default {
           this.players.forEach(player => {
             player.hands = hands[player.user_id]?.cards || [];
           });
+
+          this.match.stock_pile_size = response.data.stock_pile_size;
         }
       } catch (error) {
         alert('Failed to fetch hands!');
@@ -137,6 +145,21 @@ h1, h2 {
 
 .card-item:not(:first-child) {
   margin-left: -80px;
+}
+
+.stock-pile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 150px;
+  position: relative;
+}
+
+.stock-pile > * {
+  position: absolute;
+  margin-left: -95px; /* Adjust this value to control the overlap */
 }
 
 p {
