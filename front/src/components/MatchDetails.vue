@@ -17,9 +17,7 @@
         </li>
       </ul>
       <h2>Stock Pile</h2>
-      <div class="stock-pile">
-        <HiddenCard v-for="n in match.stock_pile_size" :key="n" />
-      </div>
+      <StockPile :size="match.stock_pile_size" />
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
     <div v-else>
@@ -32,13 +30,13 @@
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
 import PlayingCard from './PlayingCard.vue';
-import HiddenCard from './HiddenCard.vue';
+import StockPile from './StockPile.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
     PlayingCard,
-    HiddenCard
+    StockPile
   },
   data() {
     return {
@@ -93,7 +91,6 @@ export default {
     async startMatch() {
       try {
         await apiClient.post(`/matches/${this.matchId}/start`);
-        // Reload match details to get the updated start time
         await this.loadMatchDetails();
       } catch (error) {
         alert('Failed to start match!');
@@ -145,21 +142,6 @@ h1, h2 {
 
 .card-item:not(:first-child) {
   margin-left: -80px;
-}
-
-.stock-pile {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-  height: 150px;
-  position: relative;
-}
-
-.stock-pile > * {
-  position: absolute;
-  margin-left: -95px; /* Adjust this value to control the overlap */
 }
 
 p {
