@@ -66,7 +66,10 @@ def init_matches(app):
         cursor = connection.cursor()
         try:
             cursor.execute(
-                "SELECT match_id, created_by, create_time, start_time, end_time FROM Matches WHERE match_id = %s",
+                "SELECT m.match_id, m.created_by, m.create_time, m.start_time, m.end_time, r.round_id AS current_round_id "
+                "FROM Matches m "
+                "LEFT JOIN Rounds r ON m.match_id = r.match_id AND r.end_time IS NULL "
+                "WHERE m.match_id = %s",
                 (match_id,)
             )
             match = cursor.fetchone()
@@ -76,7 +79,8 @@ def init_matches(app):
                     "created_by": match[1],
                     "create_time": match[2].isoformat() if match[2] else None,
                     "start_time": match[3].isoformat() if match[3] else None,
-                    "end_time": match[4].isoformat() if match[4] else None
+                    "end_time": match[4].isoformat() if match[4] else None,
+                    "current_round_id": match[5]
                 }
                 return jsonify(formatted_match), 200
             else:
