@@ -2,9 +2,7 @@
   <div class="playing-card">
     <div :class="['card-content', rankClass, suitClass]">
       <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
-      <div class="pattern">
-        <div v-for="n in suitRepeat" :key="n" class="suit-symbol">{{ suitEmoji }}</div>
-      </div>
+      <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat" />
       <CardCorner class="bottom-right" :rank="displayRank" :suit="suitEmoji" />
     </div>
   </div>
@@ -12,11 +10,13 @@
 
 <script>
 import CardCorner from './CardCorner.vue';
+import CardPattern from './CardPattern.vue';
 
 export default {
   name: 'PlayingCard',
   components: {
     CardCorner,
+    CardPattern,
   },
   props: {
     card: {
@@ -87,24 +87,6 @@ export default {
   bottom: 4px;
   right: 0px;
   transform: rotate(180deg);
-}
-
-.pattern {
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 20px;
-  right: 20px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(16, 1fr);
-  justify-content: center;
-  justify-items: center;
-  align-items: center;
-}
-
-.suit-symbol {
-  font-size: 20px;
 }
 
 .hearts, .diamonds {
