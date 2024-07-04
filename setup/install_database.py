@@ -23,7 +23,7 @@ def create_database_and_tables(connection, database_name):
         try:
             cursor = connection.cursor()
             # Create database and select it
-            cursor.execute(f"CREATE DATABASE {database_name};")
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name};")
             cursor.execute(f"USE {database_name};")
 
             # SQL to create tables
@@ -69,6 +69,8 @@ def create_database_and_tables(connection, database_name):
                     `round_id` INT NOT NULL,
                     `user_id` INT NOT NULL,
                     `turn_number` INT NOT NULL,
+                    `start_time` DATETIME NOT NULL,
+                    `end_time` DATETIME,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
                 );
@@ -93,11 +95,19 @@ def create_database_and_tables(connection, database_name):
                 """
                 CREATE TABLE IF NOT EXISTS `Hands` (
                     `hand_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `turn_id` INT NOT NULL,
+                    `round_id` INT NOT NULL,
                     `user_id` INT NOT NULL,
+                    FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
+                    FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
+                );
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS `Hand_Cards` (
+                    `hand_card_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `hand_id` INT NOT NULL,
                     `card_id` INT NOT NULL,
-                    FOREIGN KEY (`turn_id`) REFERENCES `Turns`(`turn_id`),
-                    FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`),
+                    `sequence` INT NOT NULL,
+                    FOREIGN KEY (`hand_id`) REFERENCES `Hands`(`hand_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
                 );
                 """,
@@ -105,9 +115,16 @@ def create_database_and_tables(connection, database_name):
                 CREATE TABLE IF NOT EXISTS `Stock_Piles` (
                     `stock_pile_id` INT AUTO_INCREMENT PRIMARY KEY,
                     `round_id` INT NOT NULL,
+                    FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`)
+                );
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS `Stock_Pile_Cards` (
+                    `stock_pile_card_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `stock_pile_id` INT NOT NULL,
                     `card_id` INT NOT NULL,
                     `sequence` INT NOT NULL,
-                    FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
+                    FOREIGN KEY (`stock_pile_id`) REFERENCES `Stock_Piles`(`stock_pile_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
                 );
                 """,
@@ -115,9 +132,16 @@ def create_database_and_tables(connection, database_name):
                 CREATE TABLE IF NOT EXISTS `Discard_Piles` (
                     `discard_pile_id` INT AUTO_INCREMENT PRIMARY KEY,
                     `round_id` INT NOT NULL,
+                    FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`)
+                );
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS `Discard_Pile_Cards` (
+                    `discard_pile_card_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `discard_pile_id` INT NOT NULL,
                     `card_id` INT NOT NULL,
                     `sequence` INT NOT NULL,
-                    FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
+                    FOREIGN KEY (`discard_pile_id`) REFERENCES `Discard_Piles`(`discard_pile_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
                 );
                 """,
