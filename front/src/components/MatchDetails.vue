@@ -6,12 +6,12 @@
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       <h2>Players</h2>
-      <ul>
-        <li v-for="player in players" :key="player.user_id">
+      <ul class="players-list">
+        <li v-for="player in players" :key="player.user_id" class="player-item">
           {{ player.username }}
-          <ul>
-            <li v-for="card in player.hands" :key="card.card_id">
-              <PlayingCard :card="card" />
+          <ul class="hand">
+            <li v-for="card in player.hands" :key="card.card_id" class="card-item">
+              <PlayingCard :card="card"/>
             </li>
           </ul>
         </li>
@@ -26,7 +26,7 @@
 
 <script>
 import apiClient from '../api/axios';
-import { formatDateTime } from '../utils/dateFormatter';
+import {formatDateTime} from '../utils/dateFormatter';
 import PlayingCard from './PlayingCard.vue';
 
 export default {
@@ -117,16 +117,29 @@ h1, h2 {
   margin-bottom: 20px;
 }
 
-ul {
+.players-list {
   list-style-type: none;
   padding: 0;
+  width: 100%;
 }
 
-li {
+.player-item {
   background-color: #f9f9f9;
   padding: 10px;
   margin: 5px 0;
   border: 1px solid #ddd;
+}
+
+.hand {
+  display: flex;
+  flex-direction: row;
+  padding: 0;
+  margin: 10px 0 0 0;
+  list-style-type: none;
+}
+
+.card-item:not(:first-child) {
+  margin-left: -80px;
 }
 
 p {
