@@ -11,7 +11,7 @@
           {{ player.username }}
           <ul>
             <li v-for="card in player.hands" :key="card.card_id">
-              {{ card.rank }} of {{ card.suit }} (Points: {{ card.point_value }})
+              <PlayingCard :card="card" />
             </li>
           </ul>
         </li>
@@ -27,9 +27,13 @@
 <script>
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
+import PlayingCard from './PlayingCard.vue';
 
 export default {
   name: 'MatchDetails',
+  components: {
+    PlayingCard
+  },
   data() {
     return {
       matchId: this.$route.params.id,
