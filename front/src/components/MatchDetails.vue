@@ -11,7 +11,7 @@
           {{ player.username }}
           <ul class="hand">
             <li v-for="card in player.hands" :key="card.card_id" class="card-item">
-              <PlayingCard :card="card"/>
+              <PlayingCard :card="card" />
             </li>
           </ul>
         </li>
@@ -26,7 +26,7 @@
 
 <script>
 import apiClient from '../api/axios';
-import {formatDateTime} from '../utils/dateFormatter';
+import { formatDateTime } from '../utils/dateFormatter';
 import PlayingCard from './PlayingCard.vue';
 
 export default {
@@ -70,15 +70,12 @@ export default {
     async loadHandsForPlayers() {
       try {
         if (this.match && this.match.current_round_id) {
-          for (let player of this.players) {
-            const response = await apiClient.get('/hands', {
-              params: {
-                round_id: this.match.current_round_id,
-                user_id: player.user_id
-              }
-            });
-            player.hands = response.data.cards;
-          }
+          const response = await apiClient.get(`/rounds/${this.match.current_round_id}`);
+          const hands = response.data.hands;
+
+          this.players.forEach(player => {
+            player.hands = hands[player.user_id]?.cards || [];
+          });
         }
       } catch (error) {
         alert('Failed to fetch hands!');
