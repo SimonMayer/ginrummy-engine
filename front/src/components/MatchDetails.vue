@@ -9,16 +9,16 @@
       <StockPile v-if="match.stock_pile_size !== undefined" :size="match.stock_pile_size" />
       <h2>Players</h2>
       <ul class="players-list">
-        <li v-for="player in players" :key="player.user_id" class="player-item">
+        <li v-for="player in players" :key="player.user_id" :class="{'current-turn': isCurrentTurn(player.user_id)}" class="player-item">
           {{ player.username }}
           <ul class="hand" v-if="player.user_id !== signedInUserId">
             <li v-for="n in player.handSize" :key="n" class="card-item">
-              <HiddenCard/>
+              <HiddenCard />
             </li>
           </ul>
           <ul class="hand" v-else>
             <li v-for="card in myHand" :key="card.card_id" class="card-item">
-              <VisibleCard :card="card"/>
+              <VisibleCard :card="card" />
             </li>
           </ul>
         </li>
@@ -33,7 +33,7 @@
 
 <script>
 import apiClient from '../api/axios';
-import {formatDateTime} from '../utils/dateFormatter';
+import { formatDateTime } from '../utils/dateFormatter';
 import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
 import VisibleCard from './VisibleCard.vue';
@@ -53,7 +53,8 @@ export default {
       minPlayers: 2,
       maxPlayers: 4,
       signedInUserId: parseInt(localStorage.getItem('user_id'), 10),
-      myHand: []
+      myHand: [],
+      currentTurnUserId: null
     };
   },
   async created() {
@@ -61,6 +62,7 @@ export default {
     await this.loadPlayers();
     await this.loadHandsForPlayers();
     await this.loadMyHand();
+    await this.loadCurrentTurn();
   },
   methods: {
     async loadMatchDetails() {
@@ -109,6 +111,17 @@ export default {
         console.error(error);
       }
     },
+    async loadCurrentTurn() {
+      try {
+        if (this.match && this.match.current_round_id) {
+          const response = await apiClient.get(`/rounds/${this.match.current_round_id}/current_turn`);
+          this.currentTurnUserId = response.data.user_id;
+        }
+      } catch (error) {
+        alert('Failed to fetch current turn!');
+        console.error(error);
+      }
+    },
     async startMatch() {
       try {
         await apiClient.post(`/matches/${this.matchId}/start`);
@@ -118,7 +131,10 @@ export default {
         console.error(error);
       }
     },
-    formatDateTime
+    formatDateTime,
+    isCurrentTurn(userId) {
+      return this.currentTurnUserId === userId;
+    }
   },
   computed: {
     canStartMatch() {
@@ -151,6 +167,11 @@ h1, h2 {
   padding: 10px;
   margin: 5px 0;
   border: 1px solid #ddd;
+}
+
+.current-turn {
+  border: 2px solid #4CAF50;
+  background-color: #e8f5e9;
 }
 
 .hand {
