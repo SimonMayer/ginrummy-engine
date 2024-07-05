@@ -27,13 +27,10 @@ export default {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 150px;
   position: relative;
 }
 
-.stock-card-item {
-  position: absolute;
-  margin-left: -95px;
+.stock-card-item:not(:first-child) {
+  margin-left: -100px;
 }
 </style>
