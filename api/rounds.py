@@ -40,22 +40,26 @@ def init_round_routes(app):
             ]
 
             # Get the hands for each player and the cards they contain
+            # Deprecation note: Showing cards in hands is deprecated and will be removed in future releases.
             cursor.execute(
-                "SELECT h.hand_id, h.user_id, hc.card_id, c.rank, c.suit, c.point_value "
-                "FROM Hands h "
-                "JOIN Hand_Cards hc ON h.hand_id = hc.hand_id "
-                "JOIN Cards c ON hc.card_id = c.card_id "
-                "WHERE h.round_id = %s",
+                """
+                SELECT h.hand_id, h.user_id, hc.card_id, c.rank, c.suit, c.point_value
+                FROM Hands h
+                JOIN Hand_Cards hc ON h.hand_id = hc.hand_id
+                JOIN Cards c ON hc.card_id = c.card_id
+                WHERE h.round_id = %s
+                """,
                 (round_id,)
             )
             hands_data = cursor.fetchall()
             hands = {}
-            for hand in hands_data:
-                hand_id, user_id, card_id, rank, suit, point_value = hand
+            for hand_id, user_id, card_id, rank, suit, point_value in hands_data:
                 if user_id not in hands:
                     hands[user_id] = {
                         "hand_id": hand_id,
-                        "cards": []
+                        "cards": [], # Deprecated: This property will be removed in future versions.
+
+                        "size": 0  # Initialize size
                     }
                 hands[user_id]["cards"].append({
                     "card_id": card_id,
@@ -63,6 +67,10 @@ def init_round_routes(app):
                     "suit": suit,
                     "point_value": point_value
                 })
+
+            # Calculate the size of each hand
+            for user_id in hands:
+                hands[user_id]["size"] = len(hands[user_id]["cards"])
 
             result = {
                 "round_id": round_id,
