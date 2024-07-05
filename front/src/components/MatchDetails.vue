@@ -12,8 +12,8 @@
         <li v-for="player in players" :key="player.user_id" class="player-item">
           {{ player.username }}
           <ul class="hand">
-            <li v-for="card in player.hands" :key="card.card_id" class="card-item">
-              <VisibleCard :card="card" />
+            <li v-for="n in player.handSize" :key="n" class="card-item">
+              <HiddenCard />
             </li>
           </ul>
         </li>
@@ -29,13 +29,13 @@
 <script>
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
-import VisibleCard from './VisibleCard.vue';
+import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
-    VisibleCard,
+    HiddenCard,
     StockPile
   },
   data() {
@@ -78,7 +78,7 @@ export default {
           const hands = response.data.hands;
 
           this.players.forEach(player => {
-            player.hands = hands[player.user_id]?.cards || [];
+            player.handSize = hands[player.user_id]?.size || 0;
           });
 
           this.match.stock_pile_size = response.data.stock_pile_size;
