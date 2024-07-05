@@ -114,3 +114,40 @@ def init_round_routes(app):
         finally:
             cursor.close()
             connection.close()
+
+    @app.route('/rounds/<int:round_id>/current_turn', methods=['GET'])
+    @jwt_required()
+    def get_current_turn(round_id):
+        config = load_database_config()
+        connection = connect_to_database(config)
+        cursor = connection.cursor()
+
+        try:
+            # Query to find the current turn for the specified round
+            cursor.execute("""
+                SELECT turn_id, user_id, rotation_number, start_time
+                FROM Turns
+                WHERE round_id = %s AND end_time IS NULL
+                ORDER BY start_time DESC
+                LIMIT 1
+            """, (round_id,))
+            current_turn = cursor.fetchone()
+
+            # If there is a current turn
+            if current_turn:
+                result = {
+                    "turn_id": current_turn[0],
+                    "user_id": current_turn[1],
+                    "rotation_number": current_turn[2],
+                    "start_time": current_turn[3].strftime('%Y-%m-%d %H:%M:%S')
+                }
+                return jsonify(result), 200
+            else:
+                return jsonify({"message": "No current turn found for this round"}), 404
+
+        except mysql.connector.Error as err:
+            return jsonify({"error": str(err)}), 400
+
+        finally:
+            cursor.close()
+            connection.close()

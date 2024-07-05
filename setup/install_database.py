@@ -68,7 +68,7 @@ def create_database_and_tables(connection, database_name):
                     `turn_id` INT AUTO_INCREMENT PRIMARY KEY,
                     `round_id` INT NOT NULL,
                     `user_id` INT NOT NULL,
-                    `turn_number` INT NOT NULL,
+                    `rotation_number` INT NOT NULL,
                     `start_time` DATETIME NOT NULL,
                     `end_time` DATETIME,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),

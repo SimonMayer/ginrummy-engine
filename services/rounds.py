@@ -73,7 +73,7 @@ def create_round(match_id, players):
         # Select a random player to start the first turn
         first_player = random.choice(players)[0]
         cursor.execute(
-            "INSERT INTO Turns (round_id, user_id, turn_number, start_time) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO Turns (round_id, user_id, rotation_number, start_time) VALUES (%s, %s, %s, %s)",
             (round_id, first_player, 1, current_time)
         )
 
