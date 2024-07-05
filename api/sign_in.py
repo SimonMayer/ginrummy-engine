@@ -18,13 +18,13 @@ def authenticate_user(username, password):
             if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
                 access_token = create_access_token(identity=user_id)
                 refresh_token = create_refresh_token(identity=user_id)
-                return access_token, refresh_token
+                return access_token, refresh_token, user_id
     except mysql.connector.Error as err:
         print(f"Database error: {err}")
     finally:
         cursor.close()
         connection.close()
-    return None, None
+    return None, None, None
 
 def init_auth_routes(app):
     """Initialize authentication routes for the app."""
@@ -32,9 +32,9 @@ def init_auth_routes(app):
     def sign_in():
         username = request.json.get('username', None)
         password = request.json.get('password', None)
-        access_token, refresh_token = authenticate_user(username, password)
+        access_token, refresh_token, user_id = authenticate_user(username, password)
         if access_token:
-            return jsonify({'access_token': access_token, 'refresh_token': refresh_token}), 200
+            return jsonify({'access_token': access_token, 'refresh_token': refresh_token, 'user_id': user_id}), 200
         else:
             return jsonify({"msg": "Bad username or password"}), 401
 
