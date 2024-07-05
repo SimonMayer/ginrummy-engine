@@ -16,6 +16,11 @@
               <HiddenCard />
             </li>
           </ul>
+          <ul class="hand" v-if="player.user_id === signedInUserId">
+            <li v-for="card in myHand" :key="card.card_id" class="card-item">
+              <VisibleCard :card="card" />
+            </li>
+          </ul>
         </li>
       </ul>
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
@@ -30,12 +35,14 @@
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
 import HiddenCard from './HiddenCard.vue';
+import VisibleCard from './VisibleCard.vue';
 import StockPile from './StockPile.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
     HiddenCard,
+    VisibleCard,
     StockPile
   },
   data() {
@@ -45,13 +52,15 @@ export default {
       players: [],
       minPlayers: 2,
       maxPlayers: 4,
-      signedInUserId: parseInt(localStorage.getItem('user_id'), 10)
+      signedInUserId: parseInt(localStorage.getItem('user_id'), 10),
+      myHand: []
     };
   },
   async created() {
     await this.loadMatchDetails();
     await this.loadPlayers();
     await this.loadHandsForPlayers();
+    await this.loadMyHand();
   },
   methods: {
     async loadMatchDetails() {
@@ -86,6 +95,17 @@ export default {
         }
       } catch (error) {
         alert('Failed to fetch hands!');
+        console.error(error);
+      }
+    },
+    async loadMyHand() {
+      try {
+        if (this.match && this.match.current_round_id) {
+          const response = await apiClient.get(`/rounds/${this.match.current_round_id}/my_hand`);
+          this.myHand = response.data.cards;
+        }
+      } catch (error) {
+        alert('Failed to fetch your hand!');
         console.error(error);
       }
     },
