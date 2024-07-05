@@ -6,19 +6,19 @@
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       <h2>Stock Pile</h2>
-      <StockPile :size="match.stock_pile_size" />
+      <StockPile v-if="match.stock_pile_size !== undefined" :size="match.stock_pile_size" />
       <h2>Players</h2>
       <ul class="players-list">
         <li v-for="player in players" :key="player.user_id" class="player-item">
           {{ player.username }}
           <ul class="hand" v-if="player.user_id !== signedInUserId">
             <li v-for="n in player.handSize" :key="n" class="card-item">
-              <HiddenCard />
+              <HiddenCard/>
             </li>
           </ul>
-          <ul class="hand" v-if="player.user_id === signedInUserId">
+          <ul class="hand" v-else>
             <li v-for="card in myHand" :key="card.card_id" class="card-item">
-              <VisibleCard :card="card" />
+              <VisibleCard :card="card"/>
             </li>
           </ul>
         </li>
@@ -33,17 +33,17 @@
 
 <script>
 import apiClient from '../api/axios';
-import { formatDateTime } from '../utils/dateFormatter';
+import {formatDateTime} from '../utils/dateFormatter';
 import HiddenCard from './HiddenCard.vue';
-import VisibleCard from './VisibleCard.vue';
 import StockPile from './StockPile.vue';
+import VisibleCard from './VisibleCard.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
     HiddenCard,
-    VisibleCard,
-    StockPile
+    StockPile,
+    VisibleCard
   },
   data() {
     return {
@@ -91,7 +91,7 @@ export default {
             player.handSize = hands[player.user_id]?.size || 0;
           });
 
-          this.match.stock_pile_size = response.data.stock_pile_size;
+          this.match.stock_pile_size = response.data.stock_pile_size || 0;
         }
       } catch (error) {
         alert('Failed to fetch hands!');
