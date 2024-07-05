@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
@@ -70,6 +70,47 @@ def init_round_routes(app):
             return jsonify(result), 200
         except mysql.connector.Error as err:
             return jsonify({"error": str(err)}), 400
+        finally:
+            cursor.close()
+            connection.close()
+
+    @app.route('/rounds/<int:round_id>/my_hand', methods=['GET'])
+    @jwt_required()
+    def get_my_hand(round_id):
+        user_id = get_jwt_identity()
+
+        config = load_database_config()
+        connection = connect_to_database(config)
+        cursor = connection.cursor()
+
+        try:
+            # Execute SQL query to get the card details from the user's hand
+            cursor.execute(
+                """
+                SELECT c.card_id, c.rank, c.suit, c.point_value
+                FROM Hands h
+                JOIN Hand_Cards hc ON h.hand_id = hc.hand_id
+                JOIN Cards c ON hc.card_id = c.card_id
+                WHERE h.round_id = %s AND h.user_id = %s
+                """,
+                (round_id, user_id)
+            )
+            cards = cursor.fetchall()
+
+            hand_details = [
+                {
+                    "card_id": card[0],
+                    "rank": card[1],
+                    "suit": card[2],
+                    "point_value": card[3]
+                } for card in cards
+            ]
+
+            return jsonify({"user_id": user_id, "round_id": round_id, "cards": hand_details}), 200
+
+        except mysql.connector.Error as err:
+            return jsonify({"error": str(err)}), 400
+
         finally:
             cursor.close()
             connection.close()
