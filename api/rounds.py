@@ -56,6 +56,7 @@ def init_round_routes(app):
                  if user_id not in hands:
                     hands[user_id] = {
                         "hand_id": hand_id,
+                        "user_id": user_id,
                         "size": size
                     }
 
