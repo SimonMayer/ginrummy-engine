@@ -42,7 +42,7 @@ def init_round_routes(app):
             # Get the hand data for each player
             cursor.execute(
                 """
-                SELECT h.user_id, MAX(h.hand_id), COUNT(hc.card_id) AS size
+                SELECT h.user_id, MAX(h.hand_id) AS hand_id, COUNT(hc.card_id) AS size
                 FROM Hands h
                 JOIN Hand_Cards hc ON h.hand_id = hc.hand_id
                 WHERE h.round_id = %s
@@ -52,7 +52,7 @@ def init_round_routes(app):
             )
             hands_data = cursor.fetchall()
             hands = {}
-            for hand_id, user_id, size in hands_data:
+            for user_id, hand_id, size in hands_data:
                  if user_id not in hands:
                     hands[user_id] = {
                         "hand_id": hand_id,
