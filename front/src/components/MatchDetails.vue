@@ -5,6 +5,8 @@
       <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
+      <h2>Stock Pile</h2>
+      <StockPile :size="match.stock_pile_size" />
       <h2>Players</h2>
       <ul class="players-list">
         <li v-for="player in players" :key="player.user_id" class="player-item">
@@ -16,8 +18,6 @@
           </ul>
         </li>
       </ul>
-      <h2>Stock Pile</h2>
-      <StockPile :size="match.stock_pile_size" />
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
     <div v-else>
