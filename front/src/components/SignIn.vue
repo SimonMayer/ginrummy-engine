@@ -29,6 +29,8 @@ export default {
         });
         localStorage.setItem('access_token', response.data.access_token);
         localStorage.setItem('refresh_token', response.data.refresh_token);
+        localStorage.setItem('user_id', response.data.user_id);
+
         this.$emit('auth-success');
       } catch (error) {
         alert('Sign in failed!');
