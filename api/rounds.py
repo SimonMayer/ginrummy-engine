@@ -39,38 +39,25 @@ def init_round_routes(app):
                 for card in discard_pile
             ]
 
-            # Get the hands for each player and the cards they contain
-            # Deprecation note: Showing cards in hands is deprecated and will be removed in future releases.
+            # Get the hand data for each player
             cursor.execute(
                 """
-                SELECT h.hand_id, h.user_id, hc.card_id, c.rank, c.suit, c.point_value
+                SELECT h.user_id, MAX(h.hand_id), COUNT(hc.card_id) AS size
                 FROM Hands h
                 JOIN Hand_Cards hc ON h.hand_id = hc.hand_id
-                JOIN Cards c ON hc.card_id = c.card_id
                 WHERE h.round_id = %s
+                GROUP BY h.user_id
                 """,
                 (round_id,)
             )
             hands_data = cursor.fetchall()
             hands = {}
-            for hand_id, user_id, card_id, rank, suit, point_value in hands_data:
-                if user_id not in hands:
+            for hand_id, user_id, size in hands_data:
+                 if user_id not in hands:
                     hands[user_id] = {
                         "hand_id": hand_id,
-                        "cards": [], # Deprecated: This property will be removed in future versions.
-
-                        "size": 0  # Initialize size
+                        "size": size
                     }
-                hands[user_id]["cards"].append({
-                    "card_id": card_id,
-                    "rank": rank,
-                    "suit": suit,
-                    "point_value": point_value
-                })
-
-            # Calculate the size of each hand
-            for user_id in hands:
-                hands[user_id]["size"] = len(hands[user_id]["cards"])
 
             result = {
                 "round_id": round_id,
