@@ -13,7 +13,7 @@
           {{ player.username }}
           <ul class="hand">
             <li v-for="n in player.handSize" :key="n" class="card-item">
-              <HiddenCard />
+              <HiddenCard v-if="player.user_id !== signedInUserId" />
             </li>
           </ul>
         </li>
@@ -44,7 +44,8 @@ export default {
       match: null,
       players: [],
       minPlayers: 2,
-      maxPlayers: 4
+      maxPlayers: 4,
+      signedInUserId: parseInt(localStorage.getItem('user_id'), 10)
     };
   },
   async created() {
