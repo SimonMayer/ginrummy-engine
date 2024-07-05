@@ -11,9 +11,9 @@
       <ul class="players-list">
         <li v-for="player in players" :key="player.user_id" class="player-item">
           {{ player.username }}
-          <ul class="hand">
+          <ul class="hand" v-if="player.user_id !== signedInUserId">
             <li v-for="n in player.handSize" :key="n" class="card-item">
-              <HiddenCard v-if="player.user_id !== signedInUserId" />
+              <HiddenCard />
             </li>
           </ul>
         </li>
