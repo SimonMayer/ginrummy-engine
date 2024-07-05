@@ -123,25 +123,37 @@ def init_round_routes(app):
         cursor = connection.cursor()
 
         try:
-            # Query to find the current turn for the specified round
+            # Query to find the current turn for the specified round and its actions
             cursor.execute("""
-                SELECT turn_id, user_id, rotation_number, start_time
-                FROM Turns
-                WHERE round_id = %s AND end_time IS NULL
-                ORDER BY start_time DESC
-                LIMIT 1
+                SELECT t.turn_id, t.user_id, t.rotation_number, t.start_time,
+                       a.action_id, a.action_type, a.public_details
+                FROM Turns t
+                LEFT JOIN Actions a ON t.turn_id = a.turn_id
+                WHERE t.round_id = %s AND t.end_time IS NULL
+                ORDER BY t.start_time DESC, a.action_id ASC
             """, (round_id,))
-            current_turn = cursor.fetchone()
+            result = cursor.fetchall()
 
-            # If there is a current turn
-            if current_turn:
-                result = {
-                    "turn_id": current_turn[0],
-                    "user_id": current_turn[1],
-                    "rotation_number": current_turn[2],
-                    "start_time": current_turn[3].strftime('%Y-%m-%d %H:%M:%S')
+            if result:
+                # Extract turn details from the first row
+                turn_details = {
+                    "turn_id": result[0][0],
+                    "user_id": result[0][1],
+                    "rotation_number": result[0][2],
+                    "start_time": result[0][3].strftime('%Y-%m-%d %H:%M:%S'),
+                    "actions": []
                 }
-                return jsonify(result), 200
+
+                # Append action details
+                for row in result:
+                    if row[4]:  # Ensure action_id is not None
+                        turn_details["actions"].append({
+                            "action_id": row[4],
+                            "action_type": row[5],
+                            "public_details": row[6]
+                        })
+
+                return jsonify(turn_details), 200
             else:
                 return jsonify({"message": "No current turn found for this round"}), 404
 
