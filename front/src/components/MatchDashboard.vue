@@ -1,7 +1,7 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
-    <ErrorBox v-if="errorMessage" :message="errorMessage" @close="clearErrorMessage" />
+    <ErrorBox v-if="errorTitle" :title="errorTitle" :message="errorMessage" @close="clearErrorBox" />
     <LoadingIndicator :visible="loading" />
     <div v-if="match">
       <MatchTable
@@ -47,30 +47,31 @@ export default {
       currentTurnUserId: null,
       turnId: null,
       loading: true,
+      errorTitle: '',
       errorMessage: ''
     };
   },
   async created() {
     await this.loadData([
-      { method: this.loadMatchDetails, errorMessage: 'Failed to fetch match details!' },
-      { method: this.loadPlayers, errorMessage: 'Failed to fetch players!' },
-      { method: this.loadHandsForPlayers, errorMessage: 'Failed to fetch hands!' },
-      { method: this.loadMyHand, errorMessage: 'Failed to fetch your hand!' },
-      { method: this.loadCurrentTurn, errorMessage: 'Failed to fetch current turn!' },
+      { method: this.loadMatchDetails, errorTitle: 'Failed to fetch match details!' },
+      { method: this.loadPlayers, errorTitle: 'Failed to fetch players!' },
+      { method: this.loadHandsForPlayers, errorTitle: 'Failed to fetch hands!' },
+      { method: this.loadMyHand, errorTitle: 'Failed to fetch your hand!' },
+      { method: this.loadCurrentTurn, errorTitle: 'Failed to fetch current turn!' },
     ]);
   },
   methods: {
     async loadData(tasks) {
-      for (const { method, errorMessage } of tasks) {
-        await this.handleApiCall(method, errorMessage);
+      for (const { method, errorTitle } of tasks) {
+        await this.handleApiCall(method, errorTitle);
       }
     },
-    async handleApiCall(apiCall, errorMessage) {
+    async handleApiCall(apiCall, errorTitle) {
       this.loading = true;
       try {
         await apiCall();
       } catch (error) {
-        this.errorMessage = error.message || errorMessage;
+        this.setErrorMessage(errorTitle, error.message);
         console.error(error);
       } finally {
         this.loading = false;
@@ -128,7 +129,12 @@ export default {
         );
       }
     },
-    clearErrorMessage() {
+    setErrorMessage(title, message) {
+      this.errorTitle = title;
+      this.errorMessage = message;
+    },
+    clearErrorBox() {
+      this.errorTitle = '';
       this.errorMessage = '';
     },
     formatDateTime,

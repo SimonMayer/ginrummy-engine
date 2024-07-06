@@ -9,7 +9,7 @@ const apiService = {
             return response.data;
         } catch (error) {
             console.error(errorMessage, error);
-            throw new Error(errorMessage);
+            throw new Error(error.response.data.error);
         }
     },
     async post(endpoint, data, errorMessage) {
@@ -18,7 +18,7 @@ const apiService = {
             return response.data;
         } catch (error) {
             console.error(errorMessage, error);
-            throw new Error(errorMessage);
+            throw new Error(error.response.data.error);
         }
     }
 };

@@ -1,6 +1,7 @@
 <template>
   <div class="error-box">
-    <p>{{ message }}</p>
+    <p><strong>{{ title }}</strong></p>
+    <p v-if="message">{{ message }}</p>
     <button class="close-button" @click="$emit('close')">X</button>
   </div>
 </template>
@@ -9,9 +10,13 @@
 export default {
   name: 'ErrorBox',
   props: {
-    message: {
+    title: {
       type: String,
       required: true
+    },
+    message: {
+      type: String,
+      default: ''
     }
   }
 };
