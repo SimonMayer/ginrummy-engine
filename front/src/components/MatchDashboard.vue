@@ -4,17 +4,14 @@
     <ErrorBox v-if="errorMessage" :message="errorMessage" @close="clearErrorMessage" />
     <LoadingIndicator :visible="loading" />
     <div v-if="match">
-      <StockPile
-          v-if="match.stock_pile_size !== undefined"
-          :size="match.stock_pile_size"
-          @click="handleStockPileClick"
-          :disabled="loading"
-      />
-      <MatchPlayerList
+      <MatchTable
+          :match="match"
           :players="players"
           :myHand="myHand"
           :signedInUserId="signedInUserId"
           :currentTurnUserId="currentTurnUserId"
+          :loading="loading"
+          @stock-pile-click="handleStockPileClick"
       />
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
@@ -26,19 +23,17 @@
 
 <script>
 import apiClient from '../api/axios';
-import {formatDateTime} from '../utils/dateFormatter';
-import StockPile from './StockPile.vue';
+import { formatDateTime } from '../utils/dateFormatter';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
-import MatchPlayerList from './MatchPlayerList.vue';
+import MatchTable from './MatchTable.vue';
 
 export default {
   name: 'MatchDashboard',
   components: {
-    StockPile,
     ErrorBox,
     LoadingIndicator,
-    MatchPlayerList
+    MatchTable,
   },
   data() {
     return {
