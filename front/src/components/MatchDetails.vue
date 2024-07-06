@@ -10,16 +10,12 @@
           @click="handleStockPileClick"
           :disabled="loading"
       />
-      <ul class="players-list">
-        <MatchPlayer
-            v-for="player in players"
-            :key="player.user_id"
-            :player="player"
-            :myHand="myHand"
-            :signedInUserId="signedInUserId"
-            :currentTurnUserId="currentTurnUserId"
-        />
-      </ul>
+      <MatchPlayerList
+          :players="players"
+          :myHand="myHand"
+          :signedInUserId="signedInUserId"
+          :currentTurnUserId="currentTurnUserId"
+      />
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
     <div v-else>
@@ -34,7 +30,7 @@ import { formatDateTime } from '../utils/dateFormatter';
 import StockPile from './StockPile.vue';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
-import MatchPlayer from './MatchPlayer.vue';
+import MatchPlayerList from './MatchPlayerList.vue';
 
 export default {
   name: 'MatchDetails',
@@ -42,7 +38,7 @@ export default {
     StockPile,
     ErrorBox,
     LoadingIndicator,
-    MatchPlayer
+    MatchPlayerList
   },
   data() {
     return {
@@ -173,12 +169,6 @@ export default {
   flex-direction: column;
   align-items: center;
   margin-top: 50px;
-}
-
-.players-list {
-  list-style-type: none;
-  padding: 0;
-  width: 100%;
 }
 
 p {
