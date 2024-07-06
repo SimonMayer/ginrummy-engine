@@ -1,7 +1,7 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
-    <ErrorBox v-if="errorMessage" :message="errorMessage"/>
+    <ErrorBox v-if="errorMessage" :message="errorMessage" @close="clearErrorMessage" />
     <LoadingIndicator :visible="loading" />
     <div v-if="match">
       <StockPile
@@ -150,6 +150,9 @@ export default {
           this.loading = false;
         }
       }
+    },
+    clearErrorMessage() {
+      this.errorMessage = '';
     },
     formatDateTime,
   },

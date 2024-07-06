@@ -1,6 +1,7 @@
 <template>
-  <div class="error-box" v-if="message">
+  <div class="error-box">
     <p>{{ message }}</p>
+    <button class="close-button" @click="$emit('close')">X</button>
   </div>
 </template>
 
@@ -18,11 +19,24 @@ export default {
 
 <style scoped>
 .error-box {
+  border: 1px solid #b22222;
   background-color: #f8d7da;
   color: #721c24;
-  border: 1px solid #f5c6cb;
   padding: 10px;
+  position: relative;
+  max-width: 300px;
+  margin: 10px 0;
   border-radius: 5px;
-  margin-bottom: 20px;
+}
+
+.close-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #721c24;
 }
 </style>
