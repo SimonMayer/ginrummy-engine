@@ -109,7 +109,8 @@ def create_database_and_tables(connection, database_name):
                     `card_id` INT NOT NULL,
                     `sequence` INT NOT NULL,
                     FOREIGN KEY (`hand_id`) REFERENCES `Hands`(`hand_id`),
-                    FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
+                    FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`),
+                    UNIQUE (`card_id`)
                 );
                 """,
                 """

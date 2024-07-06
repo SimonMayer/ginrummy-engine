@@ -54,6 +54,8 @@ def init_turn_routes(app):
 
         except mysql.connector.Error as err:
             connection.rollback()
+            if err.errno == mysql.connector.errorcode.ER_DUP_ENTRY:
+                return jsonify({"error": "This card is already in a hand"}), 400
             return jsonify({"error": str(err)}), 500
         finally:
             cursor.close()
