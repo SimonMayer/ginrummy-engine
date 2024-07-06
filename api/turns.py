@@ -14,8 +14,11 @@ def init_turn_routes(app):
         cursor = connection.cursor(buffered=True)
 
         try:
+            # Start a transaction
+            connection.start_transaction()
+
             # Check if it is the current turn and if the user is the turn's user
-            cursor.execute("SELECT `user_id`, `round_id` FROM `Turns` WHERE `turn_id` = %s AND `end_time` IS NULL", (turn_id,))
+            cursor.execute("SELECT `user_id`, `round_id` FROM `Turns` WHERE `turn_id` = %s AND `end_time` IS NULL FOR UPDATE", (turn_id,))
             turn = cursor.fetchone()
             if not turn:
                 return jsonify({"error": "Not the current turn or turn does not exist"}), 400
@@ -23,18 +26,18 @@ def init_turn_routes(app):
                 return jsonify({"error": "Not the authenticated user's turn"}), 403
 
             # Check if an action of type 'draw' already exists for this turn
-            cursor.execute("SELECT `action_id` FROM `Actions` WHERE `turn_id` = %s AND `action_type` = 'draw'", (turn_id,))
+            cursor.execute("SELECT `action_id` FROM `Actions` WHERE `turn_id` = %s AND `action_type` = 'draw' FOR UPDATE", (turn_id,))
             if cursor.fetchone():
                 return jsonify({"error": "Drawing has already taken place this turn"}), 400
 
             # Check if the stock pile is empty
-            cursor.execute("SELECT `card_id` FROM `Stock_Pile_Cards` WHERE `stock_pile_id` = (SELECT `stock_pile_id` FROM `Stock_Piles` WHERE `round_id` = %s) ORDER BY `sequence` DESC LIMIT 1", (turn[1],))
+            cursor.execute("SELECT `card_id` FROM `Stock_Pile_Cards` WHERE `stock_pile_id` = (SELECT `stock_pile_id` FROM `Stock_Piles` WHERE `round_id` = %s) ORDER BY `sequence` DESC LIMIT 1 FOR UPDATE", (turn[1],))
             card = cursor.fetchone()
             if not card:
                 return jsonify({"error": "Stock pile is empty"}), 400
 
             # Get the next sequence number for the user's hand
-            cursor.execute("SELECT COALESCE(MAX(`sequence`), 0) + 1 FROM `Hand_Cards` WHERE `hand_id` IN (SELECT `hand_id` FROM `Hands` WHERE `user_id` = %s AND `round_id` = %s)", (user_id, turn[1]))
+            cursor.execute("SELECT COALESCE(MAX(`sequence`), 0) + 1 FROM `Hand_Cards` WHERE `hand_id` IN (SELECT `hand_id` FROM `Hands` WHERE `user_id` = %s AND `round_id` = %s) FOR UPDATE", (user_id, turn[1]))
             next_sequence = cursor.fetchone()[0]
 
             # Delete the card from the stock pile
