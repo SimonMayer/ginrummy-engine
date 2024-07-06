@@ -26,14 +26,14 @@
 
 <script>
 import apiClient from '../api/axios';
-import { formatDateTime } from '../utils/dateFormatter';
+import {formatDateTime} from '../utils/dateFormatter';
 import StockPile from './StockPile.vue';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
 import MatchPlayerList from './MatchPlayerList.vue';
 
 export default {
-  name: 'MatchDetails',
+  name: 'MatchDashboard',
   components: {
     StockPile,
     ErrorBox,
