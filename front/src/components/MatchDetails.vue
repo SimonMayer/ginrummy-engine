@@ -23,7 +23,7 @@
             class="player-item"
         >
           {{ player.username }}
-          <ul class="hand" v-if="player.user_id !== signedInUserId">
+          <ul class="hand" v-if="!isSignedInUser(player.user_id)">
             <li v-for="n in player.handSize" :key="n" class="card-item">
               <HiddenCard />
             </li>
@@ -147,7 +147,7 @@ export default {
       }
     },
     async handleStockPileClick() {
-      if (this.currentTurnUserId === this.signedInUserId && !this.loading) {
+      if (this.isCurrentUserTurn && !this.loading) {
         this.loading = true;
         try {
           const response = await apiClient.post(`/turns/${this.turnId}/draw_from_stock_pile`);
@@ -176,13 +176,19 @@ export default {
       }
     },
     formatDateTime,
-    isCurrentTurn(userId) {
-      return this.currentTurnUserId === userId;
+    isSignedInUser(userId) {
+      return this.signedInUserId === userId;
     }
   },
   computed: {
     canStartMatch() {
       return this.players.length >= this.minPlayers && this.players.length <= this.maxPlayers && !this.match.start_time;
+    },
+    isCurrentUserTurn() {
+      return this.currentTurnUserId === this.signedInUserId;
+    },
+    isCurrentTurn() {
+      return userId => this.currentTurnUserId === userId;
     }
   }
 };
