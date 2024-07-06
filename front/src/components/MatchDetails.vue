@@ -46,7 +46,7 @@ export default {
     HiddenCard,
     StockPile,
     VisibleCard,
-    ErrorBox
+    ErrorBox,
   },
   data() {
     return {
@@ -64,69 +64,56 @@ export default {
     };
   },
   async created() {
-    await this.loadMatchDetails();
-    await this.loadPlayers();
-    await this.loadHandsForPlayers();
-    await this.loadMyHand();
-    await this.loadCurrentTurn();
+    try {
+      await this.loadMatchDetails();
+      await this.loadPlayers();
+      await this.loadHandsForPlayers();
+      await this.loadMyHand();
+      await this.loadCurrentTurn();
+    } catch (error) {
+      this.errorMessage = error.message;
+    }
   },
   methods: {
-    async loadMatchDetails() {
+    async fetchData(endpoint, errorMessage) {
       try {
-        const response = await apiClient.get(`/matches/${this.matchId}`);
-        this.match = response.data;
+        const response = await apiClient.get(endpoint);
+        return response.data;
       } catch (error) {
-        this.errorMessage = 'Failed to fetch match details!';
+        this.errorMessage = errorMessage;
         console.error(error);
+        throw error;
       }
+    },
+    async loadMatchDetails() {
+      this.match = await this.fetchData(`/matches/${this.matchId}`, 'Failed to fetch match details!');
     },
     async loadPlayers() {
-      try {
-        const response = await apiClient.get(`/matches/${this.matchId}/players`);
-        this.players = response.data;
-      } catch (error) {
-        this.errorMessage = 'Failed to fetch players!';
-        console.error(error);
-      }
+      this.players = await this.fetchData(`/matches/${this.matchId}/players`, 'Failed to fetch players!');
     },
     async loadHandsForPlayers() {
-      try {
-        if (this.match && this.match.current_round_id) {
-          const response = await apiClient.get(`/rounds/${this.match.current_round_id}`);
-          const hands = response.data.hands;
+      if (this.match && this.match.current_round_id) {
+        const data = await this.fetchData(`/rounds/${this.match.current_round_id}`, 'Failed to fetch hands!');
+        const hands = data.hands;
 
-          this.players.forEach(player => {
-            player.handSize = hands[player.user_id]?.size || 0;
-          });
+        this.players.forEach(player => {
+          player.handSize = hands[player.user_id]?.size || 0;
+        });
 
-          this.match.stock_pile_size = response.data.stock_pile_size || 0;
-        }
-      } catch (error) {
-        this.errorMessage = 'Failed to fetch hands!';
-        console.error(error);
+        this.match.stock_pile_size = data.stock_pile_size || 0;
       }
     },
     async loadMyHand() {
-      try {
-        if (this.match && this.match.current_round_id) {
-          const response = await apiClient.get(`/rounds/${this.match.current_round_id}/my_hand`);
-          this.myHand = response.data.cards;
-        }
-      } catch (error) {
-        this.errorMessage = 'Failed to fetch your hand!';
-        console.error(error);
+      if (this.match && this.match.current_round_id) {
+        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/my_hand`, 'Failed to fetch your hand!');
+        this.myHand = data.cards;
       }
     },
     async loadCurrentTurn() {
-      try {
-        if (this.match && this.match.current_round_id) {
-          const response = await apiClient.get(`/rounds/${this.match.current_round_id}/current_turn`);
-          this.currentTurnUserId = response.data.user_id;
-          this.turnId = response.data.turn_id;
-        }
-      } catch (error) {
-        this.errorMessage = 'Failed to fetch current turn!';
-        console.error(error);
+      if (this.match && this.match.current_round_id) {
+        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/current_turn`, 'Failed to fetch current turn!');
+        this.currentTurnUserId = data.user_id;
+        this.turnId = data.turn_id;
       }
     },
     async handleStockPileClick() {
@@ -145,12 +132,17 @@ export default {
       }
     },
     async startMatch() {
-      try {
-        await apiClient.post(`/matches/${this.matchId}/start`);
-        await this.loadMatchDetails();
-      } catch (error) {
-        this.errorMessage = 'Failed to start match!';
-        console.error(error);
+      if (!this.loading) {
+        this.loading = true;
+        try {
+          await apiClient.post(`/matches/${this.matchId}/start`);
+          await this.loadMatchDetails();
+        } catch (error) {
+          this.errorMessage = 'Failed to start match!';
+          console.error(error);
+        } finally {
+          this.loading = false;
+        }
       }
     },
     formatDateTime,
