@@ -1,7 +1,8 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
-    <ErrorBox v-if="errorMessage" :message="errorMessage" />
+    <ErrorBox v-if="errorMessage" :message="errorMessage"/>
+    <LoadingIndicator :visible="loading" />
     <div v-if="match">
       <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
@@ -39,6 +40,7 @@ import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
 import VisibleCard from './VisibleCard.vue';
 import ErrorBox from './ErrorBox.vue';
+import LoadingIndicator from './LoadingIndicator.vue';
 
 export default {
   name: 'MatchDetails',
@@ -47,6 +49,7 @@ export default {
     StockPile,
     VisibleCard,
     ErrorBox,
+    LoadingIndicator,
   },
   data() {
     return {
@@ -59,7 +62,7 @@ export default {
       myHand: [],
       currentTurnUserId: null,
       turnId: null,
-      loading: false,
+      loading: true, // Set initial loading state to true
       errorMessage: ''
     };
   },
@@ -72,6 +75,8 @@ export default {
       await this.loadCurrentTurn();
     } catch (error) {
       this.errorMessage = error.message;
+    } finally {
+      this.loading = false; // Set loading to false after data is fetched
     }
   },
   methods: {

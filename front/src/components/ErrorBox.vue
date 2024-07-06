@@ -24,7 +24,5 @@ export default {
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 20px;
-  width: 100%;
-  text-align: center;
 }
 </style>
