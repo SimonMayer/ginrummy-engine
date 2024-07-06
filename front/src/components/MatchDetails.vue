@@ -1,17 +1,27 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
-    <ErrorBox v-if="errorMessage" :message="errorMessage"/>
+    <ErrorBox v-if="errorMessage" :message="errorMessage" />
     <LoadingIndicator :visible="loading" />
     <div v-if="match">
       <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       <h2>Stock Pile</h2>
-      <StockPile v-if="match.stock_pile_size !== undefined" :size="match.stock_pile_size" @click="handleStockPileClick" :disabled="loading" />
+      <StockPile
+          v-if="match.stock_pile_size !== undefined"
+          :size="match.stock_pile_size"
+          @click="handleStockPileClick"
+          :disabled="loading"
+      />
       <h2>Players</h2>
       <ul class="players-list">
-        <li v-for="player in players" :key="player.user_id" :class="{'current-turn': isCurrentTurn(player.user_id)}" class="player-item">
+        <li
+            v-for="player in players"
+            :key="player.user_id"
+            :class="{ 'current-turn': isCurrentTurn(player.user_id) }"
+            class="player-item"
+        >
           {{ player.username }}
           <ul class="hand" v-if="player.user_id !== signedInUserId">
             <li v-for="n in player.handSize" :key="n" class="card-item">
@@ -35,7 +45,7 @@
 
 <script>
 import apiClient from '../api/axios';
-import { formatDateTime } from '../utils/dateFormatter';
+import {formatDateTime} from '../utils/dateFormatter';
 import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
 import VisibleCard from './VisibleCard.vue';
@@ -63,7 +73,7 @@ export default {
       currentTurnUserId: null,
       turnId: null,
       loading: true, // Set initial loading state to true
-      errorMessage: ''
+      errorMessage: '',
     };
   },
   async created() {
@@ -91,17 +101,26 @@ export default {
       }
     },
     async loadMatchDetails() {
-      this.match = await this.fetchData(`/matches/${this.matchId}`, 'Failed to fetch match details!');
+      this.match = await this.fetchData(
+          `/matches/${this.matchId}`,
+          'Failed to fetch match details!'
+      );
     },
     async loadPlayers() {
-      this.players = await this.fetchData(`/matches/${this.matchId}/players`, 'Failed to fetch players!');
+      this.players = await this.fetchData(
+          `/matches/${this.matchId}/players`,
+          'Failed to fetch players!'
+      );
     },
     async loadHandsForPlayers() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(`/rounds/${this.match.current_round_id}`, 'Failed to fetch hands!');
+        const data = await this.fetchData(
+            `/rounds/${this.match.current_round_id}`,
+            'Failed to fetch hands!'
+        );
         const hands = data.hands;
 
-        this.players.forEach(player => {
+        this.players.forEach((player) => {
           player.handSize = hands[player.user_id]?.size || 0;
         });
 
@@ -110,13 +129,19 @@ export default {
     },
     async loadMyHand() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/my_hand`, 'Failed to fetch your hand!');
+        const data = await this.fetchData(
+            `/rounds/${this.match.current_round_id}/my_hand`,
+            'Failed to fetch your hand!'
+        );
         this.myHand = data.cards;
       }
     },
     async loadCurrentTurn() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/current_turn`, 'Failed to fetch current turn!');
+        const data = await this.fetchData(
+            `/rounds/${this.match.current_round_id}/current_turn`,
+            'Failed to fetch current turn!'
+        );
         this.currentTurnUserId = data.user_id;
         this.turnId = data.turn_id;
       }
@@ -125,7 +150,9 @@ export default {
       if (this.currentTurnUserId === this.signedInUserId && !this.loading) {
         this.loading = true;
         try {
-          const response = await apiClient.post(`/turns/${this.turnId}/draw_from_stock_pile`);
+          const response = await apiClient.post(
+              `/turns/${this.turnId}/draw_from_stock_pile`
+          );
           this.myHand.push(response.data.new_card);
           this.match.stock_pile_size -= 1;
         } catch (error) {
@@ -153,13 +180,17 @@ export default {
     formatDateTime,
     isCurrentTurn(userId) {
       return this.currentTurnUserId === userId;
-    }
+    },
   },
   computed: {
     canStartMatch() {
-      return this.players.length >= this.minPlayers && this.players.length <= this.maxPlayers && !this.match.start_time;
-    }
-  }
+      return (
+          this.players.length >= this.minPlayers &&
+          this.players.length <= this.maxPlayers &&
+          !this.match.start_time
+      );
+    },
+  },
 };
 </script>
 
@@ -171,7 +202,8 @@ export default {
   margin-top: 50px;
 }
 
-h1, h2 {
+h1,
+h2 {
   margin-bottom: 20px;
 }
 
@@ -189,7 +221,7 @@ h1, h2 {
 }
 
 .current-turn {
-  border: 2px solid #4CAF50;
+  border: 2px solid #4caf50;
   background-color: #e8f5e9;
 }
 
@@ -212,7 +244,7 @@ p {
 button {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   cursor: pointer;
