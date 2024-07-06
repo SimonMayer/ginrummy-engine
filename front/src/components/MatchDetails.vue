@@ -6,7 +6,7 @@
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
       <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
       <h2>Stock Pile</h2>
-      <StockPile v-if="match.stock_pile_size !== undefined" :size="match.stock_pile_size" />
+      <StockPile v-if="match.stock_pile_size !== undefined" :size="match.stock_pile_size" @click="handleStockPileClick" :disabled="loading" />
       <h2>Players</h2>
       <ul class="players-list">
         <li v-for="player in players" :key="player.user_id" :class="{'current-turn': isCurrentTurn(player.user_id)}" class="player-item">
@@ -54,7 +54,9 @@ export default {
       maxPlayers: 4,
       signedInUserId: parseInt(localStorage.getItem('user_id'), 10),
       myHand: [],
-      currentTurnUserId: null
+      currentTurnUserId: null,
+      turnId: null,
+      loading: false
     };
   },
   async created() {
@@ -116,10 +118,26 @@ export default {
         if (this.match && this.match.current_round_id) {
           const response = await apiClient.get(`/rounds/${this.match.current_round_id}/current_turn`);
           this.currentTurnUserId = response.data.user_id;
+          this.turnId = response.data.turn_id;
         }
       } catch (error) {
         alert('Failed to fetch current turn!');
         console.error(error);
+      }
+    },
+    async handleStockPileClick() {
+      if (this.currentTurnUserId === this.signedInUserId && !this.loading) {
+        this.loading = true;
+        try {
+          const response = await apiClient.post(`/turns/${this.turnId}/draw_from_stock_pile`);
+          this.myHand.push(response.data.new_card);
+          this.match.stock_pile_size -= 1;
+        } catch (error) {
+          alert('Failed to draw from stock pile!');
+          console.error(error);
+        } finally {
+          this.loading = false;
+        }
       }
     },
     async startMatch() {
