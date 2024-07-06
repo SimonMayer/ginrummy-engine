@@ -1,7 +1,7 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
-    <ErrorBox v-if="errorMessage" :message="errorMessage" />
+    <ErrorBox v-if="errorMessage" :message="errorMessage"/>
     <LoadingIndicator :visible="loading" />
     <div v-if="match">
       <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
@@ -19,7 +19,7 @@
         <li
             v-for="player in players"
             :key="player.user_id"
-            :class="{ 'current-turn': isCurrentTurn(player.user_id) }"
+            :class="{'current-turn': isCurrentTurn(player.user_id)}"
             class="player-item"
         >
           {{ player.username }}
@@ -72,8 +72,8 @@ export default {
       myHand: [],
       currentTurnUserId: null,
       turnId: null,
-      loading: true, // Set initial loading state to true
-      errorMessage: '',
+      loading: true,
+      errorMessage: ''
     };
   },
   async created() {
@@ -86,7 +86,7 @@ export default {
     } catch (error) {
       this.errorMessage = error.message;
     } finally {
-      this.loading = false; // Set loading to false after data is fetched
+      this.loading = false;
     }
   },
   methods: {
@@ -100,24 +100,25 @@ export default {
         throw error;
       }
     },
+    async postData(endpoint, data, errorMessage) {
+      try {
+        const response = await apiClient.post(endpoint, data);
+        return response.data;
+      } catch (error) {
+        this.errorMessage = errorMessage;
+        console.error(error);
+        throw error;
+      }
+    },
     async loadMatchDetails() {
-      this.match = await this.fetchData(
-          `/matches/${this.matchId}`,
-          'Failed to fetch match details!'
-      );
+      this.match = await this.fetchData(`/matches/${this.matchId}`, 'Failed to fetch match details!');
     },
     async loadPlayers() {
-      this.players = await this.fetchData(
-          `/matches/${this.matchId}/players`,
-          'Failed to fetch players!'
-      );
+      this.players = await this.fetchData(`/matches/${this.matchId}/players`, 'Failed to fetch players!');
     },
     async loadHandsForPlayers() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(
-            `/rounds/${this.match.current_round_id}`,
-            'Failed to fetch hands!'
-        );
+        const data = await this.fetchData(`/rounds/${this.match.current_round_id}`, 'Failed to fetch hands!');
         const hands = data.hands;
 
         this.players.forEach((player) => {
@@ -129,19 +130,13 @@ export default {
     },
     async loadMyHand() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(
-            `/rounds/${this.match.current_round_id}/my_hand`,
-            'Failed to fetch your hand!'
-        );
+        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/my_hand`, 'Failed to fetch your hand!');
         this.myHand = data.cards;
       }
     },
     async loadCurrentTurn() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(
-            `/rounds/${this.match.current_round_id}/current_turn`,
-            'Failed to fetch current turn!'
-        );
+        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/current_turn`, 'Failed to fetch current turn!');
         this.currentTurnUserId = data.user_id;
         this.turnId = data.turn_id;
       }
@@ -150,11 +145,10 @@ export default {
       if (this.isCurrentUserTurn && !this.loading) {
         this.loading = true;
         try {
-          const response = await apiClient.post(`/turns/${this.turnId}/draw_from_stock_pile`);
-          this.myHand.push(response.data.new_card);
+          const response = await this.postData(`/turns/${this.turnId}/draw_from_stock_pile`, {}, 'Failed to draw from stock pile!');
+          this.myHand.push(response.new_card);
           this.match.stock_pile_size -= 1;
         } catch (error) {
-          this.errorMessage = 'Failed to draw from stock pile!';
           console.error(error);
         } finally {
           this.loading = false;
@@ -165,10 +159,9 @@ export default {
       if (!this.loading) {
         this.loading = true;
         try {
-          await apiClient.post(`/matches/${this.matchId}/start`);
+          await this.postData(`/matches/${this.matchId}/start`, {}, 'Failed to start match!');
           await this.loadMatchDetails();
         } catch (error) {
-          this.errorMessage = 'Failed to start match!';
           console.error(error);
         } finally {
           this.loading = false;
