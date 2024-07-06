@@ -1,6 +1,7 @@
 <template>
   <div class="match-details">
     <h1>Match ID: {{ matchId }}</h1>
+    <ErrorBox v-if="errorMessage" :message="errorMessage" />
     <div v-if="match">
       <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
       <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
@@ -37,13 +38,15 @@ import { formatDateTime } from '../utils/dateFormatter';
 import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
 import VisibleCard from './VisibleCard.vue';
+import ErrorBox from './ErrorBox.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
     HiddenCard,
     StockPile,
-    VisibleCard
+    VisibleCard,
+    ErrorBox
   },
   data() {
     return {
@@ -56,7 +59,8 @@ export default {
       myHand: [],
       currentTurnUserId: null,
       turnId: null,
-      loading: false
+      loading: false,
+      errorMessage: ''
     };
   },
   async created() {
@@ -72,7 +76,7 @@ export default {
         const response = await apiClient.get(`/matches/${this.matchId}`);
         this.match = response.data;
       } catch (error) {
-        alert('Failed to fetch match details!');
+        this.errorMessage = 'Failed to fetch match details!';
         console.error(error);
       }
     },
@@ -81,7 +85,7 @@ export default {
         const response = await apiClient.get(`/matches/${this.matchId}/players`);
         this.players = response.data;
       } catch (error) {
-        alert('Failed to fetch players!');
+        this.errorMessage = 'Failed to fetch players!';
         console.error(error);
       }
     },
@@ -98,7 +102,7 @@ export default {
           this.match.stock_pile_size = response.data.stock_pile_size || 0;
         }
       } catch (error) {
-        alert('Failed to fetch hands!');
+        this.errorMessage = 'Failed to fetch hands!';
         console.error(error);
       }
     },
@@ -109,7 +113,7 @@ export default {
           this.myHand = response.data.cards;
         }
       } catch (error) {
-        alert('Failed to fetch your hand!');
+        this.errorMessage = 'Failed to fetch your hand!';
         console.error(error);
       }
     },
@@ -121,7 +125,7 @@ export default {
           this.turnId = response.data.turn_id;
         }
       } catch (error) {
-        alert('Failed to fetch current turn!');
+        this.errorMessage = 'Failed to fetch current turn!';
         console.error(error);
       }
     },
@@ -133,7 +137,7 @@ export default {
           this.myHand.push(response.data.new_card);
           this.match.stock_pile_size -= 1;
         } catch (error) {
-          alert('Failed to draw from stock pile!');
+          this.errorMessage = 'Failed to draw from stock pile!';
           console.error(error);
         } finally {
           this.loading = false;
@@ -145,7 +149,7 @@ export default {
         await apiClient.post(`/matches/${this.matchId}/start`);
         await this.loadMatchDetails();
       } catch (error) {
-        alert('Failed to start match!');
+        this.errorMessage = 'Failed to start match!';
         console.error(error);
       }
     },
