@@ -74,14 +74,16 @@ export default {
         throw error;
       }
     },
-    async postData(endpoint, data, errorMessage) {
+    async postDataAndHandle(endpoint, successCallback, errorMessage) {
+      this.loading = true;
       try {
-        const response = await apiClient.post(endpoint, data);
-        return response.data;
+        const response = await apiClient.post(endpoint);
+        await successCallback(response.data);
       } catch (error) {
         this.errorMessage = errorMessage;
         console.error(error);
-        throw error;
+      } finally {
+        this.loading = false;
       }
     },
     async loadMatchDetails() {
@@ -117,29 +119,23 @@ export default {
     },
     async handleStockPileClick() {
       if (this.isCurrentUserTurn && !this.loading) {
-        this.loading = true;
-        try {
-          const response = await this.postData(`/turns/${this.turnId}/draw_from_stock_pile`, {}, 'Failed to draw from stock pile!');
-          this.myHand.push(response.new_card);
-          this.match.stock_pile_size -= 1;
-        } catch (error) {
-          console.error(error);
-        } finally {
-          this.loading = false;
-        }
+        this.postDataAndHandle(
+            `/turns/${this.turnId}/draw_from_stock_pile`,
+            (data) => {
+              this.myHand.push(data.new_card);
+              this.match.stock_pile_size -= 1;
+            },
+            'Failed to draw from stock pile!'
+        );
       }
     },
     async startMatch() {
       if (!this.loading) {
-        this.loading = true;
-        try {
-          await this.postData(`/matches/${this.matchId}/start`, {}, 'Failed to start match!');
-          await this.loadMatchDetails();
-        } catch (error) {
-          console.error(error);
-        } finally {
-          this.loading = false;
-        }
+        this.postDataAndHandle(
+            `/matches/${this.matchId}/start`,
+            this.loadMatchDetails,
+            'Failed to start match!'
+        );
       }
     },
     clearErrorMessage() {
