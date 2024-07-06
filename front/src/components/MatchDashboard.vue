@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import apiClient from '../api/axios';
+import matchService from '../services/matchService';
 import { formatDateTime } from '../utils/dateFormatter';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
@@ -64,63 +64,72 @@ export default {
     }
   },
   methods: {
-    async fetchData(endpoint, errorMessage) {
-      try {
-        const response = await apiClient.get(endpoint);
-        return response.data;
-      } catch (error) {
-        this.errorMessage = errorMessage;
-        console.error(error);
-        throw error;
-      }
-    },
-    async postDataAndHandle(endpoint, successCallback, errorMessage) {
+    async handleApiCall(apiCall, successCallback, errorMessage) {
       this.loading = true;
       try {
-        const response = await apiClient.post(endpoint);
-        await successCallback(response.data);
+        const data = await apiCall();
+        successCallback(data);
       } catch (error) {
-        this.errorMessage = errorMessage;
+        this.errorMessage = error.message || errorMessage;
         console.error(error);
       } finally {
         this.loading = false;
       }
     },
     async loadMatchDetails() {
-      this.match = await this.fetchData(`/matches/${this.matchId}`, 'Failed to fetch match details!');
+      await this.handleApiCall(
+          () => matchService.getMatchDetails(this.matchId),
+          (data) => { this.match = data; },
+          'Failed to fetch match details!'
+      );
     },
     async loadPlayers() {
-      this.players = await this.fetchData(`/matches/${this.matchId}/players`, 'Failed to fetch players!');
+      await this.handleApiCall(
+          () => matchService.getPlayers(this.matchId),
+          (data) => { this.players = data; },
+          'Failed to fetch players!'
+      );
     },
     async loadHandsForPlayers() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(`/rounds/${this.match.current_round_id}`, 'Failed to fetch hands!');
-        const hands = data.hands;
-
-        this.players.forEach((player) => {
-          player.handSize = hands[player.user_id]?.size || 0;
-        });
-
-        this.match.stock_pile_size = data.stock_pile_size || 0;
+        await this.handleApiCall(
+            () => matchService.getHandsForPlayers(this.match.current_round_id),
+            (data) => {
+              const hands = data.hands;
+              this.players.forEach(player => {
+                player.handSize = hands[player.user_id]?.size || 0;
+              });
+              this.match.stock_pile_size = data.stock_pile_size || 0;
+            },
+            'Failed to fetch hands!'
+        );
       }
     },
     async loadMyHand() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/my_hand`, 'Failed to fetch your hand!');
-        this.myHand = data.cards;
+        await this.handleApiCall(
+            () => matchService.getMyHand(this.match.current_round_id),
+            (data) => { this.myHand = data.cards; },
+            'Failed to fetch your hand!'
+        );
       }
     },
     async loadCurrentTurn() {
       if (this.match && this.match.current_round_id) {
-        const data = await this.fetchData(`/rounds/${this.match.current_round_id}/current_turn`, 'Failed to fetch current turn!');
-        this.currentTurnUserId = data.user_id;
-        this.turnId = data.turn_id;
+        await this.handleApiCall(
+            () => matchService.getCurrentTurn(this.match.current_round_id),
+            (data) => {
+              this.currentTurnUserId = data.user_id;
+              this.turnId = data.turn_id;
+            },
+            'Failed to fetch current turn!'
+        );
       }
     },
     async handleStockPileClick() {
       if (this.isCurrentUserTurn && !this.loading) {
-        this.postDataAndHandle(
-            `/turns/${this.turnId}/draw_from_stock_pile`,
+        await this.handleApiCall(
+            () => matchService.drawFromStockPile(this.turnId),
             (data) => {
               this.myHand.push(data.new_card);
               this.match.stock_pile_size -= 1;
@@ -131,9 +140,9 @@ export default {
     },
     async startMatch() {
       if (!this.loading) {
-        this.postDataAndHandle(
-            `/matches/${this.matchId}/start`,
-            this.loadMatchDetails,
+        await this.handleApiCall(
+            () => matchService.startMatch(this.matchId),
+            () => { this.loadMatchDetails(); },
             'Failed to start match!'
         );
       }
