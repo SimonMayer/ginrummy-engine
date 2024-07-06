@@ -18,6 +18,7 @@ export default {
     size: {
       type: Number,
       required: true,
+      validator: value => value >= 0 // Ensure size is a non-negative number
     },
     disabled: {
       type: Boolean,

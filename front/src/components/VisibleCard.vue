@@ -23,6 +23,15 @@ export default {
     card: {
       type: Object,
       required: true,
+      validator: function(value) {
+        return (
+            value &&
+            typeof value.card_id === 'number' &&
+            typeof value.rank === 'string' &&
+            typeof value.suit === 'string' &&
+            typeof value.point_value === 'number'
+        );
+      }
     },
   },
   computed: {

@@ -45,7 +45,7 @@
 
 <script>
 import apiClient from '../api/axios';
-import {formatDateTime} from '../utils/dateFormatter';
+import { formatDateTime } from '../utils/dateFormatter';
 import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
 import VisibleCard from './VisibleCard.vue';
@@ -150,9 +150,7 @@ export default {
       if (this.currentTurnUserId === this.signedInUserId && !this.loading) {
         this.loading = true;
         try {
-          const response = await apiClient.post(
-              `/turns/${this.turnId}/draw_from_stock_pile`
-          );
+          const response = await apiClient.post(`/turns/${this.turnId}/draw_from_stock_pile`);
           this.myHand.push(response.data.new_card);
           this.match.stock_pile_size -= 1;
         } catch (error) {
@@ -180,17 +178,13 @@ export default {
     formatDateTime,
     isCurrentTurn(userId) {
       return this.currentTurnUserId === userId;
-    },
+    }
   },
   computed: {
     canStartMatch() {
-      return (
-          this.players.length >= this.minPlayers &&
-          this.players.length <= this.maxPlayers &&
-          !this.match.start_time
-      );
-    },
-  },
+      return this.players.length >= this.minPlayers && this.players.length <= this.maxPlayers && !this.match.start_time;
+    }
+  }
 };
 </script>
 
@@ -202,8 +196,7 @@ export default {
   margin-top: 50px;
 }
 
-h1,
-h2 {
+h1, h2 {
   margin-bottom: 20px;
 }
 
@@ -221,7 +214,7 @@ h2 {
 }
 
 .current-turn {
-  border: 2px solid #4caf50;
+  border: 2px solid #4CAF50;
   background-color: #e8f5e9;
 }
 
@@ -244,7 +237,7 @@ p {
 button {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #4caf50;
+  background-color: #4CAF50;
   color: white;
   border: none;
   cursor: pointer;
