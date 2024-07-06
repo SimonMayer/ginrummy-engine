@@ -51,24 +51,24 @@ export default {
     };
   },
   async created() {
-    try {
-      await this.loadMatchDetails();
-      await this.loadPlayers();
-      await this.loadHandsForPlayers();
-      await this.loadMyHand();
-      await this.loadCurrentTurn();
-    } catch (error) {
-      this.errorMessage = error.message;
-    } finally {
-      this.loading = false;
-    }
+    await this.loadData([
+      { method: this.loadMatchDetails, errorMessage: 'Failed to fetch match details!' },
+      { method: this.loadPlayers, errorMessage: 'Failed to fetch players!' },
+      { method: this.loadHandsForPlayers, errorMessage: 'Failed to fetch hands!' },
+      { method: this.loadMyHand, errorMessage: 'Failed to fetch your hand!' },
+      { method: this.loadCurrentTurn, errorMessage: 'Failed to fetch current turn!' },
+    ]);
   },
   methods: {
-    async handleApiCall(apiCall, successCallback, errorMessage) {
+    async loadData(tasks) {
+      for (const { method, errorMessage } of tasks) {
+        await this.handleApiCall(method, errorMessage);
+      }
+    },
+    async handleApiCall(apiCall, errorMessage) {
       this.loading = true;
       try {
-        const data = await apiCall();
-        successCallback(data);
+        await apiCall();
       } catch (error) {
         this.errorMessage = error.message || errorMessage;
         console.error(error);
@@ -77,60 +77,39 @@ export default {
       }
     },
     async loadMatchDetails() {
-      await this.handleApiCall(
-          () => matchService.getMatchDetails(this.matchId),
-          (data) => { this.match = data; },
-          'Failed to fetch match details!'
-      );
+      this.match = await matchService.getMatchDetails(this.matchId);
     },
     async loadPlayers() {
-      await this.handleApiCall(
-          () => matchService.getPlayers(this.matchId),
-          (data) => { this.players = data; },
-          'Failed to fetch players!'
-      );
+      this.players = await matchService.getPlayers(this.matchId);
     },
     async loadHandsForPlayers() {
       if (this.match && this.match.current_round_id) {
-        await this.handleApiCall(
-            () => matchService.getHandsForPlayers(this.match.current_round_id),
-            (data) => {
-              const hands = data.hands;
-              this.players.forEach(player => {
-                player.handSize = hands[player.user_id]?.size || 0;
-              });
-              this.match.stock_pile_size = data.stock_pile_size || 0;
-            },
-            'Failed to fetch hands!'
-        );
+        const data = await matchService.getHandsForPlayers(this.match.current_round_id);
+        const hands = data.hands;
+        this.players.forEach(player => {
+          player.handSize = hands[player.user_id]?.size || 0;
+        });
+        this.match.stock_pile_size = data.stock_pile_size || 0;
       }
     },
     async loadMyHand() {
       if (this.match && this.match.current_round_id) {
-        await this.handleApiCall(
-            () => matchService.getMyHand(this.match.current_round_id),
-            (data) => { this.myHand = data.cards; },
-            'Failed to fetch your hand!'
-        );
+        const data = await matchService.getMyHand(this.match.current_round_id);
+        this.myHand = data.cards;
       }
     },
     async loadCurrentTurn() {
       if (this.match && this.match.current_round_id) {
-        await this.handleApiCall(
-            () => matchService.getCurrentTurn(this.match.current_round_id),
-            (data) => {
-              this.currentTurnUserId = data.user_id;
-              this.turnId = data.turn_id;
-            },
-            'Failed to fetch current turn!'
-        );
+        const data = await matchService.getCurrentTurn(this.match.current_round_id);
+        this.currentTurnUserId = data.user_id;
+        this.turnId = data.turn_id;
       }
     },
     async handleStockPileClick() {
       if (this.isCurrentUserTurn && !this.loading) {
         await this.handleApiCall(
-            () => matchService.drawFromStockPile(this.turnId),
-            (data) => {
+            async () => {
+              const data = await matchService.drawFromStockPile(this.turnId);
               this.myHand.push(data.new_card);
               this.match.stock_pile_size -= 1;
             },
@@ -141,8 +120,10 @@ export default {
     async startMatch() {
       if (!this.loading) {
         await this.handleApiCall(
-            () => matchService.startMatch(this.matchId),
-            () => { this.loadMatchDetails(); },
+            async () => {
+              await matchService.startMatch(this.matchId);
+              await this.loadMatchDetails();
+            },
             'Failed to start match!'
         );
       }
