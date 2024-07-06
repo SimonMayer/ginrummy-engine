@@ -5,6 +5,7 @@ from api.matches.matches import init_matches
 from api.matches.players import init_match_players
 from api.sign_in import init_auth_routes
 from api.rounds import init_round_routes
+from api.turns import init_turn_routes
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'your-very-secret-key'  # Change this to a real secret in production
@@ -38,6 +39,7 @@ init_auth_routes(app)
 init_matches(app)
 init_match_players(app)
 init_round_routes(app)
+init_turn_routes(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
