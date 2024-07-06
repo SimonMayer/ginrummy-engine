@@ -4,36 +4,21 @@
     <ErrorBox v-if="errorMessage" :message="errorMessage"/>
     <LoadingIndicator :visible="loading" />
     <div v-if="match">
-      <p>Create Time: {{ formatDateTime(match.create_time) }}</p>
-      <p v-if="match.start_time">Start Time: {{ formatDateTime(match.start_time) }}</p>
-      <p v-if="match.end_time">End Time: {{ formatDateTime(match.end_time) }}</p>
-      <h2>Stock Pile</h2>
       <StockPile
           v-if="match.stock_pile_size !== undefined"
           :size="match.stock_pile_size"
           @click="handleStockPileClick"
           :disabled="loading"
       />
-      <h2>Players</h2>
       <ul class="players-list">
-        <li
+        <MatchPlayer
             v-for="player in players"
             :key="player.user_id"
-            :class="{'current-turn': isCurrentTurn(player.user_id)}"
-            class="player-item"
-        >
-          {{ player.username }}
-          <ul class="hand" v-if="!isSignedInUser(player.user_id)">
-            <li v-for="n in player.handSize" :key="n" class="card-item">
-              <HiddenCard />
-            </li>
-          </ul>
-          <ul class="hand" v-else>
-            <li v-for="card in myHand" :key="card.card_id" class="card-item">
-              <VisibleCard :card="card" />
-            </li>
-          </ul>
-        </li>
+            :player="player"
+            :myHand="myHand"
+            :signedInUserId="signedInUserId"
+            :currentTurnUserId="currentTurnUserId"
+        />
       </ul>
       <button v-if="canStartMatch" @click="startMatch">Start Match</button>
     </div>
@@ -46,20 +31,18 @@
 <script>
 import apiClient from '../api/axios';
 import { formatDateTime } from '../utils/dateFormatter';
-import HiddenCard from './HiddenCard.vue';
 import StockPile from './StockPile.vue';
-import VisibleCard from './VisibleCard.vue';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
+import MatchPlayer from './MatchPlayer.vue';
 
 export default {
   name: 'MatchDetails',
   components: {
-    HiddenCard,
     StockPile,
-    VisibleCard,
     ErrorBox,
     LoadingIndicator,
+    MatchPlayer
   },
   data() {
     return {
@@ -169,9 +152,6 @@ export default {
       }
     },
     formatDateTime,
-    isSignedInUser(userId) {
-      return this.signedInUserId === userId;
-    }
   },
   computed: {
     canStartMatch() {
@@ -179,9 +159,6 @@ export default {
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
-    },
-    isCurrentTurn() {
-      return userId => this.currentTurnUserId === userId;
     }
   }
 };
@@ -195,38 +172,10 @@ export default {
   margin-top: 50px;
 }
 
-h1, h2 {
-  margin-bottom: 20px;
-}
-
 .players-list {
   list-style-type: none;
   padding: 0;
   width: 100%;
-}
-
-.player-item {
-  background-color: #f9f9f9;
-  padding: 10px;
-  margin: 5px 0;
-  border: 1px solid #ddd;
-}
-
-.current-turn {
-  border: 2px solid #4CAF50;
-  background-color: #e8f5e9;
-}
-
-.hand {
-  display: flex;
-  flex-direction: row;
-  padding: 0;
-  margin: 10px 0 0 0;
-  list-style-type: none;
-}
-
-.card-item:not(:first-child) {
-  margin-left: -80px;
 }
 
 p {
