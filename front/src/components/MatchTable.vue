@@ -43,7 +43,7 @@ export default {
       required: true,
     },
     currentTurnUserId: {
-      type: Number,
+      type: [Number, null],
       required: true,
     },
     loading: {

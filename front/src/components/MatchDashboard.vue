@@ -23,7 +23,6 @@
 
 <script>
 import matchService from '../services/matchService';
-import { formatDateTime } from '../utils/dateFormatter';
 import { setErrorMessage, clearErrorMessage } from '../utils/errorHandler';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
@@ -63,7 +62,7 @@ export default {
   },
   methods: {
     async loadData(tasks) {
-      for (const {method, errorTitle} of tasks) {
+      for (const { method, errorTitle } of tasks) {
         await this.handleApiCall(method, errorTitle);
       }
     },
@@ -133,7 +132,6 @@ export default {
     clearErrorBox() {
       clearErrorMessage(this);
     },
-    formatDateTime,
   },
   computed: {
     canStartMatch() {
