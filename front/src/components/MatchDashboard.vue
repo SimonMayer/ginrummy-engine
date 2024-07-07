@@ -3,21 +3,17 @@
     <h1>Match ID: {{ matchId }}</h1>
     <ErrorBox v-if="errorTitle" :title="errorTitle" :message="errorMessage" @close="clearErrorBox" />
     <LoadingIndicator :visible="loading" />
-    <div v-if="match">
-      <MatchTable
-          :match="match"
-          :players="players"
-          :myHand="myHand"
-          :signedInUserId="signedInUserId"
-          :currentTurnUserId="currentTurnUserId"
-          :loading="loading"
-          @stock-pile-click="handleStockPileClick"
-      />
-      <button v-if="canStartMatch" @click="startMatch">Start Match</button>
-    </div>
-    <div v-else>
-      <p>Loading match details...</p>
-    </div>
+    <MatchContent
+        :match="match"
+        :players="players"
+        :myHand="myHand"
+        :signedInUserId="signedInUserId"
+        :currentTurnUserId="currentTurnUserId"
+        :loading="loading"
+        :canStartMatch="canStartMatch"
+        @stock-pile-click="handleStockPileClick"
+        @start-match="startMatch"
+    />
   </div>
 </template>
 
@@ -26,29 +22,37 @@ import matchService from '../services/matchService';
 import { setErrorMessage, clearErrorMessage } from '../utils/errorHandler';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
-import MatchTable from './MatchTable.vue';
+import MatchContent from './MatchContent.vue';
 
 export default {
   name: 'MatchDashboard',
   components: {
     ErrorBox,
     LoadingIndicator,
-    MatchTable,
+    MatchContent,
   },
   data() {
     return {
       matchId: this.$route.params.id,
-      match: null,
+      match: {
+        create_time: '',
+        created_by: null,
+        current_round_id: null,
+        end_time: null,
+        match_id: null,
+        start_time: null,
+        stock_pile_size: 0,
+      },
       players: [],
-      minPlayers: 2,
-      maxPlayers: 4,
-      signedInUserId: parseInt(localStorage.getItem('user_id'), 10),
       myHand: [],
       currentTurnUserId: null,
       turnId: null,
       loading: true,
       errorTitle: '',
-      errorMessage: ''
+      errorMessage: '',
+      signedInUserId: parseInt(localStorage.getItem('user_id'), 10),
+      minPlayers: 2,
+      maxPlayers: 4,
     };
   },
   async created() {
@@ -84,7 +88,7 @@ export default {
       this.players = await matchService.getPlayers(this.matchId);
     },
     async loadHandsForPlayers() {
-      if (this.match && this.match.current_round_id) {
+      if (this.match.current_round_id) {
         const data = await matchService.getHandsForPlayers(this.match.current_round_id);
         const hands = data.hands;
         this.players.forEach(player => {
@@ -94,13 +98,13 @@ export default {
       }
     },
     async loadMyHand() {
-      if (this.match && this.match.current_round_id) {
+      if (this.match.current_round_id) {
         const data = await matchService.getMyHand(this.match.current_round_id);
         this.myHand = data.cards;
       }
     },
     async loadCurrentTurn() {
-      if (this.match && this.match.current_round_id) {
+      if (this.match.current_round_id) {
         const data = await matchService.getCurrentTurn(this.match.current_round_id);
         this.currentTurnUserId = data.user_id;
         this.turnId = data.turn_id;
