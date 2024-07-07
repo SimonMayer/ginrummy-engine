@@ -62,8 +62,7 @@ export default {
   },
   async created() {
     if (typeof this.cardProp === 'number') {
-      const response = cardsService.getCard(this.card_id);
-      this.cardData = response.data;
+      this.cardData = cardsService.getCard(this.card_id);
     } else {
       this.cardData = this.cardProp;
     }

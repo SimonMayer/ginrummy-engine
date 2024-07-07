@@ -117,7 +117,7 @@ export default {
         await this.handleApiCall(
             async () => {
               const data = await turnsService.drawFromStockPile(this.turnId);
-              this.myHand.push(data.new_card);
+              this.myHand.push(data);
               this.match.stock_pile_size -= 1;
             },
             'Failed to draw from stock pile!'
