@@ -1,5 +1,3 @@
-// services/matchService.js
-
 import apiService from './apiService';
 
 const matchService = {
@@ -19,7 +17,9 @@ const matchService = {
         return await apiService.get(`/rounds/${roundId}/current_turn`, 'Failed to fetch current turn!');
     },
     async drawFromStockPile(turnId) {
-        return await apiService.post(`/turns/${turnId}/draw_from_stock_pile`, {}, 'Failed to draw from stock pile!');
+        const turnData = await apiService.post(`/turns/${turnId}/draw_from_stock_pile`, {}, 'Failed to draw from stock pile!');
+        const cardData = await apiService.get(`/cards/${turnData.card_id}`, 'Failed to fetch card details!');
+        return { new_card: cardData };
     },
     async startMatch(matchId) {
         return await apiService.post(`/matches/${matchId}/start`, {}, 'Failed to start match!');

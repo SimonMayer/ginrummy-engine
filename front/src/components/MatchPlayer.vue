@@ -8,7 +8,7 @@
     </ul>
     <ul class="hand" v-else>
       <li v-for="card in myHand" :key="card.card_id" class="card-item">
-        <VisibleCard :card="card" />
+        <VisibleCard :cardProp="card" />
       </li>
     </ul>
   </li>

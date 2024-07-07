@@ -1,5 +1,3 @@
-// services/apiService.js
-
 import apiClient from '../api/axios';
 
 const apiService = {

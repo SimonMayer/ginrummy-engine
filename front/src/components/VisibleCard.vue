@@ -1,5 +1,5 @@
 <template>
-  <div class="card visible-card">
+  <div class="card visible-card" v-if="cardData">
     <div :class="['card-content', rankClass, suitClass]">
       <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
       <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat" />
@@ -12,6 +12,7 @@
 import CardCorner from './CardCorner.vue';
 import CardPattern from './CardPattern.vue';
 import { getSuitEmoji, getDisplayRank, getSuitRepeat } from '../utils/cardUtils';
+import apiService from "@/services/apiService";
 
 export default {
   name: 'VisibleCard',
@@ -20,10 +21,13 @@ export default {
     CardPattern,
   },
   props: {
-    card: {
-      type: Object,
+    cardProp: {
+      type: [Object, Number],
       required: true,
-      validator: function(value) {
+      validator(value) {
+        if (typeof value === 'number') {
+          return true;
+        }
         return (
             value &&
             typeof value.card_id === 'number' &&
@@ -34,23 +38,36 @@ export default {
       }
     },
   },
+  data() {
+    return {
+      cardData: null,
+    };
+  },
   computed: {
     suitEmoji() {
-      return getSuitEmoji(this.card.suit);
+      return getSuitEmoji(this.cardData.suit);
     },
     displayRank() {
-      return getDisplayRank(this.card.rank);
+      return getDisplayRank(this.cardData.rank);
     },
     suitRepeat() {
-      return getSuitRepeat(this.card.rank);
+      return getSuitRepeat(this.cardData.rank);
     },
     rankClass() {
-      return `rank-${this.card.rank}`;
+      return `rank-${this.cardData.rank}`;
     },
     suitClass() {
-      return this.card.suit.toLowerCase();
+      return this.cardData.suit.toLowerCase();
     },
   },
+  async created() {
+    if (typeof this.cardProp === 'number') {
+      const response = apiService.get(`/cards/${this.card_id}`, 'Failed to fetch card details!');
+      this.cardData = response.data;
+    } else {
+      this.cardData = this.cardProp;
+    }
+  }
 };
 </script>
 
