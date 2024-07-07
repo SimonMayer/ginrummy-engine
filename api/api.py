@@ -1,10 +1,11 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from api.cards import init_card_routes
 from api.matches.matches import init_matches
 from api.matches.players import init_match_players
-from api.sign_in import init_auth_routes
 from api.rounds import init_round_routes
+from api.sign_in import init_auth_routes
 from api.turns import init_turn_routes
 
 app = Flask(__name__)
@@ -36,6 +37,7 @@ CORS(app)
 jwt = JWTManager(app)
 
 init_auth_routes(app)
+init_card_routes(app)
 init_matches(app)
 init_match_players(app)
 init_round_routes(app)
