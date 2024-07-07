@@ -12,7 +12,7 @@
 import CardCorner from './CardCorner.vue';
 import CardPattern from './CardPattern.vue';
 import { getSuitEmoji, getDisplayRank, getSuitRepeat } from '../utils/cardUtils';
-import apiService from "@/services/apiService";
+import cardsService from "../services/cardsService";
 
 export default {
   name: 'VisibleCard',
@@ -62,7 +62,7 @@ export default {
   },
   async created() {
     if (typeof this.cardProp === 'number') {
-      const response = apiService.get(`/cards/${this.card_id}`, 'Failed to fetch card details!');
+      const response = cardsService.getCard(this.card_id);
       this.cardData = response.data;
     } else {
       this.cardData = this.cardProp;

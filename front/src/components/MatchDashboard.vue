@@ -18,7 +18,9 @@
 </template>
 
 <script>
-import matchService from '../services/matchService';
+import matchesService from '../services/matchesService';
+import roundsService from "../services/roundsService";
+import turnsService from "../services/turnsService";
 import { setErrorMessage, clearErrorMessage } from '../utils/errorHandler';
 import ErrorBox from './ErrorBox.vue';
 import LoadingIndicator from './LoadingIndicator.vue';
@@ -82,14 +84,14 @@ export default {
       }
     },
     async loadMatchDetails() {
-      this.match = await matchService.getMatchDetails(this.matchId);
+      this.match = await matchesService.getMatchDetails(this.matchId);
     },
     async loadPlayers() {
-      this.players = await matchService.getPlayers(this.matchId);
+      this.players = await matchesService.getPlayers(this.matchId);
     },
     async loadHandsForPlayers() {
       if (this.match.current_round_id) {
-        const data = await matchService.getHandsForPlayers(this.match.current_round_id);
+        const data = await roundsService.getHandsForPlayers(this.match.current_round_id);
         const hands = data.hands;
         this.players.forEach(player => {
           player.handSize = hands[player.user_id]?.size || 0;
@@ -99,13 +101,13 @@ export default {
     },
     async loadMyHand() {
       if (this.match.current_round_id) {
-        const data = await matchService.getMyHand(this.match.current_round_id);
+        const data = await roundsService.getMyHand(this.match.current_round_id);
         this.myHand = data.cards;
       }
     },
     async loadCurrentTurn() {
       if (this.match.current_round_id) {
-        const data = await matchService.getCurrentTurn(this.match.current_round_id);
+        const data = await roundsService.getCurrentTurn(this.match.current_round_id);
         this.currentTurnUserId = data.user_id;
         this.turnId = data.turn_id;
       }
@@ -114,7 +116,7 @@ export default {
       if (this.isCurrentUserTurn && !this.loading) {
         await this.handleApiCall(
             async () => {
-              const data = await matchService.drawFromStockPile(this.turnId);
+              const data = await turnsService.drawFromStockPile(this.turnId);
               this.myHand.push(data.new_card);
               this.match.stock_pile_size -= 1;
             },
@@ -126,7 +128,7 @@ export default {
       if (!this.loading) {
         await this.handleApiCall(
             async () => {
-              await matchService.startMatch(this.matchId);
+              await matchesService.startMatch(this.matchId);
               await this.loadMatchDetails();
             },
             'Failed to start match!'
