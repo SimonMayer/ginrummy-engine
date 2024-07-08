@@ -1,16 +1,16 @@
 <template>
-  <li :class="['player-item', { 'current-turn': isCurrentTurn }]">
-    {{ player.username }}
-    <ul class="hand" v-if="!isSignedInUser">
-      <li v-for="n in player.handSize" :key="n" class="card-item">
+  <li :class="['player-item', { 'highlighted': highlightPlayer }]">
+    {{ username }}
+    <ul class="hand" v-if="hiddenCardCount">
+      <li v-for="n in hiddenCardCount" :key="n" class="card-item">
         <HiddenCard />
       </li>
     </ul>
-    <ul class="hand" v-else>
+    <ul class="hand" v-if="hand">
       <li
-          v-for="card in myHand"
+          v-for="card in hand"
           :key="card.card_id"
-          :class="['card-item', { selected: isSelectedCard(card) }]"
+          :class="['card-item', { selected: isSelectedCard(card), selectable: selectable }]"
           @click="handleCardClick(card)"
       >
         <VisibleCard :cardProp="card" />
@@ -30,21 +30,26 @@ export default {
     VisibleCard
   },
   props: {
-    player: {
-      type: Object,
+    username: {
+      type: String,
       required: true
     },
-    myHand: {
+    hand: {
       type: Array,
       required: true
     },
-    signedInUserId: {
+    hiddenCardCount: {
       type: Number,
-      required: true
+      required: true,
+      default: 0
     },
-    currentTurnUserId: {
-      type: [Number, null],
-      required: true
+    highlightPlayer: {
+      type: Boolean,
+      default: false
+    },
+    selectable: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -53,19 +58,13 @@ export default {
     };
   },
   computed: {
-    isSignedInUser() {
-      return this.player.user_id === this.signedInUserId;
-    },
-    isCurrentTurn() {
-      return this.player.user_id === this.currentTurnUserId;
-    },
     isSelectedCard() {
       return (card) => this.selectedCards.some(selected => selected.card_id === card.card_id);
     }
   },
   methods: {
     handleCardClick(card) {
-      if (this.isCurrentTurn) {
+      if (this.selectable) {
         const index = this.selectedCards.findIndex(selected => selected.card_id === card.card_id);
         if (index === -1) {
           this.selectedCards.push(card);
@@ -86,7 +85,7 @@ export default {
   border: 1px solid #ddd;
 }
 
-.current-turn {
+.highlighted {
   border: 2px solid #4CAF50;
   background-color: #e8f5e9;
 }
@@ -100,8 +99,11 @@ export default {
 }
 
 .card-item {
-  cursor: pointer;
   transition: transform 0.3s ease;
+}
+
+.card-item.selectable {
+  cursor: pointer;
 }
 
 .card-item.selected {

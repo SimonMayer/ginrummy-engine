@@ -3,10 +3,11 @@
     <MatchPlayer
         v-for="player in players"
         :key="player.user_id"
-        :player="player"
-        :myHand="myHand"
-        :signedInUserId="signedInUserId"
-        :currentTurnUserId="currentTurnUserId"
+        :username="player.username"
+        :hand="player.user_id === signedInUserId ? myHand : []"
+        :hiddenCardCount="player.user_id !== signedInUserId ? player.handSize : 0"
+        :highlightPlayer="player.user_id === currentTurnUserId"
+        :selectable="isCurrentUserTurn"
     />
   </ul>
 </template>
@@ -37,6 +38,11 @@ export default {
       required: true,
     },
   },
+  computed: {
+    isCurrentUserTurn() {
+      return this.currentTurnUserId === this.signedInUserId;
+    }
+  }
 };
 </script>
 
