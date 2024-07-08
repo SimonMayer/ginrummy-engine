@@ -4,10 +4,10 @@
         v-for="player in players"
         :key="player.user_id"
         :username="player.username"
-        :hand="player.user_id === signedInUserId ? myHand : []"
-        :hiddenCardCount="player.user_id !== signedInUserId ? player.handSize : 0"
-        :highlightPlayer="player.user_id === currentTurnUserId"
-        :selectable="isCurrentUserTurn"
+        :hand="player.hand"
+        :hiddenCardCount="player.hiddenCardCount"
+        :highlightPlayer="player.highlightPlayer"
+        :selectable="player.selectable"
     />
   </ul>
 </template>
@@ -25,24 +25,7 @@ export default {
       type: Array,
       required: true,
     },
-    myHand: {
-      type: Array,
-      required: true,
-    },
-    signedInUserId: {
-      type: Number,
-      required: true,
-    },
-    currentTurnUserId: {
-      type: [Number, null],
-      required: true,
-    },
   },
-  computed: {
-    isCurrentUserTurn() {
-      return this.currentTurnUserId === this.signedInUserId;
-    }
-  }
 };
 </script>
 

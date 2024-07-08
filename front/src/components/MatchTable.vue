@@ -7,8 +7,7 @@
         :disabled="stockPileDisabled"
     />
     <MatchPlayerList
-        :players="players"
-        :myHand="myHand"
+        :players="processedPlayers"
         :signedInUserId="signedInUserId"
         :currentTurnUserId="currentTurnUserId"
     />
@@ -54,6 +53,22 @@ export default {
       type: Boolean,
       required: true,
     },
+  },
+  computed: {
+    processedPlayers() {
+      return this.players.map(player => {
+        return {
+          ...player,
+          hand: player.user_id === this.signedInUserId ? this.myHand : [],
+          hiddenCardCount: player.user_id !== this.signedInUserId ? player.handSize : 0,
+          highlightPlayer: player.user_id === this.currentTurnUserId,
+          selectable: this.isCurrentUserTurn,
+        };
+      });
+    },
+    isCurrentUserTurn() {
+      return this.currentTurnUserId === this.signedInUserId;
+    }
   },
   methods: {
     handleStockPileClick() {
