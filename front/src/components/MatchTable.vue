@@ -1,7 +1,7 @@
 <template>
   <div class="match-table">
     <StockPile
-        v-if="match.stock_pile_size !== undefined"
+        v-if="match && match.stock_pile_size !== undefined"
         :size="match.stock_pile_size"
         @click="handleStockPileClick"
         :disabled="stockPileDisabled"
@@ -17,6 +17,9 @@
 <script>
 import StockPile from './StockPile.vue';
 import MatchPlayerList from './MatchPlayerList.vue';
+import turnsService from "../services/turnsService";
+import matchesService from '../services/matchesService';
+import roundsService from "@/services/roundsService";
 
 export default {
   name: 'MatchTable',
@@ -25,15 +28,11 @@ export default {
     MatchPlayerList,
   },
   props: {
-    match: {
-      type: Object,
+    matchId: {
+      type: Number,
       required: true,
     },
     players: {
-      type: Array,
-      required: true,
-    },
-    myHand: {
       type: Array,
       required: true,
     },
@@ -41,18 +40,21 @@ export default {
       type: Number,
       required: true,
     },
-    currentTurnUserId: {
-      type: [Number, null],
-      required: true,
-    },
     loading: {
       type: Boolean,
       required: true,
-    },
-    stockPileDisabled: {
-      type: Boolean,
-      required: true,
-    },
+    }
+  },
+  data() {
+    return {
+      match: null,
+      myHand: [],
+      currentTurnUserId: null,
+      currentTurnActions: []
+    };
+  },
+  async created() {
+    await this.loadAllData();
   },
   computed: {
     processedPlayers() {
@@ -68,12 +70,71 @@ export default {
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
+    },
+    hasDrawAction() {
+      return this.currentTurnActions.some(action => action.action_type === 'draw');
+    },
+    stockPileDisabled() {
+      return !this.isCurrentUserTurn || this.loading || this.hasDrawAction;
     }
   },
   methods: {
-    handleStockPileClick() {
-      this.$emit('stock-pile-click');
+    async loadMatchDetails() {
+      try {
+        this.match = await matchesService.getMatchDetails(this.matchId);
+      } catch (error) {
+        this.$emit('error', 'Failed to fetch match details!', error);
+      }
     },
+    async loadCurrentTurn() {
+      if (this.match.current_round_id) {
+        const data = await roundsService.getCurrentTurn(this.match.current_round_id);
+        this.currentTurnUserId = data.user_id;
+        this.turnId = data.turn_id;
+        this.currentTurnActions = data.actions || [];
+      }
+    },
+    async loadMyHand() {
+      if (this.match.current_round_id) {
+        try {
+          const data = await roundsService.getMyHand(this.match.current_round_id);
+          this.myHand = data.cards;
+        } catch (error) {
+          this.$emit('error', 'Failed to fetch your hand!', error);
+        }
+      }
+    },
+    async loadHandsForPlayers() {
+      if (this.match.current_round_id) {
+        const data = await roundsService.getHandsForPlayers(this.match.current_round_id);
+        const hands = data.hands;
+        this.players.forEach(player => {
+          player.handSize = hands[player.user_id]?.size || 0;
+        });
+        this.match.stock_pile_size = data.stock_pile_size || 0;
+      }
+    },
+    async handleStockPileClick() {
+      if (this.isCurrentUserTurn && !this.loading && !this.hasDrawAction) {
+        this.$emit('loading', true);
+        try {
+          const card = await turnsService.drawFromStockPile(this.turnId);
+          this.myHand.push(card)
+          this.match.stock_pile_size = this.match.stock_pile_size - 1;
+          this.currentTurnActions.push({action_type: 'draw'});
+        } catch (error) {
+          this.$emit('error', 'Failed to draw from stock pile!', error);
+        } finally {
+          this.$emit('loading', false);
+        }
+      }
+    },
+    async loadAllData() {
+      await this.loadMatchDetails();
+      await this.loadCurrentTurn();
+      await this.loadMyHand();
+      await this.loadHandsForPlayers();
+    }
   },
 };
 </script>
