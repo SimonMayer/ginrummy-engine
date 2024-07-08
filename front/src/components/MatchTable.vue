@@ -4,7 +4,7 @@
         v-if="match.stock_pile_size !== undefined"
         :size="match.stock_pile_size"
         @click="handleStockPileClick"
-        :disabled="loading"
+        :disabled="stockPileDisabled"
     />
     <MatchPlayerList
         :players="players"
@@ -47,6 +47,10 @@ export default {
       required: true,
     },
     loading: {
+      type: Boolean,
+      required: true,
+    },
+    stockPileDisabled: {
       type: Boolean,
       required: true,
     },

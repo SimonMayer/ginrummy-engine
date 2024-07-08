@@ -7,6 +7,7 @@
         :signedInUserId="signedInUserId"
         :currentTurnUserId="currentTurnUserId"
         :loading="loading"
+        :stockPileDisabled="stockPileDisabled"
         @stock-pile-click="handleStockPileClick"
     />
     <button v-if="canStartMatch" @click="$emit('start-match')">Start Match</button>
@@ -47,6 +48,10 @@ export default {
       required: true
     },
     canStartMatch: {
+      type: Boolean,
+      required: true
+    },
+    stockPileDisabled: {
       type: Boolean,
       required: true
     }
