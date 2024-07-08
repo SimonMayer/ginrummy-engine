@@ -12,7 +12,7 @@
         :loading="loading"
         :canStartMatch="canStartMatch"
         @stock-pile-click="handleStockPileClick"
-        :stockPileDisabled="!isCurrentUserTurn || loading || hasDrawAction"
+        :stockPileDisabled="stockPileDisabled"
         @start-match="startMatch"
     />
   </div>
@@ -70,7 +70,7 @@ export default {
   },
   methods: {
     async loadData(tasks) {
-      for (const { method, errorTitle } of tasks) {
+      for (const {method, errorTitle} of tasks) {
         await this.handleApiCall(method, errorTitle);
       }
     },
@@ -122,8 +122,7 @@ export default {
               const data = await turnsService.drawFromStockPile(this.turnId);
               this.myHand.push(data);
               this.match.stock_pile_size -= 1;
-              // Add "draw" action to the currentTurnActions
-              this.currentTurnActions.push({ type: 'draw' });
+              this.currentTurnActions.push({type: 'draw'});
             },
             'Failed to draw from stock pile!'
         );
@@ -153,6 +152,9 @@ export default {
     },
     hasDrawAction() {
       return this.currentTurnActions.some(action => action.action_type === 'draw');
+    },
+    stockPileDisabled() {
+      return !this.isCurrentUserTurn || this.loading || this.hasDrawAction;
     }
   }
 };
