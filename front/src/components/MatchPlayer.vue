@@ -7,7 +7,12 @@
       </li>
     </ul>
     <ul class="hand" v-else>
-      <li v-for="card in myHand" :key="card.card_id" class="card-item">
+      <li
+          v-for="card in myHand"
+          :key="card.card_id"
+          :class="['card-item', { selected: isSelectedCard(card) }]"
+          @click="handleCardClick(card)"
+      >
         <VisibleCard :cardProp="card" />
       </li>
     </ul>
@@ -42,12 +47,32 @@ export default {
       required: true
     }
   },
+  data() {
+    return {
+      selectedCards: []
+    };
+  },
   computed: {
     isSignedInUser() {
       return this.player.user_id === this.signedInUserId;
     },
     isCurrentTurn() {
       return this.player.user_id === this.currentTurnUserId;
+    },
+    isSelectedCard() {
+      return (card) => this.selectedCards.some(selected => selected.card_id === card.card_id);
+    }
+  },
+  methods: {
+    handleCardClick(card) {
+      if (this.isCurrentTurn) {
+        const index = this.selectedCards.findIndex(selected => selected.card_id === card.card_id);
+        if (index === -1) {
+          this.selectedCards.push(card);
+        } else {
+          this.selectedCards.splice(index, 1);
+        }
+      }
     }
   }
 };
@@ -72,6 +97,15 @@ export default {
   padding: 0;
   margin: 10px 0 0 0;
   list-style-type: none;
+}
+
+.card-item {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.card-item.selected {
+  transform: translateY(-20px);
 }
 
 .card-item:not(:first-child) {
