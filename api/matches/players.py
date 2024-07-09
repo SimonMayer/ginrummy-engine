@@ -4,7 +4,7 @@ import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 
-def init_match_players(app):
+def init_match_player_routes(app):
     @app.route('/matches/<int:match_id>/players', methods=['POST'])
     @jwt_required()
     def add_players(match_id):

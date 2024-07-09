@@ -28,7 +28,7 @@ def authenticate_user(username, password):
 
 def init_auth_routes(app):
     """Initialize authentication routes for the app."""
-    @app.route('/sign-in', methods=['POST'])
+    @app.route('/auth/sign-in', methods=['POST'])
     def sign_in():
         username = request.json.get('username', None)
         password = request.json.get('password', None)
@@ -38,7 +38,7 @@ def init_auth_routes(app):
         else:
             return jsonify({"msg": "Bad username or password"}), 401
 
-    @app.route('/refresh', methods=['POST'])
+    @app.route('/auth/refresh', methods=['POST'])
     @jwt_required(refresh=True)
     def refresh():
         identity = get_jwt_identity()

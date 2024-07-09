@@ -2,11 +2,11 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from api.cards import init_card_routes
-from api.matches.matches import init_matches
-from api.matches.players import init_match_players
+from api.matches.matches import init_match_routes
+from api.matches.actions import init_match_action_routes
+from api.matches.players import init_match_player_routes
 from api.rounds import init_round_routes
-from api.sign_in import init_auth_routes
-from api.turns import init_turn_routes
+from api.auth import init_auth_routes
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'your-very-secret-key'  # Change this to a real secret in production
@@ -38,10 +38,10 @@ jwt = JWTManager(app)
 
 init_auth_routes(app)
 init_card_routes(app)
-init_matches(app)
-init_match_players(app)
+init_match_routes(app)
+init_match_action_routes(app)
+init_match_player_routes(app)
 init_round_routes(app)
-init_turn_routes(app)
 
 if __name__ == '__main__':
     app.run(debug=True)

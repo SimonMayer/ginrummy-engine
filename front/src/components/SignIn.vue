@@ -23,7 +23,7 @@ export default {
   methods: {
     async signIn() {
       try {
-        const response = await apiClient.post('/sign-in', {
+        const response = await apiClient.post('/auth/sign-in', {
           username: this.username,
           password: this.password
         });

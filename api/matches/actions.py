@@ -4,7 +4,7 @@ import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 
-def init_turn_routes(app):
+def init_match_action_routes(app):
     @app.route('/turns/<int:turn_id>/draw_from_stock_pile', methods=['POST'])
     @jwt_required()
     def draw_from_stock_pile(turn_id):

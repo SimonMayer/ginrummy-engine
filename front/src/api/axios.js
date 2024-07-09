@@ -1,8 +1,18 @@
 import axios from 'axios';
 
-// Create an axios instance
+const BASE_URL = 'http://localhost:5000';
+
+// Create an axios instance for general API requests
 const apiClient = axios.create({
-    baseURL: 'http://localhost:5000', // Your API base URL
+    baseURL: BASE_URL,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+// Create a separate axios instance for token refresh requests
+const refreshClient = axios.create({
+    baseURL: BASE_URL,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -29,7 +39,7 @@ apiClient.interceptors.response.use(response => {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
             try {
-                const response = await axios.post('http://localhost:5000/refresh', {}, {
+                const response = await refreshClient.post('/auth/refresh', {}, {
                     headers: { 'Authorization': `Bearer ${refreshToken}` }
                 });
                 const newAccessToken = response.data.access_token;

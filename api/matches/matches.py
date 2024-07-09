@@ -6,7 +6,7 @@ from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 from services.rounds import create_round
 
-def init_matches(app):
+def init_match_routes(app):
     @app.route('/matches', methods=['POST'])
     @jwt_required()
     def create_match():
