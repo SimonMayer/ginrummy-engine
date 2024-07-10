@@ -7,6 +7,7 @@ from api.matches.actions import init_match_action_routes
 from api.matches.players import init_match_player_routes
 from api.rounds import init_round_routes
 from api.auth import init_auth_routes
+from api.matches.events import events_blueprint
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = 'your-very-secret-key'  # Change this to a real secret in production
@@ -42,6 +43,8 @@ init_match_routes(app)
 init_match_action_routes(app)
 init_match_player_routes(app)
 init_round_routes(app)
+
+app.register_blueprint(events_blueprint, url_prefix='/')
 
 if __name__ == '__main__':
     app.run(debug=True)
