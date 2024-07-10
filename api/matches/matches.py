@@ -111,7 +111,7 @@ def init_match_routes(app):
 
             # Get the number of players in the match
             cursor.execute(
-                "SELECT user_id FROM Match_Players WHERE match_id = %s",
+                "SELECT user_id FROM Match_Players WHERE match_id = %s ORDER BY user_id",
                 (match_id,)
             )
             players = cursor.fetchall()
