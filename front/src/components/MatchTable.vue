@@ -6,8 +6,12 @@
         @click="handleStockPileClick"
         :disabled="stockPileDisabled"
     />
+    <DiscardPile
+        v-if="match && match.discard_pile"
+        :visibleCards="match.discard_pile"
+    />
     <button
-        v-if="isCurrentUserTurn && !loading && hasDrawAction && selectedCard"
+        v-if="isCurrentUserTurn && !loading && hasDrawAction && hasOneSelectedCard"
         @click="handleDiscardClick"
     >
       Discard
@@ -23,6 +27,7 @@
 
 <script>
 import StockPile from './StockPile.vue';
+import DiscardPile from './DiscardPile.vue';
 import MatchPlayerList from './MatchPlayerList.vue';
 import turnsService from "../services/turnsService";
 import matchesService from '../services/matchesService';
@@ -32,6 +37,7 @@ export default {
   name: 'MatchTable',
   components: {
     StockPile,
+    DiscardPile,
     MatchPlayerList,
   },
   props: {
@@ -58,7 +64,7 @@ export default {
       myHand: [],
       currentTurnUserId: null,
       currentTurnActions: [],
-      selectedCard: null,
+      selectedCards: [],
     };
   },
   async created() {
@@ -78,6 +84,9 @@ export default {
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
+    },
+    hasOneSelectedCard() {
+      return this.selectedCards.length === 1;
     },
     hasDrawAction() {
       return this.currentTurnActions.some(action => action.action_type === 'draw');
@@ -119,6 +128,7 @@ export default {
           player.handSize = hands[player.user_id]?.size || 0;
         });
         this.match.stock_pile_size = data.stock_pile_size || 0;
+        this.match.discard_pile = data.discard_pile || [];
       }
     },
     async handleStockPileClick() {
@@ -137,12 +147,14 @@ export default {
       }
     },
     async handleDiscardClick() {
-      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.selectedCard) {
+      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.hasOneSelectedCard) {
         this.$emit('loading', true);
         try {
-          await turnsService.discardCard(this.matchId, this.selectedCard.card_id);
-          this.myHand = this.myHand.filter(card => card.card_id !== this.selectedCard.card_id);
-          this.selectedCard = null;
+          const selectedCard = this.selectedCards[0];
+          await turnsService.discardCard(this.matchId, selectedCard.card_id);
+          this.myHand = this.myHand.filter(card => card.card_id !== selectedCard.card_id);
+          this.updateSelectedCards([]);
+          this.match.discard_pile.push(selectedCard);
         } catch (error) {
           this.$emit('error', 'Failed to discard card!', error);
         } finally {
@@ -157,7 +169,7 @@ export default {
       await this.loadHandsForPlayers();
     },
     updateSelectedCards(selectedCards) {
-      this.selectedCard = selectedCards.length === 1 ? selectedCards[0] : null;
+      this.selectedCards = selectedCards;
     }
   },
 };
