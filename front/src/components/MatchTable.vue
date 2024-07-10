@@ -6,10 +6,17 @@
         @click="handleStockPileClick"
         :disabled="stockPileDisabled"
     />
+    <button
+        v-if="isCurrentUserTurn && !loading && hasDrawAction && selectedCard"
+        @click="handleDiscardClick"
+    >
+      Discard
+    </button>
     <MatchPlayerList
         :players="processedPlayers"
         :signedInUserId="signedInUserId"
         :currentTurnUserId="currentTurnUserId"
+        @update:selectedCards="updateSelectedCards"
     />
   </div>
 </template>
@@ -50,7 +57,8 @@ export default {
       match: null,
       myHand: [],
       currentTurnUserId: null,
-      currentTurnActions: []
+      currentTurnActions: [],
+      selectedCard: null,
     };
   },
   async created() {
@@ -128,11 +136,28 @@ export default {
         }
       }
     },
+    async handleDiscardClick() {
+      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.selectedCard) {
+        this.$emit('loading', true);
+        try {
+          await turnsService.discardCard(this.matchId, this.selectedCard.card_id);
+          this.myHand = this.myHand.filter(card => card.card_id !== this.selectedCard.card_id);
+          this.selectedCard = null;
+        } catch (error) {
+          this.$emit('error', 'Failed to discard card!', error);
+        } finally {
+          this.$emit('loading', false);
+        }
+      }
+    },
     async loadAllData() {
       await this.loadMatchDetails();
       await this.loadCurrentTurn();
       await this.loadMyHand();
       await this.loadHandsForPlayers();
+    },
+    updateSelectedCards(selectedCards) {
+      this.selectedCard = selectedCards.length === 1 ? selectedCards[0] : null;
     }
   },
 };

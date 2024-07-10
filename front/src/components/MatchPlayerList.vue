@@ -8,6 +8,7 @@
         :hiddenCardCount="player.hiddenCardCount"
         :highlightPlayer="player.highlightPlayer"
         :selectable="player.selectable"
+        @update:selectedCards="updateSelectedCards"
     />
   </ul>
 </template>
@@ -26,6 +27,11 @@ export default {
       required: true,
     },
   },
+  methods: {
+    updateSelectedCards(selectedCards) {
+      this.$emit('update:selectedCards', selectedCards);
+    }
+  }
 };
 </script>
 

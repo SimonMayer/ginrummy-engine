@@ -56,6 +56,26 @@ export default {
   margin-left: -100px;
 }
 
+.stock-card-item:nth-child(odd) {
+  transform: rotate(-0.3deg);
+}
+
+.stock-card-item:nth-child(2n) {
+  transform: rotate(0.2deg);
+}
+
+.stock-card-item:nth-child(5n) {
+  transform: rotate(0.4deg);
+}
+
+.stock-card-item:nth-child(7n) {
+  transform: rotate(-0.5deg);
+}
+
+.stock-card-item:nth-child(11n) {
+  transform: rotate(0.7deg);
+}
+
 .disabled {
   pointer-events: none;
   cursor: not-allowed;

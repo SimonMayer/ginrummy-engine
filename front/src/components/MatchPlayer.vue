@@ -71,6 +71,7 @@ export default {
         } else {
           this.selectedCards.splice(index, 1);
         }
+        this.$emit('update:selectedCards', this.selectedCards);
       }
     }
   }
