@@ -49,7 +49,7 @@ def stream_events(match_id):
                             'action_type': action[2],
                             'public_details': action[3]
                         }
-                        yield f'data: {json.dumps(action_data)}\n\n'
+                        yield f'data: {json.dumps(action_data)}\n'
 
                 connection.commit()  # Ensure any pending transactions are committed
                 time.sleep(0.5)
