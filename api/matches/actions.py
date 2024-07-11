@@ -1,8 +1,9 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+import services.authentication as authentication_service
 import services.database as database_service
 import services.turns as turns_service
 import services.hands as hands_service
@@ -16,7 +17,7 @@ def init_match_action_routes(app):
     @app.route('/matches/<int:match_id>/actions/draw_from_stock_pile', methods=['POST'])
     @jwt_required()
     def draw_from_stock_pile(match_id):
-        user_id = get_jwt_identity()
+        user_id = authentication_service.get_user_id_from_jwt_identity()
         config = load_database_config()
         connection = connect_to_database(config)
         cursor = connection.cursor(buffered=True)
@@ -57,7 +58,7 @@ def init_match_action_routes(app):
     @app.route('/matches/<int:match_id>/actions/discard_card', methods=['POST'])
     @jwt_required()
     def discard_card(match_id):
-        user_id = get_jwt_identity()
+        user_id = authentication_service.get_user_id_from_jwt_identity()
         card_id = request.json.get('card_id')
         if not card_id:
             return jsonify({"error": "Card ID is required"}), 400

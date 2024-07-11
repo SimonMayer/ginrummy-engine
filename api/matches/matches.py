@@ -1,16 +1,17 @@
 from flask import request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from datetime import datetime
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+import services.authentication as authentication_service
 from services.rounds import create_round
 
 def init_match_routes(app):
     @app.route('/matches', methods=['POST'])
     @jwt_required()
     def create_match():
-        user_id = get_jwt_identity()  # Get the identity of the current user from the JWT
+        user_id = authentication_service.get_user_id_from_jwt_identity()
         config = load_database_config()
         connection = connect_to_database(config)
         cursor = connection.cursor()
@@ -31,7 +32,7 @@ def init_match_routes(app):
     @app.route('/matches', methods=['GET'])
     @jwt_required()
     def get_user_matches():
-        user_id = get_jwt_identity()  # Get the identity of the current user from the JWT
+        user_id = authentication_service.get_user_id_from_jwt_identity()
         config = load_database_config()
         connection = connect_to_database(config)
         cursor = connection.cursor()
