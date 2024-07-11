@@ -1,13 +1,13 @@
 from flask import request, jsonify
-from flask_jwt_extended import jwt_required
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
 
 def init_round_routes(app):
     @app.route('/rounds/<int:round_id>', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_round(round_id):
         config = load_database_config()
         connection = connect_to_database(config)
@@ -76,7 +76,7 @@ def init_round_routes(app):
             connection.close()
 
     @app.route('/rounds/<int:round_id>/my_hand', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_my_hand(round_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
 
@@ -117,7 +117,7 @@ def init_round_routes(app):
             connection.close()
 
     @app.route('/rounds/<int:round_id>/current_turn', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_current_turn(round_id):
         config = load_database_config()
         connection = connect_to_database(config)

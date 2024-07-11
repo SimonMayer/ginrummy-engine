@@ -1,12 +1,12 @@
 from flask import request, jsonify
-from flask_jwt_extended import jwt_required
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 
 def init_match_player_routes(app):
     @app.route('/matches/<int:match_id>/players', methods=['POST'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def add_players(match_id):
         user_ids = request.json.get('user_ids', [])
         if not user_ids:
@@ -31,7 +31,7 @@ def init_match_player_routes(app):
             connection.close()
 
     @app.route('/matches/<int:match_id>/players', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_match_players(match_id):
         config = load_database_config()
         connection = connect_to_database(config)

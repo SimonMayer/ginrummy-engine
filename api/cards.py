@@ -1,12 +1,12 @@
 from flask import jsonify, request
-from flask_jwt_extended import jwt_required
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 
 def init_card_routes(app):
     @app.route('/cards/<int:card_id>', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_card(card_id):
         config = load_database_config()
         connection = connect_to_database(config)

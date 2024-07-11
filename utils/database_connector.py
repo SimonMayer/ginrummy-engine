@@ -1,7 +1,6 @@
 import mysql.connector
 
 def connect_to_database(config):
-    """Establish a database connection using the provided configuration."""
     try:
         connection = mysql.connector.connect(
             host=config['host'],

@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required
 from services.authentication import authenticate_user, create_rest_access_token, create_sse_access_token, get_user_id_from_jwt_identity
 
 def init_auth_routes(app):
-    """Initialize authentication routes for the app."""
     @app.route('/auth/sign-in', methods=['POST'])
     def sign_in():
         username = request.json.get('username', None)

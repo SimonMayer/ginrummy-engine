@@ -7,7 +7,6 @@ from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 
 def create_user(connection, username, password):
-    """Create a new user with a hashed password."""
     cursor = connection.cursor()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     try:

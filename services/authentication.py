@@ -17,14 +17,18 @@ def create_rest_access_token(user_id):
     return create_access_token_with_permissions(user_id, True, False)
 
 def create_sse_access_token(user_id):
-    return create_access_token_with_permissions(user_id, True, False)
+    return create_access_token_with_permissions(user_id, False, True)
 
 def get_user_id_from_jwt_identity():
     identity = get_jwt_identity()
     return identity['user_id']
 
+def has_permission(permission_type):
+    identity = get_jwt_identity()
+    permissions = identity.get('permissions', {})
+    return permissions.get(permission_type, False)
+
 def authenticate_user(username, password):
-    """Authenticate user and return JWT if valid."""
     config = load_database_config()
     connection = connect_to_database(config)
     cursor = connection.cursor()

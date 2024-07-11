@@ -1,17 +1,21 @@
-from flask import Blueprint, Response
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, Response, request, jsonify
 import mysql.connector
 import json
 import time
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.database as database_service
+import services.authentication as authentication_service
+import logging
 
 events_blueprint = Blueprint('events', __name__)
 
 @events_blueprint.route('/matches/<int:match_id>/events', methods=['GET'])
-@jwt_required()
+@jwt_multi_source_auth_handler(permission_type='sse', accept_query_param=True)
 def stream_events(match_id):
+    logging.info(f"Entering stream_events for match_id: {match_id}")
+
     def event_stream():
         config = load_database_config()
         connection = connect_to_database(config)
@@ -47,11 +51,11 @@ def stream_events(match_id):
                         }
                         yield f'data: {json.dumps(action_data)}\n\n'
 
-                connection.commit() # Ensure any pending transactions are committed
+                connection.commit()  # Ensure any pending transactions are committed
                 time.sleep(0.5)
 
         except mysql.connector.Error as err:
-            print(f"Error: {err}")
+            logging.error(f"Database error: {err}")
 
         finally:
             cursor.close()

@@ -1,15 +1,15 @@
 from flask import request, jsonify, current_app
-from flask_jwt_extended import jwt_required
 from datetime import datetime
 import mysql.connector
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
 from services.rounds import create_round
 
 def init_match_routes(app):
     @app.route('/matches', methods=['POST'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def create_match():
         user_id = authentication_service.get_user_id_from_jwt_identity()
         config = load_database_config()
@@ -30,7 +30,7 @@ def init_match_routes(app):
             connection.close()
 
     @app.route('/matches', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_user_matches():
         user_id = authentication_service.get_user_id_from_jwt_identity()
         config = load_database_config()
@@ -60,7 +60,7 @@ def init_match_routes(app):
             connection.close()
 
     @app.route('/matches/<int:match_id>', methods=['GET'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def get_match(match_id):
         config = load_database_config()
         connection = connect_to_database(config)
@@ -93,7 +93,7 @@ def init_match_routes(app):
             connection.close()
 
     @app.route('/matches/<int:match_id>/start', methods=['POST'])
-    @jwt_required()
+    @jwt_multi_source_auth_handler(permission_type='rest')
     def start_match(match_id):
         config = load_database_config()
         connection = connect_to_database(config)
