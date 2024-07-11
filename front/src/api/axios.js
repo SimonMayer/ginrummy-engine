@@ -20,7 +20,7 @@ const refreshClient = axios.create({
 
 // Add a request interceptor to include the access token in headers
 apiClient.interceptors.request.use(config => {
-    const accessToken = localStorage.getItem('access_token');
+    const accessToken = localStorage.getItem('rest_access_token');
     if (accessToken) {
         config.headers['Authorization'] = `Bearer ${accessToken}`;
     }
@@ -39,17 +39,18 @@ apiClient.interceptors.response.use(response => {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
             try {
-                const response = await refreshClient.post('/auth/refresh', {}, {
+                const response = await refreshClient.post('/auth/refresh/rest', {}, {
                     headers: { 'Authorization': `Bearer ${refreshToken}` }
                 });
-                const newAccessToken = response.data.access_token;
-                localStorage.setItem('access_token', newAccessToken);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+                const newRestAccessToken = response.data.rest_access_token;
+                localStorage.setItem('rest_access_token', newRestAccessToken);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${newRestAccessToken}`;
+                originalRequest.headers['Authorization'] = `Bearer ${newRestAccessToken}`;
                 return axios(originalRequest);
             } catch (refreshError) {
                 // If the refresh fails, clear both tokens and redirect to login
-                localStorage.removeItem('access_token');
+                localStorage.removeItem('rest_access_token');
+                localStorage.removeItem('sse_access_token');
                 localStorage.removeItem('refresh_token');
                 window.location.href = '/'; // Redirect to login
             }

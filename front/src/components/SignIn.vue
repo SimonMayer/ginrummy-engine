@@ -27,7 +27,8 @@ export default {
           username: this.username,
           password: this.password
         });
-        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('rest_access_token', response.data.rest_access_token);
+        localStorage.setItem('sse_access_token', response.data.sse_access_token);
         localStorage.setItem('refresh_token', response.data.refresh_token);
         localStorage.setItem('user_id', response.data.user_id);
 

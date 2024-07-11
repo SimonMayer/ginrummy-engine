@@ -24,14 +24,15 @@ export default {
     };
 
     const signOut = () => {
-      localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('rest_access_token');
+      localStorage.removeItem('sse_access_token');
       isAuthenticated.value = false;
       router.push('/');
     };
 
     onMounted(() => {
-      if (localStorage.getItem('access_token')) {
+      if (localStorage.getItem('refresh_token')) {
         isAuthenticated.value = true;
       }
     });
