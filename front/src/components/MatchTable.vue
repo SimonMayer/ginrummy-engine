@@ -32,6 +32,7 @@ import MatchPlayerList from './MatchPlayerList.vue';
 import turnsService from "../services/turnsService";
 import matchesService from '../services/matchesService';
 import roundsService from "@/services/roundsService";
+import SSEService from "../services/sseService";
 
 export default {
   name: 'MatchTable',
@@ -65,10 +66,16 @@ export default {
       currentTurnUserId: null,
       currentTurnActions: [],
       selectedCards: [],
+      sseService: null,
+      currentTurnId: null,
+      latestActionId: null,
     };
   },
   async created() {
     await this.loadAllData();
+  },
+  beforeUnmount() {
+    this.cleanupSSE();
   },
   computed: {
     processedPlayers() {
@@ -96,6 +103,11 @@ export default {
     }
   },
   methods: {
+    cleanupSSE() {
+      if (this.sseService) {
+        this.sseService.disconnect();
+      }
+    },
     async loadMatchDetails() {
       try {
         this.match = await matchesService.getMatchDetails(this.matchId);
@@ -108,6 +120,8 @@ export default {
         const data = await roundsService.getCurrentTurn(this.match.current_round_id);
         this.currentTurnUserId = data.user_id;
         this.currentTurnActions = data.actions || [];
+        this.currentTurnId = data.turn_id;
+        this.latestActionId = data.latest_action_id;
       }
     },
     async loadMyHand() {
@@ -136,9 +150,8 @@ export default {
         this.$emit('loading', true);
         try {
           const card = await turnsService.drawFromStockPile(this.matchId);
-          this.myHand.push(card)
-          this.match.stock_pile_size = this.match.stock_pile_size - 1;
-          this.currentTurnActions.push({action_type: 'draw'});
+          this.myHand.push(card);
+          this.match.stock_pile_size -= 1;
         } catch (error) {
           this.$emit('error', 'Failed to draw from stock pile!', error);
         } finally {
@@ -167,9 +180,30 @@ export default {
       await this.loadCurrentTurn();
       await this.loadMyHand();
       await this.loadHandsForPlayers();
+      this.initializeSSE();
     },
     updateSelectedCards(selectedCards) {
       this.selectedCards = selectedCards;
+    },
+    initializeSSE() {
+      const latestActionId = this.latestActionId === null ? '' : this.latestActionId;
+      const endpoint = `/matches/${this.matchId}/events?latest_action_id=${latestActionId}`;
+
+      try {
+        this.sseService = new SSEService(endpoint);
+
+        this.sseService.connect(
+            () => {
+              this.loadCurrentTurn();
+              this.loadHandsForPlayers();
+            },
+            (error) => {
+              console.error('SSE error:', error);
+            }
+        );
+      } catch (error) {
+        console.error('Failed to initialize SSE:', error);
+      }
     }
   },
 };
