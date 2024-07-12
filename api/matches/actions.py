@@ -55,9 +55,9 @@ def init_match_action_routes(app):
         finally:
             database_service.close_resources(cursor, connection)
 
-    @app.route('/matches/<int:match_id>/actions/draw_from_discard_pile', methods=['POST'])
+    @app.route('/matches/<int:match_id>/actions/draw_one_from_discard_pile', methods=['POST'])
     @jwt_multi_source_auth_handler(permission_type='rest')
-    def draw_from_discard_pile(match_id):
+    def draw_one_from_discard_pile(match_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
         config = load_database_config()
         connection = connect_to_database(config)
