@@ -2,13 +2,13 @@
   <div
       class="card visible-card"
       :class="{ selected: isSelected }"
-      @click="toggleSelection"
+      @click="handleClick"
       v-if="cardData"
   >
     <div :class="['card-content', rankClass, suitClass]">
-      <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
-      <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat" />
-      <CardCorner class="bottom-right" :rank="displayRank" :suit="suitEmoji" />
+      <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji"/>
+      <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat"/>
+      <CardCorner class="bottom-right" :rank="displayRank" :suit="suitEmoji"/>
     </div>
   </div>
 </template>
@@ -16,7 +16,7 @@
 <script>
 import CardCorner from './CardCorner.vue';
 import CardPattern from './CardPattern.vue';
-import { getSuitEmoji, getDisplayRank, getSuitRepeat } from '../utils/cardUtils';
+import {getSuitEmoji, getDisplayRank, getSuitRepeat} from '../utils/cardUtils';
 import cardsService from "../services/cardsService";
 
 export default {
@@ -45,6 +45,14 @@ export default {
     selected: {
       type: Boolean,
       default: false
+    },
+    clickable: {
+      type: Boolean,
+      default: false
+    },
+    selectable: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -71,6 +79,13 @@ export default {
     },
   },
   methods: {
+    handleClick() {
+      if (this.clickable) {
+        this.$emit('card-clicked');
+      } else if (this.selectable) {
+        this.toggleSelection();
+      }
+    },
     toggleSelection() {
       this.isSelected = !this.isSelected;
       this.$emit('update:selected', this.cardData.card_id, this.isSelected);

@@ -1,9 +1,11 @@
 <template>
   <div class="discard-pile">
     <VisibleCard
-        v-for="card in visibleCards"
+        v-for="(card, index) in visibleCards"
         :key="card.card_id"
         :cardProp="card"
+        :clickable="isTopCard(index)"
+        @card-clicked="handleClick(index)"
     />
   </div>
 </template>
@@ -28,6 +30,14 @@ export default {
             typeof card.point_value === 'number'
         ));
       },
+    },
+  },
+  methods: {
+    isTopCard(index) {
+      return index === this.visibleCards.length - 1;
+    },
+    handleClick() {
+      this.$emit('top-card-clicked');
     },
   },
 };

@@ -12,7 +12,7 @@
           :key="card.card_id"
           :class="['card-item', { selectable: selectable }]"
       >
-        <VisibleCard ref="visibleCards" :cardProp="card" />
+        <VisibleCard ref="visibleCards" :cardProp="card" :selectable=selectable />
       </li>
     </ul>
   </li>

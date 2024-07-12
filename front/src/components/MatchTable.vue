@@ -9,6 +9,7 @@
     <DiscardPile
         v-if="match && match.discard_pile"
         :visibleCards="match.discard_pile"
+        @top-card-clicked="handleDiscardPileClick"
     />
     <button
         @click="handleDiscardClick"
@@ -180,6 +181,20 @@ export default {
           this.match.stock_pile_size -= 1;
         } catch (error) {
           this.$emit('error', 'Failed to draw from stock pile!', error);
+        } finally {
+          this.$emit('loading', false);
+        }
+      }
+    },
+    async handleDiscardPileClick() {
+      if (this.isCurrentUserTurn && !this.loading && !this.hasDrawAction && this.match.discard_pile.length > 0) {
+        this.$emit('loading', true);
+        try {
+          const card = await turnsService.drawFromDiscardPile(this.matchId);
+          this.myHand.push(card);
+          this.match.discard_pile.pop();
+        } catch (error) {
+          this.$emit('error', 'Failed to draw from discard pile!', error);
         } finally {
           this.$emit('loading', false);
         }
