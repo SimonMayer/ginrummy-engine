@@ -11,16 +11,16 @@
         :visibleCards="match.discard_pile"
     />
     <button
-        v-if="isCurrentUserTurn && !loading && hasDrawAction && hasOneSelectedCard"
         @click="handleDiscardClick"
+        :disabled="isDiscardButtonDisabled()"
     >
       Discard
     </button>
     <MatchPlayerList
+        ref="playerList"
         :players="processedPlayers"
         :signedInUserId="signedInUserId"
         :currentTurnUserId="currentTurnUserId"
-        @update:selectedCards="updateSelectedCards"
     />
   </div>
 </template>
@@ -65,7 +65,6 @@ export default {
       myHand: [],
       currentTurnUserId: null,
       currentTurnActions: [],
-      selectedCards: [],
       sseService: null,
       currentTurnId: null,
       latestActionId: null,
@@ -92,9 +91,6 @@ export default {
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
     },
-    hasOneSelectedCard() {
-      return this.selectedCards.length === 1;
-    },
     hasDrawAction() {
       return this.currentTurnActions.some(action => action.action_type === 'draw');
     },
@@ -103,10 +99,40 @@ export default {
     }
   },
   methods: {
+    hasOneSelectedCard() {
+      return this.getSelectedCardCount() === 1;
+    },
+    isDiscardButtonDisabled() {
+      const playerList = this.$refs.playerList;
+      if (playerList) {
+        const signedInPlayer = playerList.$refs['player-' + this.signedInUserId];
+        if (signedInPlayer) {
+          signedInPlayer[0].hand; // causes a refresh — otherwise button seems to remain enabled
+        }
+      }
+
+      return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || !this.hasOneSelectedCard();
+    },
     cleanupSSE() {
       if (this.sseService) {
         this.sseService.disconnect();
       }
+    },
+    getSelectedCards() {
+      const playerList = this.$refs.playerList;
+      if (!playerList) {
+        return [];
+      }
+
+      const signedInPlayer = playerList.$refs['player-' + this.signedInUserId];
+      if (!signedInPlayer) {
+        return [];
+      }
+
+      return signedInPlayer[0].getSelectedCards();
+    },
+    getSelectedCardCount() {
+      return this.getSelectedCards().length;
     },
     async loadMatchDetails() {
       try {
@@ -160,14 +186,14 @@ export default {
       }
     },
     async handleDiscardClick() {
-      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.hasOneSelectedCard) {
+      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.hasOneSelectedCard()) {
         this.$emit('loading', true);
         try {
-          const selectedCard = this.selectedCards[0];
-          await turnsService.discardCard(this.matchId, selectedCard.card_id);
-          this.myHand = this.myHand.filter(card => card.card_id !== selectedCard.card_id);
-          this.updateSelectedCards([]);
-          this.match.discard_pile.push(selectedCard);
+          const selectedCard = this.getSelectedCards()[0];
+          const cardId = selectedCard.cardData.card_id;
+
+          await turnsService.discardCard(this.matchId, cardId);
+          this.myHand = this.myHand.filter(card => card.card_id !== cardId);
         } catch (error) {
           this.$emit('error', 'Failed to discard card!', error);
         } finally {
@@ -181,9 +207,6 @@ export default {
       await this.loadMyHand();
       await this.loadHandsForPlayers();
       this.initializeSSE();
-    },
-    updateSelectedCards(selectedCards) {
-      this.selectedCards = selectedCards;
     },
     initializeSSE() {
       const latestActionId = this.latestActionId === null ? '' : this.latestActionId;

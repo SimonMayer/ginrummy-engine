@@ -10,10 +10,9 @@
       <li
           v-for="card in hand"
           :key="card.card_id"
-          :class="['card-item', { selected: isSelectedCard(card), selectable: selectable }]"
-          @click="handleCardClick(card)"
+          :class="['card-item', { selectable: selectable }]"
       >
-        <VisibleCard :cardProp="card" />
+        <VisibleCard ref="visibleCards" :cardProp="card" />
       </li>
     </ul>
   </li>
@@ -52,27 +51,12 @@ export default {
       default: false
     }
   },
-  data() {
-    return {
-      selectedCards: []
-    };
-  },
-  computed: {
-    isSelectedCard() {
-      return (card) => this.selectedCards.some(selected => selected.card_id === card.card_id);
-    }
-  },
   methods: {
-    handleCardClick(card) {
-      if (this.selectable) {
-        const index = this.selectedCards.findIndex(selected => selected.card_id === card.card_id);
-        if (index === -1) {
-          this.selectedCards.push(card);
-        } else {
-          this.selectedCards.splice(index, 1);
-        }
-        this.$emit('update:selectedCards', this.selectedCards);
+    getSelectedCards() {
+      if (!this.$refs.visibleCards) {
+        return [];
       }
+      return this.$refs.visibleCards.filter(visibleCard => visibleCard.isCardSelected());
     }
   }
 };

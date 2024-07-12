@@ -1,5 +1,10 @@
 <template>
-  <div class="card visible-card" v-if="cardData">
+  <div
+      class="card visible-card"
+      :class="{ selected: isSelected }"
+      @click="toggleSelection"
+      v-if="cardData"
+  >
     <div :class="['card-content', rankClass, suitClass]">
       <CardCorner class="top-left" :rank="displayRank" :suit="suitEmoji" />
       <CardPattern :suitEmoji="suitEmoji" :suitRepeat="suitRepeat" />
@@ -37,10 +42,15 @@ export default {
         );
       }
     },
+    selected: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
       cardData: null,
+      isSelected: this.selected
     };
   },
   computed: {
@@ -60,9 +70,18 @@ export default {
       return this.cardData.suit.toLowerCase();
     },
   },
+  methods: {
+    toggleSelection() {
+      this.isSelected = !this.isSelected;
+      this.$emit('update:selected', this.cardData.card_id, this.isSelected);
+    },
+    isCardSelected() {
+      return this.isSelected;
+    }
+  },
   async created() {
     if (typeof this.cardProp === 'number') {
-      this.cardData = cardsService.getCard(this.card_id);
+      this.cardData = cardsService.getCard(this.cardProp);
     } else {
       this.cardData = this.cardProp;
     }
@@ -99,5 +118,10 @@ export default {
 
 .clubs, .spades {
   color: black;
+}
+
+.selected {
+  transform: translateY(-20px);
+  border: 2px solid #4CAF50;
 }
 </style>

@@ -3,12 +3,12 @@
     <MatchPlayer
         v-for="player in players"
         :key="player.user_id"
+        :ref="'player-' + player.user_id"
         :username="player.username"
         :hand="player.hand"
         :hiddenCardCount="player.hiddenCardCount"
         :highlightPlayer="player.highlightPlayer"
         :selectable="player.selectable"
-        @update:selectedCards="updateSelectedCards"
     />
   </ul>
 </template>
@@ -26,11 +26,6 @@ export default {
       type: Array,
       required: true,
     },
-  },
-  methods: {
-    updateSelectedCards(selectedCards) {
-      this.$emit('update:selectedCards', selectedCards);
-    }
   }
 };
 </script>
