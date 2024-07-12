@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, request, jsonify
+from flask import Blueprint, Response, request, stream_with_context
 import mysql.connector
 import json
 import time
@@ -15,13 +15,13 @@ events_blueprint = Blueprint('events', __name__)
 @jwt_multi_source_auth_handler(permission_type='sse', accept_query_param=True)
 def stream_events(match_id):
     logging.info(f"Entering stream_events for match_id: {match_id}")
+    latest_action_id = request.args.get('latest_action_id', default=None, type=int)
 
-    def event_stream():
+    @stream_with_context
+    def event_stream(latest_action_id):
         config = load_database_config()
         connection = connect_to_database(config)
         cursor = connection.cursor(buffered=True)
-
-        last_action_id = None
 
         try:
             while True:
@@ -32,16 +32,18 @@ def stream_events(match_id):
                     JOIN `Rounds` `r` ON `t`.`round_id` = `r`.`round_id`
                     WHERE `r`.`match_id` = %s
                 """
-                if last_action_id:
-                    query += " AND `a`.`action_id` > %s ORDER BY `a`.`action_id` ASC"
-                    cursor.execute(query, (match_id, last_action_id))
-                else:
-                    query += " ORDER BY `a`.`action_id` ASC"
-                    cursor.execute(query, (match_id,))
+                params = [match_id]
+
+                if latest_action_id is not None:
+                    query += " AND `a`.`action_id` > %s"
+                    params.append(latest_action_id)
+
+                query += " ORDER BY `a`.`action_id` ASC"
+                cursor.execute(query, params)
 
                 new_actions = cursor.fetchall()
                 if new_actions:
-                    last_action_id = new_actions[-1][0]
+                    latest_action_id = new_actions[-1][0]
                     for action in new_actions:
                         action_data = {
                             'action_id': action[0],
@@ -61,4 +63,4 @@ def stream_events(match_id):
             cursor.close()
             connection.close()
 
-    return Response(event_stream(), mimetype='text/event-stream')
+    return Response(event_stream(latest_action_id), mimetype='text/event-stream')
