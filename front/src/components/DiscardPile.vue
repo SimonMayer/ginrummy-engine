@@ -4,6 +4,7 @@
         v-for="(card, index) in visibleCards"
         :key="card.card_id"
         :cardProp="card"
+        :class="{ clickable: isTopCard(index) }"
         :clickable="isTopCard(index)"
         @card-clicked="handleClick(index)"
     />
@@ -52,8 +53,12 @@ export default {
   margin-top: 10px;
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 .card:not(:first-child) {
-  margin-left: -75px;
+  margin-left: -82px;
 }
 
 .card:first-child {

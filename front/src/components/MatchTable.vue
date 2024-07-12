@@ -176,9 +176,14 @@ export default {
       if (this.isCurrentUserTurn && !this.loading && !this.hasDrawAction) {
         this.$emit('loading', true);
         try {
-          const card = await turnsService.drawFromStockPile(this.matchId);
+          let card;
+          if (this.match.stock_pile_size > 0) {
+            card = await turnsService.drawFromStockPile(this.matchId);
+            this.match.stock_pile_size -= 1;
+          } else {
+            card = await turnsService.drawFromEmptyStockPile(this.matchId);
+          }
           this.myHand.push(card);
-          this.match.stock_pile_size -= 1;
         } catch (error) {
           this.$emit('error', 'Failed to draw from stock pile!', error);
         } finally {
