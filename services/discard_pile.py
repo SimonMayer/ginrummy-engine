@@ -24,6 +24,22 @@ def get_top_card(cursor, round_id):
     card = fetch_one(cursor, query, (round_id,))
     return card
 
+def get_all_cards(cursor, round_id):
+    query = """
+    SELECT `card_id` FROM `Discard_Pile_Cards`
+    WHERE `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)
+    ORDER BY `sequence` DESC FOR UPDATE;
+    """
+    cursor.execute(query, (round_id,))
+    return cursor.fetchall()
+
 def remove_card(cursor, card_id, round_id):
     query = "DELETE FROM `Discard_Pile_Cards` WHERE `card_id` = %s AND `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)"
     execute_query(cursor, query, (card_id, round_id))
+
+def clear_discard_pile(cursor, round_id):
+    query = """
+    DELETE FROM `Discard_Pile_Cards`
+    WHERE `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)
+    """
+    execute_query(cursor, query, (round_id,))

@@ -96,6 +96,57 @@ def init_match_action_routes(app):
         finally:
             database_service.close_resources(cursor, connection)
 
+    @app.route('/matches/<int:match_id>/actions/draw_from_empty_stock_pile', methods=['POST'])
+    @jwt_multi_source_auth_handler(permission_type='rest')
+    def draw_from_empty_stock_pile(match_id):
+        user_id = authentication_service.get_user_id_from_jwt_identity()
+        config = load_database_config()
+        connection = connect_to_database(config)
+        cursor = connection.cursor(buffered=True)
+
+        try:
+            database_service.start_transaction(connection)
+
+            turn = turns_service.get_current_turn(cursor, match_id)
+            validation_error = turns_service.validate_user_turn(turn, user_id)
+            if validation_error:
+                return jsonify(validation_error[0]), validation_error[1]
+
+            turn_id = turn[0]
+            round_id = turn[2]
+
+            validation_error = actions_service.validate_no_draw_this_turn(cursor, turn_id)
+            if validation_error:
+                return jsonify(validation_error[0]), validation_error[1]
+
+            stock_card = stock_pile_service.get_top_card(cursor, round_id)
+            if stock_card:
+                return jsonify({"error": "Stock pile is not empty"}), 400
+
+            discard_pile_cards = discard_pile_service.get_all_cards(cursor, round_id)
+            if not discard_pile_cards:
+                return jsonify({"error": "Discard pile is empty"}), 400
+
+            stock_pile_service.add_cards(cursor, discard_pile_cards, round_id)
+            discard_pile_service.clear_discard_pile(cursor, round_id)
+
+            # Draw the top card from the newly filled stock pile
+            card = stock_pile_service.get_top_card(cursor, round_id)
+            if not card:
+                return jsonify({"error": "Stock pile is still empty"}), 400
+
+            stock_pile_service.remove_card(cursor, card[0], round_id)
+            hands_service.add_card_to_hand(cursor, card[0], user_id, round_id)
+            actions_service.record_draw_from_stock_pile_action(cursor, turn_id, card[0])
+
+            database_service.commit_transaction(connection)
+            return jsonify({"message": "Card drawn successfully", "card_id": card[0]}), 200
+
+        except mysql.connector.Error as err:
+            return database_service.handle_error(connection, err, custom_messages={mysql.connector.errorcode.ER_DUP_ENTRY: "This card is already in a hand"})
+        finally:
+            database_service.close_resources(cursor, connection)
+
     @app.route('/matches/<int:match_id>/actions/discard_card', methods=['POST'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def discard_card(match_id):
