@@ -135,6 +135,15 @@ def init_round_routes(app):
             """, (round_id,))
             result = cursor.fetchall()
 
+            # Query to find the latest action_id associated with the round
+            cursor.execute("""
+                SELECT MAX(a.action_id)
+                FROM Actions a
+                JOIN Turns t ON a.turn_id = t.turn_id
+                WHERE t.round_id = %s
+            """, (round_id,))
+            latest_action_id = cursor.fetchone()[0] # NULL if no result
+
             if result:
                 # Extract turn details from the first row
                 turn_details = {
@@ -142,7 +151,8 @@ def init_round_routes(app):
                     "user_id": result[0][1],
                     "rotation_number": result[0][2],
                     "start_time": result[0][3].strftime('%Y-%m-%d %H:%M:%S'),
-                    "actions": []
+                    "actions": [],
+                    "latest_action_id": latest_action_id
                 }
 
                 # Append action details
