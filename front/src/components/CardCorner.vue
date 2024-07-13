@@ -24,7 +24,7 @@ export default {
 <style scoped>
 .corner {
   position: absolute;
-  width: 20px;
-  font-size: 12px;
+  width: var(--corner-width);
+  font-size: var(--card-corner-font-size);
 }
 </style>

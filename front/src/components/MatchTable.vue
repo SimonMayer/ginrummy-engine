@@ -11,10 +11,7 @@
         :visibleCards="match.discard_pile"
         @top-card-clicked="handleDiscardPileClick"
     />
-    <button
-        @click="handleDiscardClick"
-        :disabled="isDiscardButtonDisabled()"
-    >
+    <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
       Discard
     </button>
     <MatchPlayerList
@@ -30,10 +27,10 @@
 import StockPile from './StockPile.vue';
 import DiscardPile from './DiscardPile.vue';
 import MatchPlayerList from './MatchPlayerList.vue';
-import turnsService from "../services/turnsService";
+import turnsService from '../services/turnsService';
 import matchesService from '../services/matchesService';
-import roundsService from "@/services/roundsService";
-import SSEService from "../services/sseService";
+import roundsService from '@/services/roundsService';
+import SSEService from '../services/sseService';
 
 export default {
   name: 'MatchTable',
@@ -79,15 +76,13 @@ export default {
   },
   computed: {
     processedPlayers() {
-      return this.players.map(player => {
-        return {
-          ...player,
-          hand: player.user_id === this.signedInUserId ? this.myHand : [],
-          hiddenCardCount: player.user_id !== this.signedInUserId ? player.handSize : 0,
-          highlightPlayer: player.user_id === this.currentTurnUserId,
-          selectable: this.isCurrentUserTurn,
-        };
-      });
+      return this.players.map(player => ({
+        ...player,
+        hand: player.user_id === this.signedInUserId ? this.myHand : [],
+        hiddenCardCount: player.user_id !== this.signedInUserId ? player.handSize : 0,
+        highlightPlayer: player.user_id === this.currentTurnUserId,
+        selectable: this.isCurrentUserTurn,
+      }));
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
@@ -257,5 +252,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: var(--base-padding);
+  gap: var(--base-margin);
 }
 </style>

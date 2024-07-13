@@ -6,13 +6,13 @@
         <HiddenCard />
       </li>
     </ul>
-    <ul class="hand" v-if="hand">
+    <ul class="hand" v-if="hand.length">
       <li
           v-for="card in hand"
           :key="card.card_id"
           :class="['card-item', { selectable: selectable }]"
       >
-        <VisibleCard ref="visibleCards" :cardProp="card" :selectable=selectable />
+        <VisibleCard ref="visibleCards" :cardProp="card" :selectable="selectable" />
       </li>
     </ul>
   </li>
@@ -64,22 +64,24 @@ export default {
 
 <style scoped>
 .player-item {
-  background-color: #f9f9f9;
-  padding: 10px;
-  margin: 5px 0;
-  border: 1px solid #ddd;
+  background-color: rgba(var(--secondary-color-rgb), 0.2);
+  color: var(--text-color);
+  padding: var(--base-padding);
+  margin: var(--base-margin) 0;
+  border: 1px solid var(--secondary-color);
+  border-radius: var(--border-radius);
 }
 
 .highlighted {
-  border: 2px solid #4CAF50;
-  background-color: #e8f5e9;
+  border: 2px solid var(--primary-color);
+  background-color: var(--tertiary-color);
 }
 
 .hand {
   display: flex;
   flex-direction: row;
   padding: 0;
-  margin: 10px 0 0 0;
+  margin: var(--base-margin) 0 0 0;
   list-style-type: none;
 }
 

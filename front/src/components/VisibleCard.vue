@@ -105,38 +105,46 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/cardVariables.css';
 @import '../assets/cardStyles.css';
 
 .card-content {
   position: relative;
-  height: 150px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background-color: white;
+  height: var(--card-height);
+  border: 1px solid var(--card-edge-color);
+  border-radius: var(--card-border-radius);
+  background-color: var(--card-background-color);
   text-align: center;
 }
 
 .top-left {
-  top: 4px;
-  left: 0px;
+  top: var(--card-corner-indentation-size);
+  left: 0;
 }
 
 .bottom-right {
-  bottom: 4px;
-  right: 0px;
+  bottom: var(--card-corner-indentation-size);
+  right: 0;
   transform: rotate(180deg);
 }
 
-.hearts, .diamonds {
-  color: red;
+.spades {
+  color: var(--card-suit-spades-color);
 }
 
-.clubs, .spades {
-  color: black;
+.hearts {
+  color: var(--card-suit-hearts-color);
+}
+
+.clubs {
+  color: var(--card-suit-clubs-color);
+}
+
+.diamonds {
+  color: var(--card-suit-diamonds-color);
 }
 
 .selected {
-  transform: translateY(-20px);
-  border: 2px solid #4CAF50;
+  transform: translateY(calc(var(--card-selected-raise-distance) * -1));
 }
 </style>

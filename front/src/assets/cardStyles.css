@@ -1,7 +1,7 @@
 .card {
-    width: 100px;
-    height: 150px;
-    border: 0.3px solid #ddd;
-    border-radius: 10px;
+    width: var(--card-width);
+    height: var(--card-height);
+    border: var(--card-border-width) solid var(--card-edge-color);
+    border-radius: var(--card-border-radius);
     text-align: center;
 }

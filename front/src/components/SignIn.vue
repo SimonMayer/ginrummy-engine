@@ -47,11 +47,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
-}
-
-h1 {
-  margin-bottom: 20px;
 }
 
 form {
@@ -64,18 +59,13 @@ input {
   margin-bottom: 10px;
   padding: 10px;
   font-size: 16px;
+  border: 1px solid var(--primary-color);
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
 button {
   padding: 10px;
   font-size: 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #45a049;
 }
 </style>

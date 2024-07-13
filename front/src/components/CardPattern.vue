@@ -23,10 +23,10 @@ export default {
 <style scoped>
 .pattern {
   position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 20px;
-  right: 20px;
+  top: var(--card-pattern-indentation-size);
+  bottom: var(--card-pattern-indentation-size);
+  left: var(--card-pattern-indentation-size);
+  right: var(--card-pattern-indentation-size);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(16, 1fr);
@@ -36,7 +36,7 @@ export default {
 }
 
 .suit-symbol {
-  font-size: 20px;
+  font-size: var(--card-pattern-font-size);
 }
 
 /* Specific placement of each suit icon, for each rank */

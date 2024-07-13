@@ -1,7 +1,7 @@
 <template>
   <div class="match-details">
-    <h1>Match ID: {{ matchId }}</h1>
     <ErrorBox v-if="errorTitle" :title="errorTitle" :message="errorMessage" @close="clearErrorBox" />
+    <h1>Match ID: {{ matchId }}</h1>
     <LoadingIndicator :visible="loading" />
     <MatchContent
         :match="match"
@@ -89,25 +89,5 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
-}
-
-p {
-  margin: 5px 0;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 3px;
-  transition: background-color 0.3s;
-}
-
-button:hover {
-  background-color: #45a049;
 }
 </style>

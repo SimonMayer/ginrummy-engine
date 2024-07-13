@@ -1,0 +1,23 @@
+:root {
+    --card-base-size: 1px;
+    --card-width: calc(var(--card-base-size) * 100);
+    --card-height: calc(var(--card-base-size) * 150);
+    --card-border-width: calc(var(--card-base-size) * 0.3);
+    --card-border-radius: calc(var(--card-base-size) * 10);
+    --card-corner-font-size: calc(var(--card-base-size) * 12);
+    --card-pattern-font-size: calc(var(--card-base-size) * 20);
+    --corner-width: calc(var(--card-base-size) * 20);
+    --card-corner-indentation-size: calc(var(--card-base-size) * 4);
+    --card-pattern-indentation-size: calc(var(--card-base-size) * 20);
+    --card-selected-raise-distance: calc(var(--card-base-size) * 20);
+    --card-background-color: #fffef5;
+    --card-edge-color: #eee;
+    --card-suit-spades-color: #282828;
+    --card-suit-clubs-color: #282828;
+    --card-suit-hearts-color: #af0707;
+    --card-suit-diamonds-color: #af0707;
+    --card-back-1st-color: #001f3f;
+    --card-back-2nd-color-rgb: 215, 215, 72;
+    --card-back-3rd-color-rgb: 90, 0, 40;
+    --card-back-4th-color-rgb: 0, 70, 90;
+}

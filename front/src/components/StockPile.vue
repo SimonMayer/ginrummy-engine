@@ -42,11 +42,13 @@ export default {
 </script>
 
 <style scoped>
+@import '../assets/cardVariables.css';
+
 .stock-pile-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
+  margin-top: var(--base-margin);
 }
 
 .stock-pile {
@@ -56,12 +58,12 @@ export default {
   justify-content: left;
   position: relative;
   cursor: pointer;
-  height: 150px;
-  width: 150px;
+  height: var(--card-height);
+  width: calc(var(--card-width) * 1.5);
 }
 
 .stock-card-item:not(:first-child) {
-  margin-left: -100px;
+  margin-left: calc(var(--card-width) * -1);
 }
 
 .stock-card-item:nth-child(odd) {
@@ -97,12 +99,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 150px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 2px dashed #ccc;
-  border-radius: 10px;
-  font-size: 1.2em;
-  color: #999;
+  width: var(--card-width);
+  height: var(--card-height);
+  background-color: rgba(var(--secondary-color-rgb), 0.8);
+  border: 2px dashed var(--disabled-color);
+  border-radius: var(--card-border-radius);
+  font-size: calc(var(--card-base-size) * 18);
+  color: var(--disabled-color);
 }
 </style>

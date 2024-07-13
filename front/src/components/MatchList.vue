@@ -50,26 +50,33 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
 }
 
 ul {
   list-style-type: none;
   padding: 0;
+  width: 100%;
 }
 
 li {
-  background-color: #f9f9f9;
-  padding: 10px;
-  margin: 5px 0;
-  border: 1px solid #ddd;
+  background-color: var(--secondary-color);
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 5px;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+li:hover {
+  background-color: var(--button-hover-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 p {
   margin: 5px 0;
+  color: var(--text-color);
 }
 
-router-link {
+a {
   text-decoration: none;
   color: inherit;
 }
