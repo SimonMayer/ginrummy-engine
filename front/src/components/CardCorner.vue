@@ -21,7 +21,10 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+@import '@/assets/cards/variables.css';
+
 .corner {
   position: absolute;
   width: var(--corner-width);

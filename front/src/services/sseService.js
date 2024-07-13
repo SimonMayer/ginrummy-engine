@@ -1,4 +1,4 @@
-import { refreshSseToken } from './tokenService';
+import { refreshSseToken } from '@/services/tokenService';
 
 const BASE_URL = process.env.VUE_APP_BASE_URL;
 

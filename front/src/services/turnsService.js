@@ -1,5 +1,5 @@
-import apiService from './apiService';
-import cardsService from './cardsService';
+import apiService from '@/services/apiService';
+import cardsService from '@/services/cardsService';
 
 const turnsService = {
     async drawFromStockPile(matchId) {

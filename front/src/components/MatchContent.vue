@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="match-content">
     <MatchTable
         ref="matchTable"
         :matchId="matchId"
@@ -14,8 +14,8 @@
 </template>
 
 <script>
-import MatchTable from './MatchTable.vue';
-import matchesService from '../services/matchesService';
+import MatchTable from '@/components/MatchTable.vue';
+import matchesService from '@/services/matchesService';
 
 export default {
   name: 'MatchContent',
@@ -89,3 +89,11 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
+.match-content {
+  width: 100%;
+}
+</style>

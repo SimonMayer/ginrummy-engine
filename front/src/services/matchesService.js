@@ -1,4 +1,4 @@
-import apiService from './apiService';
+import apiService from '@/services/apiService';
 
 const matchesService = {
     async getMatchDetails(matchId) {

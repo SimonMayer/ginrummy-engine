@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import apiClient from '../api/axios';
+import apiClient from '@/api/axios';
 
 export default {
   name: 'SignIn',
@@ -42,30 +42,27 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
 .sign-in {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
 
-form {
-  display: flex;
-  flex-direction: column;
-  width: 300px;
-}
+  form {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
 
-input {
-  margin-bottom: 10px;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid var(--primary-color);
-  border-radius: 5px;
-  background-color: #f9f9f9;
-}
+    input {
+      font-size: 16px;
+    }
 
-button {
-  padding: 10px;
-  font-size: 16px;
+    button {
+      padding: var(--base-padding);
+      font-size: 16px;
+    }
+  }
 }
 </style>

@@ -1,4 +1,4 @@
-import apiService from './apiService';
+import apiService from '@/services/apiService';
 
 const cardsService = {
     async getCard(cardId) {

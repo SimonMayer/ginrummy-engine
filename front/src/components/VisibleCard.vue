@@ -14,10 +14,10 @@
 </template>
 
 <script>
-import CardCorner from './CardCorner.vue';
-import CardPattern from './CardPattern.vue';
-import {getSuitEmoji, getDisplayRank, getSuitRepeat} from '../utils/cardUtils';
-import cardsService from "../services/cardsService";
+import CardCorner from '@/components/CardCorner.vue';
+import CardPattern from '@/components/CardPattern.vue';
+import {getSuitEmoji, getDisplayRank, getSuitRepeat} from '@/utils/cardUtils';
+import cardsService from '@/services/cardsService';
 
 export default {
   name: 'VisibleCard',
@@ -104,9 +104,10 @@ export default {
 };
 </script>
 
-<style scoped>
-@import '../assets/cardVariables.css';
-@import '../assets/cardStyles.css';
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+@import '@/assets/cards/variables.css';
+@import '@/assets/cards/styles.css';
 
 .card-content {
   position: relative;
@@ -115,36 +116,36 @@ export default {
   border-radius: var(--card-border-radius);
   background-color: var(--card-background-color);
   text-align: center;
-}
 
-.top-left {
-  top: var(--card-corner-indentation-size);
-  left: 0;
-}
+  .top-left {
+    top: var(--card-corner-indentation-size);
+    left: 0;
+  }
 
-.bottom-right {
-  bottom: var(--card-corner-indentation-size);
-  right: 0;
-  transform: rotate(180deg);
-}
+  .bottom-right {
+    bottom: var(--card-corner-indentation-size);
+    right: 0;
+    transform: rotate(180deg);
+  }
 
-.spades {
-  color: var(--card-suit-spades-color);
-}
+  &.spades {
+    color: var(--card-suit-spades-color);
+  }
 
-.hearts {
-  color: var(--card-suit-hearts-color);
-}
+  &.hearts {
+    color: var(--card-suit-hearts-color);
+  }
 
-.clubs {
-  color: var(--card-suit-clubs-color);
-}
+  &.clubs {
+    color: var(--card-suit-clubs-color);
+  }
 
-.diamonds {
-  color: var(--card-suit-diamonds-color);
-}
+  &.diamonds {
+    color: var(--card-suit-diamonds-color);
+  }
 
-.selected {
-  transform: translateY(calc(var(--card-selected-raise-distance) * -1));
+  .selected {
+    transform: translateY(calc(var(--card-selected-raise-distance) * -1));
+  }
 }
 </style>

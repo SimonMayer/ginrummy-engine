@@ -1,26 +1,26 @@
 <template>
-  <li :class="['player-item', { 'highlighted': highlightPlayer }]">
+  <div :class="['player-item', { 'highlighted': highlightPlayer }]">
     {{ username }}
-    <ul class="hand" v-if="hiddenCardCount">
-      <li v-for="n in hiddenCardCount" :key="n" class="card-item">
+    <div class="hand" v-if="hiddenCardCount">
+      <div v-for="n in hiddenCardCount" :key="n" class="card-item">
         <HiddenCard />
-      </li>
-    </ul>
-    <ul class="hand" v-if="hand.length">
-      <li
+      </div>
+    </div>
+    <div class="hand" v-if="hand.length">
+      <div
           v-for="card in hand"
           :key="card.card_id"
-          :class="['card-item', { selectable: selectable }]"
+          :class="['card-item', { selectable: selectable, selected: isSelected(card) }]"
       >
-        <VisibleCard ref="visibleCards" :cardProp="card" :selectable="selectable" />
-      </li>
-    </ul>
-  </li>
+        <VisibleCard ref="visibleCards" :cardProp="card" :selectable="selectable" @update:selected="handleSelected" />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import HiddenCard from './HiddenCard.vue';
-import VisibleCard from './VisibleCard.vue';
+import HiddenCard from '@/components/HiddenCard.vue';
+import VisibleCard from '@/components/VisibleCard.vue';
 
 export default {
   name: 'MatchPlayer',
@@ -51,18 +51,32 @@ export default {
       default: false
     }
   },
+  data() {
+    return {
+      selectedCards: []
+    };
+  },
   methods: {
     getSelectedCards() {
       if (!this.$refs.visibleCards) {
         return [];
       }
       return this.$refs.visibleCards.filter(visibleCard => visibleCard.isCardSelected());
+    },
+    handleSelected() {
+      this.selectedCards = this.getSelectedCards().map(card => card.cardProp.card_id);
+    },
+    isSelected(card) {
+      return this.selectedCards.includes(card.card_id);
     }
   }
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+@import '@/assets/cards/variables.css';
+
 .player-item {
   background-color: rgba(var(--secondary-color-rgb), 0.2);
   color: var(--text-color);
@@ -70,34 +84,33 @@ export default {
   margin: var(--base-margin) 0;
   border: 1px solid var(--secondary-color);
   border-radius: var(--border-radius);
-}
 
-.highlighted {
-  border: 2px solid var(--primary-color);
-  background-color: var(--tertiary-color);
-}
+  &.highlighted {
+    border: 2px solid var(--primary-color);
+    background-color: var(--tertiary-color);
+  }
 
-.hand {
-  display: flex;
-  flex-direction: row;
-  padding: 0;
-  margin: var(--base-margin) 0 0 0;
-  list-style-type: none;
-}
+  .hand {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    margin: var(--base-margin) 0 0 0;
 
-.card-item {
-  transition: transform 0.3s ease;
-}
+    .card-item {
+      transition: transform 0.3s ease;
 
-.card-item.selectable {
-  cursor: pointer;
-}
+      &.selectable {
+        cursor: pointer;
+      }
 
-.card-item.selected {
-  transform: translateY(-20px);
-}
+      &.selected {
+        transform: translateY(-20px);
+      }
 
-.card-item:not(:first-child) {
-  margin-left: -80px;
+      &:not(:first-child) {
+        margin-left: calc(var(--card-width) * -0.8);
+      }
+    }
+  }
 }
 </style>

@@ -8,9 +8,10 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import NavigationMenu from './components/NavigationMenu.vue';
+import NavigationMenu from '@/components/NavigationMenu.vue';
 
 export default {
+  name: 'App',
   components: {
     NavigationMenu
   },
@@ -46,35 +47,12 @@ export default {
 };
 </script>
 
-<style>
-:root {
-  --primary-color: #1B5E20;
-  --secondary-color: #233D4D;
-  --secondary-color-rgb: 35, 61, 77;
-  --tertiary-color: #7CA982;
-  --accent-color: #F7B32B;
-  --button-hover-color: #7CA982;
-  --button-active-color: #FE7F2D;
-  --disabled-color: #B0BEC5;
-  --text-color: #ffffff;
-  --error-color: #9b1d20;
-  --error-accent-color: #DA2C38;
-  --font-family: 'Roboto', sans-serif;
-  --base-padding: 10px;
-  --base-margin: 10px;
-  --border-radius: 5px;
-}
+<style lang="scss">
+@import '@/assets/globalVariables';
+@import '@/assets/globalStyles';
+</style>
 
-body {
-  font-family: var(--font-family);
-  color: var(--text-color);
-  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-  background-size: cover;
-  background-attachment: fixed;
-  margin: 0;
-  padding: var(--base-padding);
-}
-
+<style lang="scss" scoped>
 #app {
   display: flex;
   flex-direction: column;
@@ -86,61 +64,11 @@ body {
   min-height: 100vh;
 }
 
-button {
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-  border: solid 1px var(--tertiary-color);
-  border-radius: var(--border-radius);
-  padding: var(--base-padding) calc(2 * var(--base-padding));
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-button:disabled {
-  background-color: var(--disabled-color);
-}
-
-button:not(:disabled):hover {
-  background-color: var(--button-hover-color);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-button:not(:disabled):active {
-  background-color: var(--button-active-color);
-}
-
-button:focus {
-  outline: none;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  margin: 0;
-  padding: 0;
-  color: var(--accent-color);
-}
-
-h1 {
-  margin-bottom: 20px;
-}
-
-p {
-  margin: 0 0 1em;
-}
-
-a {
-  color: var(--accent-color);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
 .container {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--base-padding);
   box-sizing: border-box;
 }
 </style>

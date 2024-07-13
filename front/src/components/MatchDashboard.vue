@@ -1,5 +1,5 @@
 <template>
-  <div class="match-details">
+  <div class="match-dashboard">
     <ErrorBox v-if="errorTitle" :title="errorTitle" :message="errorMessage" @close="clearErrorBox" />
     <h1>Match ID: {{ matchId }}</h1>
     <LoadingIndicator :visible="loading" />
@@ -16,11 +16,11 @@
 </template>
 
 <script>
-import matchesService from '../services/matchesService';
-import { setErrorMessage, clearErrorMessage } from '../utils/errorHandler';
-import ErrorBox from './ErrorBox.vue';
-import LoadingIndicator from './LoadingIndicator.vue';
-import MatchContent from './MatchContent.vue';
+import matchesService from '@/services/matchesService';
+import { setErrorMessage, clearErrorMessage } from '@/utils/errorHandler';
+import ErrorBox from '@/components/ErrorBox.vue';
+import LoadingIndicator from '@/components/LoadingIndicator.vue';
+import MatchContent from '@/components/MatchContent.vue';
 
 export default {
   name: 'MatchDashboard',
@@ -84,10 +84,13 @@ export default {
 };
 </script>
 
-<style scoped>
-.match-details {
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
+.match-dashboard {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 </style>

@@ -1,43 +1,67 @@
 <template>
   <div class="match-table">
-    <StockPile
-        v-if="match && match.stock_pile_size !== undefined"
-        :size="match.stock_pile_size"
-        @click="handleStockPileClick"
-        :disabled="stockPileDisabled"
-    />
-    <DiscardPile
-        v-if="match && match.discard_pile"
-        :visibleCards="match.discard_pile"
-        @top-card-clicked="handleDiscardPileClick"
-    />
-    <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
-      Discard
-    </button>
-    <MatchPlayerList
-        ref="playerList"
-        :players="processedPlayers"
-        :signedInUserId="signedInUserId"
-        :currentTurnUserId="currentTurnUserId"
-    />
+    <div class="non-self-players-container">
+      <MatchPlayer
+          v-for="player in nonSelfPlayers"
+          :key="player.user_id"
+          :ref="'player-' + player.user_id"
+          :username="player.username"
+          :hand="[]"
+          :hiddenCardCount="player.hiddenCardCount"
+          :highlightPlayer="player.highlightPlayer"
+          :selectable="false"
+          class="non-self-player"
+      />
+    </div>
+    <div class="pile-container">
+      <StockPile
+          v-if="match && match.stock_pile_size !== undefined"
+          :size="match.stock_pile_size"
+          @click="handleStockPileClick"
+          :disabled="stockPileDisabled"
+      />
+      <DiscardPile
+          v-if="match && match.discard_pile"
+          :visibleCards="match.discard_pile"
+          @top-card-clicked="handleDiscardPileClick"
+      />
+    </div>
+    <div class="buttons-container">
+      <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
+        Discard
+      </button>
+    </div>
+    <div class="self-player-container">
+      <MatchPlayer
+          v-if="selfPlayer"
+          :key="selfPlayer.user_id"
+          :ref="'player-self'"
+          :username="selfPlayer.username"
+          :hand="myHand"
+          :hiddenCardCount="0"
+          :highlightPlayer="selfPlayer.highlightPlayer"
+          :selectable="isCurrentUserTurn"
+          class="self-player"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import StockPile from './StockPile.vue';
-import DiscardPile from './DiscardPile.vue';
-import MatchPlayerList from './MatchPlayerList.vue';
-import turnsService from '../services/turnsService';
-import matchesService from '../services/matchesService';
+import StockPile from '@/components/StockPile.vue';
+import DiscardPile from '@/components/DiscardPile.vue';
+import MatchPlayer from '@/components/MatchPlayer.vue';
+import turnsService from '@/services/turnsService';
+import matchesService from '@/services/matchesService';
 import roundsService from '@/services/roundsService';
-import SSEService from '../services/sseService';
+import SSEService from '@/services/sseService';
 
 export default {
   name: 'MatchTable',
   components: {
     StockPile,
     DiscardPile,
-    MatchPlayerList,
+    MatchPlayer,
   },
   props: {
     matchId: {
@@ -75,14 +99,29 @@ export default {
     this.cleanupSSE();
   },
   computed: {
-    processedPlayers() {
-      return this.players.map(player => ({
-        ...player,
-        hand: player.user_id === this.signedInUserId ? this.myHand : [],
-        hiddenCardCount: player.user_id !== this.signedInUserId ? player.handSize : 0,
-        highlightPlayer: player.user_id === this.currentTurnUserId,
-        selectable: this.isCurrentUserTurn,
-      }));
+    selfPlayer() {
+      const player = this.players.find(player => player.user_id === this.signedInUserId);
+      if (player) {
+        return {
+          ...player,
+          highlightPlayer: player.user_id === this.currentTurnUserId,
+        };
+      }
+      return null;
+    },
+    nonSelfPlayers() {
+      const selfIndex = this.players.findIndex(player => player.user_id === this.signedInUserId);
+      if (selfIndex === -1) {
+        // If self player is not found, return the original array processed as usual
+        return this.players.map(this.transformPlayer);
+      }
+
+      const beforeSelf = this.players.slice(0, selfIndex);
+      const afterSelf = this.players.slice(selfIndex + 1);
+
+      const reorderedPlayers = [...afterSelf, ...beforeSelf];
+
+      return reorderedPlayers.map(this.transformPlayer);
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
@@ -99,12 +138,9 @@ export default {
       return this.getSelectedCardCount() === 1;
     },
     isDiscardButtonDisabled() {
-      const playerList = this.$refs.playerList;
-      if (playerList) {
-        const signedInPlayer = playerList.$refs['player-' + this.signedInUserId];
-        if (signedInPlayer) {
-          signedInPlayer[0].hand; // causes a refresh — otherwise button seems to remain enabled
-        }
+      const signedInPlayer = this.$refs['player-self'];
+      if (signedInPlayer) {
+        signedInPlayer.hand; // causes a refresh — otherwise button seems to remain enabled
       }
 
       return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || !this.hasOneSelectedCard();
@@ -114,18 +150,20 @@ export default {
         this.sseService.disconnect();
       }
     },
+    transformPlayer(player) {
+      return {
+        ...player,
+        hiddenCardCount: player.handSize,
+        highlightPlayer: player.user_id === this.currentTurnUserId,
+      };
+    },
     getSelectedCards() {
-      const playerList = this.$refs.playerList;
-      if (!playerList) {
-        return [];
-      }
-
-      const signedInPlayer = playerList.$refs['player-' + this.signedInUserId];
+      const signedInPlayer = this.$refs['player-self'];
       if (!signedInPlayer) {
         return [];
       }
 
-      return signedInPlayer[0].getSelectedCards();
+      return signedInPlayer.getSelectedCards();
     },
     getSelectedCardCount() {
       return this.getSelectedCards().length;
@@ -247,12 +285,40 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
 .match-table {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   padding: var(--base-padding);
   gap: var(--base-margin);
+
+  .pile-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--base-margin);
+  }
+
+  .buttons-container {
+    display: flex;
+    gap: var(--base-margin);
+    justify-content: center;
+    width: 100%;
+  }
+
+  .non-self-players-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .self-player-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
 }
 </style>

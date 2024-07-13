@@ -8,11 +8,14 @@
         :clickable="isTopCard(index)"
         @card-clicked="handleClick(index)"
     />
+    <div v-if="isEmpty" class="empty-placeholder">
+      <div>Discarded cards will appear here</div>
+    </div>
   </div>
 </template>
 
 <script>
-import VisibleCard from './VisibleCard.vue';
+import VisibleCard from '@/components/VisibleCard.vue';
 
 export default {
   name: 'DiscardPile',
@@ -33,6 +36,11 @@ export default {
       },
     },
   },
+  computed: {
+    isEmpty() {
+      return this.visibleCards.length === 0;
+    }
+  },
   methods: {
     isTopCard(index) {
       return index === this.visibleCards.length - 1;
@@ -44,8 +52,9 @@ export default {
 };
 </script>
 
-<style scoped>
-@import '../assets/cardVariables.css';
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+@import '@/assets/cards/variables.css';
 
 .discard-pile {
   display: flex;
@@ -54,34 +63,46 @@ export default {
   justify-content: center;
   padding: calc(var(--card-height) * 0.1) calc(var(--card-width) * 0.1);
   height: var(--card-height);
-}
 
-.clickable {
-  cursor: pointer;
-}
+  .clickable {
+    cursor: pointer;
+  }
 
-.card:not(:first-child) {
-  margin-left: calc(var(--card-width) * -0.85);;
-}
+  @for $i from 1 through 52 {
+    .card:nth-child(#{$i}) {
+      @if $i == 1 {
+        transform: rotate(0.6deg);
+      } @else if $i % 5 == 0 {
+        transform: rotate(-0.3deg);
+      } @else if $i % 3 == 0 {
+        transform: rotate(-1.2deg);
+      } @else if $i % 2 == 0 {
+        transform: rotate(-0.8deg);
+      } @else if $i % 2 != 0 {
+        transform: rotate(1deg);
+      }
 
-.card:first-child {
-  transform: rotate(0.6deg);
-}
+      @if $i != 1 {
+        margin-left: calc(var(--card-width) * -0.85);
+      }
+    }
+  }
 
-.card:nth-child(even) {
-  transform: rotate(-0.8deg);
-}
+  .empty-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: rgba(var(--secondary-color-rgb), 0.8);
+    border: calc(var(--card-border-width) * 5) dashed var(--disabled-color);
+    border-radius: var(--card-border-radius);
+    font-size: calc(var(--card-base-size) * 18);
+    color: var(--disabled-color);
 
-.card:nth-child(odd) {
-  transform: rotate(1deg);
+    div {
+      margin: var(--base-margin);
+    }
+  }
 }
-
-.card:nth-child(3n) {
-  transform: rotate(-1.2deg);
-}
-
-.card:nth-child(5n) {
-  transform: rotate(-0.3deg);
-}
-
 </style>

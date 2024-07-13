@@ -2,13 +2,16 @@
   <div class="stock-pile-container">
     <div class="stock-pile" :class="{ disabled: disabled, empty: isEmpty }" @click="handleClick">
       <HiddenCard v-for="n in size" :key="n" class="stock-card-item" />
-      <div v-if="isEmpty" class="empty-placeholder"><div class="icon">↻</div>Rebuild from discards</div>
+      <div v-if="isEmpty" class="empty-placeholder">
+        <div class="icon">↻</div>
+        <div>Rebuild from discards</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import HiddenCard from './HiddenCard.vue';
+import HiddenCard from '@/components/HiddenCard.vue';
 
 export default {
   name: 'StockPile',
@@ -41,14 +44,15 @@ export default {
 };
 </script>
 
-<style scoped>
-@import '../assets/cardVariables.css';
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+@import '@/assets/cards/variables.css';
 
 .stock-pile-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: var(--base-margin);
+  margin: var(--base-margin);
 }
 
 .stock-pile {
@@ -60,51 +64,55 @@ export default {
   cursor: pointer;
   height: var(--card-height);
   width: calc(var(--card-width) * 1.5);
-}
 
-.stock-card-item:not(:first-child) {
-  margin-left: calc(var(--card-width) * -1);
-}
+  @for $i from 1 through 52 {
+    .stock-card-item:nth-child(#{$i}) {
+      @if $i % 24 == 0 {
+        transform: rotate(-1.8deg);
+      }
+      @else if $i % 11 == 0 {
+        transform: rotate(-1.1deg);
+      }
+      @else if $i % 7 == 0 {
+        transform: rotate(-0.5deg);
+      }
+      @else if $i % 5 == 0 {
+        transform: rotate(0.4deg);
+      }
+      @else if $i % 2 == 0 {
+        transform: rotate(0.2deg);
+      }
+      @else if $i % 2 != 0 {
+        transform: rotate(-0.3deg);
+      }
 
-.stock-card-item:nth-child(odd) {
-  transform: rotate(-0.3deg);
-}
+      @if $i != 1 {
+        margin-left: calc(var(--card-width) * -1);
+      }
+    }
+  }
 
-.stock-card-item:nth-child(2n) {
-  transform: rotate(0.2deg);
-}
+  &.disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+  }
 
-.stock-card-item:nth-child(5n) {
-  transform: rotate(0.4deg);
-}
+  .empty-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: rgba(var(--secondary-color-rgb), 0.8);
+    border: calc(var(--card-border-width) * 5) dashed var(--disabled-color);
+    border-radius: var(--card-border-radius);
+    font-size: calc(var(--card-base-size) * 18);
+    color: var(--disabled-color);
 
-.stock-card-item:nth-child(7n) {
-  transform: rotate(-0.5deg);
-}
-
-.stock-card-item:nth-child(11n) {
-  transform: rotate(-1.1deg);
-}
-
-.stock-card-item:nth-child(24n) {
-  transform: rotate(-1.8deg);
-}
-
-.disabled {
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
-.empty-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--card-width);
-  height: var(--card-height);
-  background-color: rgba(var(--secondary-color-rgb), 0.8);
-  border: 2px dashed var(--disabled-color);
-  border-radius: var(--card-border-radius);
-  font-size: calc(var(--card-base-size) * 18);
-  color: var(--disabled-color);
+    div {
+      margin: var(--base-margin);
+    }
+  }
 }
 </style>

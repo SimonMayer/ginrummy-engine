@@ -33,7 +33,9 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
 nav {
   display: flex;
   justify-content: space-between;
@@ -42,27 +44,27 @@ nav {
   background-color: var(--secondary-color);
   padding: var(--base-padding);
   border-radius: var(--border-radius);
-}
 
-.nav-links, .auth-links {
-  display: flex;
-  gap: var(--base-margin);
-}
+  .nav-links, .auth-links {
+    display: flex;
+    gap: var(--base-margin);
+  }
 
-a {
-  color: var(--text-color);
-  text-decoration: none;
-  padding: var(--base-padding);
-  border-radius: var(--border-radius);
-  transition: background-color 0.3s, color 0.3s;
-}
+  a {
+    color: var(--text-color);
+    text-decoration: none;
+    padding: var(--base-padding);
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s, color 0.3s;
 
-a:hover {
-  background-color: var(--button-hover-color);
-}
+    &:hover {
+      background-color: var(--button-hover-color);
+    }
 
-a.active {
-  font-weight: bold;
-  border-bottom: solid 2px var(--accent-color);
+    &.active {
+      font-weight: bold;
+      border-bottom: solid 2px var(--accent-color);
+    }
+  }
 }
 </style>

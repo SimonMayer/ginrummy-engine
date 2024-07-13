@@ -6,9 +6,10 @@
 </template>
 
 <script>
-import apiClient from '../api/axios';
+import apiClient from '@/api/axios';
 
 export default {
+  name: 'CreateMatch',
   methods: {
     async createMatch() {
       try {
@@ -23,7 +24,9 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
 .create-match {
   display: flex;
   flex-direction: column;

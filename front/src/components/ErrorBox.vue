@@ -24,7 +24,9 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
 .wrapper {
   background-color: white;
   border-radius: 5px;
@@ -32,64 +34,66 @@ export default {
   min-width: 400px;
   padding: 2px;
 
-}
-.error-box {
-  border: 1px solid var(--error-accent-color);
-  color: var(--text-color);
-  position: relative;
-  border-radius: 5px;
-}
+  .error-box {
+    border: 1px solid var(--error-accent-color);
+    color: var(--text-color);
+    position: relative;
+    border-radius: 5px;
 
-.title {
-  background-color: var(--error-color);
-  font-weight: bold;
-  min-height: 30px;
-  padding: 10px;
-}
+    .title {
+      background-color: var(--error-color);
+      font-weight: bold;
+      min-height: 30px;
+      padding: 10px;
+    }
 
-.message {
-  color: var(--error-color);
-  min-height: 20px;
-  padding: 10px;
-}
-.close-button {
-  border-radius: 5px;
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  cursor: pointer;
-  padding: 5px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  width: 12px;
-  height: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    .message {
+      color: var(--error-color);
+      min-height: 20px;
+      padding: 10px;
+    }
 
-.close-button::before,
-.close-button::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 16px;
-  height: 3px;
-  background: var(--text-color);
-  transform-origin: center;
-}
+    .close-button {
+      border-radius: 0.2rem;
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 1rem;
+      height: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-.close-button::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 3px;
+        background: var(--text-color);
+        transform-origin: center;
+      }
 
-.close-button::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
-}
-.close-button:hover {
-  background-color: var(--error-accent-color);
-}
-.close-button:active {
-  background-color: var(--button-active-color);
+      &::before {
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+
+      &::after {
+        transform: translate(-50%, -50%) rotate(-45deg);
+      }
+
+      &:hover {
+        background-color: var(--error-accent-color);
+      }
+
+      &:active {
+        background-color: var(--button-active-color);
+      }
+    }
+  }
 }
 </style>

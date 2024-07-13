@@ -15,8 +15,8 @@
 </template>
 
 <script>
-import apiClient from '../api/axios';
-import { formatDateTime } from '../utils/dateFormatter';
+import apiClient from '@/api/axios';
+import { formatDateTime } from '@/utils/dateFormatter';
 
 export default {
   name: 'MatchList',
@@ -45,39 +45,41 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/assets/globalVariables';
+
 .match-list {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
 
-ul {
-  list-style-type: none;
-  padding: 0;
-  width: 100%;
-}
+  ul {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
 
-li {
-  background-color: var(--secondary-color);
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 5px;
-  transition: background-color 0.3s, box-shadow 0.3s;
-}
+    li {
+      background-color: var(--secondary-color);
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      transition: background-color 0.3s, box-shadow 0.3s;
 
-li:hover {
-  background-color: var(--button-hover-color);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+      &:hover {
+        background-color: var(--button-hover-color);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
 
-p {
-  margin: 5px 0;
-  color: var(--text-color);
-}
+      p {
+        margin: 5px 0;
+        color: var(--text-color);
+      }
 
-a {
-  text-decoration: none;
-  color: inherit;
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+    }
+  }
 }
 </style>
