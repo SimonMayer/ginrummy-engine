@@ -18,8 +18,8 @@ def init_match_action_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def draw_from_stock_pile(match_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor(buffered=True)
 
         try:
@@ -59,8 +59,8 @@ def init_match_action_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def draw_one_from_discard_pile(match_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor(buffered=True)
 
         try:
@@ -100,8 +100,8 @@ def init_match_action_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def draw_from_empty_stock_pile(match_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor(buffered=True)
 
         try:
@@ -155,8 +155,8 @@ def init_match_action_routes(app):
         if not card_id:
             return jsonify({"error": "Card ID is required"}), 400
 
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor(buffered=True)
 
         try:

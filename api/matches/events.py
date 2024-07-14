@@ -19,8 +19,8 @@ def stream_events(match_id):
 
     @stream_with_context
     def event_stream(latest_action_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor(buffered=True)
 
         try:

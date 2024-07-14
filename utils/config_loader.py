@@ -16,3 +16,6 @@ def load_config(filename):
 
 def load_database_config():
     return load_config("database.json")
+
+def load_game_config():
+    return load_config("game.json")

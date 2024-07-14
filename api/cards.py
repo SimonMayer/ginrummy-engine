@@ -8,8 +8,8 @@ def init_card_routes(app):
     @app.route('/cards/<int:card_id>', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_card(card_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor(buffered=True)
 
         try:

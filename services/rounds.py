@@ -1,8 +1,7 @@
 from datetime import datetime
 import random
 import mysql.connector
-from flask import current_app
-from utils.config_loader import load_database_config
+from utils.config_loader import load_database_config, load_game_config
 from utils.database_connector import connect_to_database
 from services.database import (
     execute_query,
@@ -16,8 +15,8 @@ from services.database import (
 )
 
 def create_round(match_id, players):
-    config = load_database_config()
-    connection = connect_to_database(config)
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
     cursor = connection.cursor(buffered=True)
     try:
         start_transaction(connection)
@@ -48,7 +47,8 @@ def create_round(match_id, players):
         cards = [{'rank': rank, 'suit': suit} for rank in ranks for suit in suits]
         random.shuffle(cards)
 
-        points_by_rank = current_app.config['POINTS_BY_RANK']
+        game_config = load_game_config()
+        points_by_rank = game_config['pointsByRank']
 
         # Add cards to the Cards table and get their ids
         for card in cards:
@@ -62,7 +62,8 @@ def create_round(match_id, players):
             card['card_id'] = card_id  # Store the card_id for later use
 
         # Create hands for each player and distribute cards
-        hand_size = current_app.config['HAND_SIZE']
+        game_config = load_game_config()
+        hand_size = game_config['handSize']
         for player in players:
             user_id = player[0]
             cursor = execute_query(

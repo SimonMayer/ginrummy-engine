@@ -35,25 +35,6 @@ app.config['JWT_SECRET_KEY'] = 'your-very-secret-key'  # Change this to a real s
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 600  # seconds
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 2419200  # seconds
 
-app.config['MIN_PLAYERS'] = 2
-app.config['MAX_PLAYERS'] = 4
-app.config['HAND_SIZE'] = 7
-app.config['POINTS_BY_RANK'] = {
-   'A': 15,
-   '2': 2,
-   '3': 3,
-   '4': 4,
-   '5': 5,
-   '6': 6,
-   '7': 7,
-   '8': 8,
-   '9': 9,
-   '10': 10,
-   'J': 10,
-   'Q': 10,
-   'K': 10
-}
-
 CORS(app)
 
 jwt = JWTManager(app)

@@ -12,8 +12,8 @@ def init_match_player_routes(app):
         if not user_ids:
             return jsonify({"error": "User IDs are required"}), 400
 
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             for user_id in user_ids:
@@ -33,8 +33,8 @@ def init_match_player_routes(app):
     @app.route('/matches/<int:match_id>/players', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_match_players(match_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             cursor.execute(

@@ -29,8 +29,8 @@ def has_permission(permission_type):
     return permissions.get(permission_type, False)
 
 def authenticate_user(username, password):
-    config = load_database_config()
-    connection = connect_to_database(config)
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
     cursor = connection.cursor()
     try:
         cursor.execute("SELECT user_id, password_hash FROM Users WHERE username = %s", (username,))

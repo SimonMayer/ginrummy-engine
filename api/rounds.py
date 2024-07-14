@@ -9,8 +9,8 @@ def init_round_routes(app):
     @app.route('/rounds/<int:round_id>', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_round(round_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             # Get the size of the stock pile
@@ -80,8 +80,8 @@ def init_round_routes(app):
     def get_my_hand(round_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
 
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
 
         try:
@@ -119,8 +119,8 @@ def init_round_routes(app):
     @app.route('/rounds/<int:round_id>/current_turn', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_current_turn(round_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
 
         try:

@@ -1,7 +1,7 @@
-from flask import request, jsonify, current_app
+from flask import request, jsonify
 from datetime import datetime
 import mysql.connector
-from utils.config_loader import load_database_config
+from utils.config_loader import load_database_config, load_game_config
 from utils.database_connector import connect_to_database
 from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
@@ -12,8 +12,8 @@ def init_match_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def create_match():
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             cursor.execute(
@@ -33,8 +33,8 @@ def init_match_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_user_matches():
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             cursor.execute(
@@ -62,8 +62,8 @@ def init_match_routes(app):
     @app.route('/matches/<int:match_id>', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_match(match_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             cursor.execute(
@@ -95,8 +95,8 @@ def init_match_routes(app):
     @app.route('/matches/<int:match_id>/start', methods=['POST'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def start_match(match_id):
-        config = load_database_config()
-        connection = connect_to_database(config)
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
         cursor = connection.cursor()
         try:
             # Check if the match has already started
@@ -110,6 +110,8 @@ def init_match_routes(app):
             if match[0] is not None:
                 return jsonify({"error": "Match has already started"}), 400
 
+            game_config = load_game_config()
+
             # Get the number of players in the match
             cursor.execute(
                 "SELECT user_id FROM Match_Players WHERE match_id = %s ORDER BY user_id",
@@ -119,8 +121,8 @@ def init_match_routes(app):
             player_count = len(players)
 
             # Check if the number of players is within the allowed range
-            min_players = current_app.config['MIN_PLAYERS']
-            max_players = current_app.config['MAX_PLAYERS']
+            min_players = game_config['players']['minimumAllowed']
+            max_players = game_config['players']['maximumAllowed']
             if player_count < min_players or player_count > max_players:
                 return jsonify({"error": f"Number of players must be between {min_players} and {max_players}"}), 400
 

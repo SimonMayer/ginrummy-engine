@@ -22,8 +22,8 @@ def create_user(connection, username, password):
         cursor.close()
 
 def main():
-    config = load_database_config()
-    connection = connect_to_database(config)
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
 
     if len(sys.argv) != 3:
         print("Usage: python create_user.py <username> <password>")
