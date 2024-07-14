@@ -16,6 +16,7 @@
 <script>
 import MatchTable from '@/components/MatchTable.vue';
 import matchesService from '@/services/matchesService';
+import configService from '@/services/configService';
 
 export default {
   name: 'MatchContent',
@@ -47,12 +48,13 @@ export default {
   },
   data() {
     return {
-      minPlayers: 2,
-      maxPlayers: 4,
+      minPlayers: null,
+      maxPlayers: null,
       players: []
     };
   },
   async created() {
+    await this.loadConfig();
     await this.loadPlayers();
   },
   methods: {
@@ -61,6 +63,15 @@ export default {
     },
     handleError(title, error) {
       this.$emit('error', title, error);
+    },
+    async loadConfig() {
+      try {
+        const config = await configService.getGameConfig();
+        this.minPlayers = config.players.minimumAllowed;
+        this.maxPlayers = config.players.maximumAllowed;
+      } catch (error) {
+        this.handleError('Failed to fetch game configuration!', error);
+      }
     },
     async loadPlayers() {
       this.updateLoading(true);

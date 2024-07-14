@@ -1,12 +1,13 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from api.auth import init_auth_routes
 from api.cards import init_card_routes
+from api.config import init_config_routes
 from api.matches.matches import init_match_routes
 from api.matches.actions import init_match_action_routes
 from api.matches.players import init_match_player_routes
 from api.rounds import init_round_routes
-from api.auth import init_auth_routes
 from api.matches.events import events_blueprint
 import logging
 from logging.handlers import RotatingFileHandler
@@ -45,6 +46,7 @@ init_match_routes(app)
 init_match_action_routes(app)
 init_match_player_routes(app)
 init_round_routes(app)
+init_config_routes(app)
 
 app.register_blueprint(events_blueprint, url_prefix='/')
 
