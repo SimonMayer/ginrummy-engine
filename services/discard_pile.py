@@ -30,8 +30,7 @@ def get_all_cards(cursor, round_id):
     WHERE `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)
     ORDER BY `sequence` DESC FOR UPDATE;
     """
-    cursor.execute(query, (round_id,))
-    return cursor.fetchall()
+    return fetch_all(cursor, query, (round_id,))
 
 def remove_card(cursor, card_id, round_id):
     query = "DELETE FROM `Discard_Pile_Cards` WHERE `card_id` = %s AND `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)"

@@ -1,6 +1,5 @@
 from datetime import datetime
 import random
-import mysql.connector
 from utils.config_loader import load_database_config, load_game_config
 from utils.database_connector import connect_to_database
 from services.database import (
@@ -62,7 +61,6 @@ def create_round(match_id, players):
             card['card_id'] = card_id  # Store the card_id for later use
 
         # Create hands for each player and distribute cards
-        game_config = load_game_config()
         hand_size = game_config['handSize']
         for player in players:
             user_id = player[0]
