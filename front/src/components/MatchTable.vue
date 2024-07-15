@@ -212,12 +212,13 @@ export default {
         }
       }
     },
-    async loadHandsForPlayers() {
+    async loadRoundDataForPlayers() {
       if (this.match.current_round_id) {
-        const data = await roundsService.getHandsForPlayers(this.match.current_round_id);
-        const hands = data.hands;
+        const data = await roundsService.getRoundDataForPlayers(this.match.current_round_id);
+        const players = data.players;
         this.players.forEach(player => {
-          player.handSize = hands[player.user_id]?.size || 0;
+          const playerData = players.find(p => p.user_id === player.user_id);
+          player.handSize = playerData ? playerData.hand.size : 0;
         });
         this.match.stock_pile_size = data.stock_pile_size || 0;
         this.match.discard_pile = data.discard_pile || [];
@@ -300,7 +301,7 @@ export default {
       await this.loadMatchDetails();
       await this.loadCurrentTurn();
       await this.loadMyHand();
-      await this.loadHandsForPlayers();
+      await this.loadRoundDataForPlayers();
       this.initializeSSE();
     },
     initializeSSE() {
@@ -313,7 +314,7 @@ export default {
         this.sseService.connect(
             () => {
               this.loadCurrentTurn();
-              this.loadHandsForPlayers();
+              this.loadRoundDataForPlayers();
             },
             (error) => {
               console.error('SSE error:', error);

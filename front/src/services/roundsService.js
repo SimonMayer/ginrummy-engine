@@ -1,8 +1,8 @@
 import apiService from '@/services/apiService';
 
 const roundsService = {
-    async getHandsForPlayers(roundId) {
-        return await apiService.get(`/rounds/${roundId}`, 'Failed to fetch hands!');
+    async getRoundDataForPlayers(roundId) {
+        return await apiService.get(`/rounds/${roundId}`, 'Failed to fetch round data!');
     },
     async getMyHand(roundId) {
         return await apiService.get(`/rounds/${roundId}/my_hand`, 'Failed to fetch your hand!');
