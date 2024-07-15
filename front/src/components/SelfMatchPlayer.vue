@@ -69,13 +69,14 @@ export default {
 @import '@/assets/players';
 
 .hand {
+  height: calc(var(--card-height) * 0.9);
   margin: calc(var(--base-margin) * 2) 0 0 0;
 
   .card {
-    @include card-transform(0deg, 0, 0.4);
+    @include card-transform(-40deg, 0deg, 0, 0.2);
 
     &.selected {
-      @include card-transform(3deg, calc(var(--card-height) / -5), 0.4);
+      @include card-transform(-40deg, 3deg, calc(var(--card-height) / -5), 0.2);
     }
   }
 }

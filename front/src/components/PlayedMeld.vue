@@ -38,9 +38,9 @@ export default {
 <style lang="scss" scoped>
 @import '@/assets/globalVariables';
 @import '@/assets/cards/variables.css';
-@mixin fan-shape($num-cards, $span) {
+@mixin fan-shape($num-cards, $span, $offset-rotation) {
   @for $i from 1 through $num-cards {
-    $rotation: (($i - ($num-cards / 2)) * ($span / $num-cards));
+    $rotation: (($i - ($num-cards / 2)) * ($span / $num-cards) + $offset-rotation);
     .card:nth-child(#{$i}) {
       transform: rotate($rotation);
     }
@@ -50,8 +50,8 @@ export default {
 .meld {
   position: relative;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: right;
+  align-items: flex-start;
 
   .card {
     position: absolute;
@@ -59,10 +59,18 @@ export default {
     transition: transform 0.3s;
   }
 
+  &.run {
+    width: calc(var(--card-width) * 1.7);
+    height: calc(var(--card-height) + calc(var(--card-width) * 0.5));
+    padding: calc(var(--card-height) / 6) calc(var(--card-width) * 0.5) 0 0;
+    @include fan-shape(13, 90deg, 10);
+  }
+
   &.set {
-    width: calc(var(--card-width) + (var(--card-height) / 2));
-    height: calc(var(--card-height) + (var(--card-width) / 2));
-    @include fan-shape(4, 30deg); // Up to 4 cards
+    width: calc(var(--card-width) + (var(--card-height) / 4));
+    height: calc(var(--card-height) + (var(--card-width) / 4));
+    padding: calc(var(--card-height) / 10) calc(var(--card-width) / 5) 0 0;
+    @include fan-shape(4, 30deg, -5);
   }
 }
 </style>

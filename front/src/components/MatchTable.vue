@@ -29,6 +29,9 @@
       <button @click="handlePlaySetClick" :disabled="isPlaySetButtonDisabled()">
         Play set
       </button>
+      <button @click="handlePlayRunClick" :disabled="isPlayRunButtonDisabled()">
+        Play run
+      </button>
       <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
         Discard
       </button>
@@ -90,6 +93,7 @@ export default {
     return {
       allowMeldsFromRotation: null,
       minimumMeldSize: null,
+      runOrders: [],
       match: null,
       myHand: [],
       rotationNumber: null,
@@ -162,6 +166,29 @@ export default {
           !(selectedCards.length >= this.minimumMeldSize) ||
           !allSameRank ||
           allCardsSelected;
+    },
+    isPlayRunButtonDisabled() {
+      const selectedCards = this.getSelectedCards();
+      const allCardsSelected = selectedCards.length === this.myHand.length;
+      const allSameSuit = selectedCards.every(card => card.cardData.suit === selectedCards[0].cardData.suit);
+      const isValidRun = this.doSelectedCardsMakeValidRun();
+
+      return !this.isCurrentUserTurn ||
+          this.loading ||
+          !this.hasDrawAction ||
+          !(selectedCards.length >= this.minimumMeldSize) ||
+          !allSameSuit ||
+          allCardsSelected ||
+          !isValidRun;
+    },
+    doSelectedCardsMakeValidRun() {
+      const selectedCards = this.getSelectedCards();
+      const cardRanks = selectedCards.map(card => card.cardData.rank);
+
+      return this.runOrders.some(order => {
+        const indices = cardRanks.map(rank => order.indexOf(rank)).sort((a, b) => a - b);
+        return indices.every((index, i) => i === 0 || index === indices[i - 1] + 1);
+      });
     },
     cleanupSSE() {
       if (this.sseService) {
@@ -295,11 +322,27 @@ export default {
         }
       }
     },
+    async handlePlayRunClick() {
+      if (this.getSelectedCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
+        this.$emit('loading', true);
+        try {
+          const selectedCards = this.getSelectedCards();
+          const cardIds = selectedCards.map(card => card.cardData.card_id);
+          await turnsService.playMeld(this.matchId, cardIds, 'run');
+          this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
+        } catch (error) {
+          this.$emit('error', 'Failed to play meld!', error);
+        } finally {
+          this.$emit('loading', false);
+        }
+      }
+    },
     async loadConfig() {
       try {
         const config = await configService.getGameConfig();
         this.allowMeldsFromRotation = config.allowMeldsFromRotation;
         this.minimumMeldSize = config.minimumMeldSize;
+        this.runOrders = config.runOrders;
       } catch (error) {
         this.handleError('Failed to fetch game configuration!', error);
       }

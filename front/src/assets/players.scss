@@ -1,5 +1,5 @@
-@mixin card-transform($rotate-y, $translate-y, $translate-z-multiplier) {
-  transform: rotateX(-55deg) translateX(calc(var(--card-width) / -5)) rotateY($rotate-y) translateY($translate-y) translateZ(calc(var(--card-height) * $translate-z-multiplier));
+@mixin card-transform($rotate-x, $rotate-y, $translate-y, $translate-z-multiplier) {
+  transform: rotateX($rotate-x) translateX(calc(var(--card-width) / -5)) rotateY($rotate-y) translateY($translate-y) translateZ(calc(var(--card-height) * $translate-z-multiplier));
 }
 
 .player-item {
