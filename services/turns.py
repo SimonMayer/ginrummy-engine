@@ -2,7 +2,7 @@ from services.database import execute_query, fetch_one
 
 def get_current_turn(cursor, match_id):
     query = """
-    SELECT `t`.`turn_id`, `t`.`user_id`, `t`.`round_id`
+    SELECT `t`.`turn_id`, `t`.`user_id`, `t`.`round_id`, `t`.`rotation_number`
     FROM `Turns` `t`
     INNER JOIN `Rounds` `r` ON `t`.`round_id` = `r`.`round_id`
     WHERE `r`.`match_id` = %s AND `t`.`end_time` IS NULL

@@ -9,5 +9,5 @@ def get_card_details(cursor, card_id):
 def validate_card_exists(cursor, card_id):
     card_details = get_card_details(cursor, card_id)
     if not card_details:
-        return jsonify({"error": "Card details not found"}), 400
+        return {"error": "Card details not found"}, 400
     return None

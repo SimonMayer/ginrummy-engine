@@ -1,6 +1,6 @@
 from flask import jsonify, request
 import mysql.connector
-from utils.config_loader import load_database_config
+from utils.config_loader import load_database_config, load_game_config
 from utils.database_connector import connect_to_database
 from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
@@ -12,6 +12,7 @@ import services.cards as cards_service
 import services.discard_pile as discard_pile_service
 import services.stock_pile as stock_pile_service
 import services.players as players_service
+import services.melds as melds_service
 
 def init_match_action_routes(app):
     @app.route('/matches/<int:match_id>/actions/draw_from_stock_pile', methods=['POST'])
@@ -186,7 +187,7 @@ def init_match_action_routes(app):
 
             validation_error = cards_service.validate_card_exists(cursor, card_id)
             if validation_error:
-                return validation_error
+                return jsonify(validation_error[0]), validation_error[1]
 
             actions_service.record_discard_action(cursor, turn_id, card_id)
 
@@ -209,5 +210,75 @@ def init_match_action_routes(app):
 
         except mysql.connector.Error as err:
             return database_service.handle_error(connection, err, custom_messages={})
+        finally:
+            database_service.close_resources(cursor, connection)
+
+    @app.route('/matches/<int:match_id>/actions/play_meld', methods=['POST'])
+    @jwt_multi_source_auth_handler(permission_type='rest')
+    def play_meld(match_id):
+        user_id = authentication_service.get_user_id_from_jwt_identity()
+        card_ids = request.json.get('card_ids')
+        if not card_ids or not isinstance(card_ids, list):
+            return jsonify({"error": "A list of card IDs is required"}), 400
+
+        game_config = load_game_config()
+        min_meld_size = game_config['minimumMeldSize']
+        allow_melds_from_rotation = game_config['allowMeldsFromRotation']
+
+        database_config = load_database_config()
+        connection = connect_to_database(database_config)
+        cursor = connection.cursor(buffered=True)
+
+        try:
+            database_service.start_transaction(connection)
+
+            turn = turns_service.get_current_turn(cursor, match_id)
+            validation_error = turns_service.validate_user_turn(turn, user_id)
+            if validation_error:
+                return jsonify(validation_error[0]), validation_error[1]
+
+            turn_id = turn[0]
+            round_id = turn[2]
+            rotation_number = turn[3]
+
+            if rotation_number < allow_melds_from_rotation:
+                return jsonify({"error": f"Melds can only be played from rotation {allow_melds_from_rotation}"}), 400
+
+            validation_error = actions_service.validate_draw_this_turn(cursor, turn_id)
+            if validation_error:
+                return jsonify(validation_error[0]), validation_error[1]
+
+            hand_cards = hands_service.get_all_cards_in_hand(cursor, user_id, round_id)
+            hand_card_ids = [card[0] for card in hand_cards]
+
+            if not all(card_id in hand_card_ids for card_id in card_ids):
+                return jsonify({"error": "All provided cards must be in the user's hand"}), 400
+
+            if len(hand_card_ids) - len(card_ids) < 1:
+                return jsonify({"error": "User must have at least one card in hand after playing the meld"}), 400
+
+            card_details = [cards_service.get_card_details(cursor, card_id) for card_id in card_ids]
+            card_ranks = [card[0] for card in card_details]
+
+            if len(set(card_ranks)) != 1:
+                return jsonify({"error": "All cards in the meld must be of the same rank"}), 400
+
+            if len(card_ids) < min_meld_size:
+                return jsonify({"error": f"A meld must contain at least {min_meld_size} cards"}), 400
+
+            meld_id = melds_service.create_meld(cursor, round_id, user_id, 'set')
+
+            for card_id in card_ids:
+                hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
+                melds_service.add_card_to_meld(cursor, meld_id, card_id, user_id)
+
+            meld_description = f"set of '{card_ranks[0]}'s ({', '.join([card[1] for card in card_details])})"
+            actions_service.record_play_meld_action(cursor, turn_id, meld_description)
+
+            database_service.commit_transaction(connection)
+            return jsonify({"message": "Meld played successfully", "meld_id": meld_id}), 200
+
+        except mysql.connector.Error as err:
+            return database_service.handle_error(connection, err)
         finally:
             database_service.close_resources(cursor, connection)

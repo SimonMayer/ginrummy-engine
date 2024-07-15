@@ -1,5 +1,5 @@
 from flask import jsonify
-from services.database import execute_query, fetch_one
+from services.database import execute_query, fetch_one, fetch_all
 
 def get_next_sequence(cursor, user_id, round_id):
     query = """
@@ -28,6 +28,17 @@ def get_card_from_hand(cursor, user_id, round_id, card_id):
     FOR UPDATE;
     """
     return fetch_one(cursor, query, (user_id, round_id, card_id))
+
+def get_all_cards_in_hand(cursor, user_id, round_id):
+    query = """
+    SELECT `hc`.`card_id`, `c`.`rank`, `c`.`suit`
+    FROM `Hand_Cards` `hc`
+    INNER JOIN `Hands` `h` ON `hc`.`hand_id` = `h`.`hand_id`
+    INNER JOIN `Cards` `c` ON `hc`.`card_id` = `c`.`card_id`
+    WHERE `h`.`user_id` = %s AND `h`.`round_id` = %s
+    """
+    return fetch_all(cursor, query, (user_id, round_id))
+
 
 def remove_card_from_hand(cursor, user_id, round_id, card_id):
     hand_card = get_card_from_hand(cursor, user_id, round_id, card_id)

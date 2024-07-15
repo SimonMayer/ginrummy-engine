@@ -147,6 +147,28 @@ def create_database_and_tables(connection, database_name):
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
                 );
                 """,
+                """
+                CREATE TABLE IF NOT EXISTS `Melds` (
+                    `meld_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `round_id` INT NOT NULL,
+                    `user_id` INT NOT NULL,
+                    `meld_type` ENUM('run', 'set') NOT NULL,
+                    FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
+                    FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
+                );
+                """,
+                """
+                CREATE TABLE IF NOT EXISTS `Meld_Cards` (
+                    `meld_card_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `meld_id` INT NOT NULL,
+                    `card_id` INT NOT NULL,
+                    `user_id` INT NOT NULL,
+                    FOREIGN KEY (`meld_id`) REFERENCES `Melds`(`meld_id`),
+                    FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`),
+                    FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`),
+                    UNIQUE (`card_id`)
+                );
+                """,
             ]
 
             for query in table_creations:

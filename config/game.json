@@ -1,5 +1,7 @@
 {
+  "allowMeldsFromRotation": 2,
   "handSize": 7,
+  "minimumMeldSize": 3,
   "players": {
     "minimumAllowed": 2,
     "maximumAllowed": 4

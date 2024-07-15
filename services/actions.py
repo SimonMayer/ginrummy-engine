@@ -5,13 +5,13 @@ from services.cards import get_card_details
 def validate_no_draw_this_turn(cursor, turn_id):
     query = "SELECT `action_id` FROM `Actions` WHERE `turn_id` = %s AND `action_type` = 'draw' FOR UPDATE"
     if fetch_one(cursor, query, (turn_id,)):
-        return jsonify({"error": "Drawing has already taken place this turn"}), 400
+        return {"error": "Drawing has already taken place this turn"}, 400
     return None
 
 def validate_draw_this_turn(cursor, turn_id):
     query = "SELECT `action_id` FROM `Actions` WHERE `turn_id` = %s AND `action_type` = 'draw' FOR UPDATE"
     if not fetch_one(cursor, query, (turn_id,)):
-        return jsonify({"error": "You must draw a card before you can perform this action"}), 400
+        return {"error": "You must draw a card before you can perform this action"}, 400
     return None
 
 def record_draw_from_stock_pile_action(cursor, turn_id, card_id):
@@ -43,3 +43,10 @@ def record_discard_action(cursor, turn_id, card_id):
     VALUES (%s, 'discard', CONCAT('Discarded ', %s, ' ', %s), CONCAT('Discarded ', %s, ' ', %s))
     """
     execute_query(cursor, query, (turn_id, card_rank, card_suit, card_rank, card_suit))
+
+def record_play_meld_action(cursor, turn_id, meld_description):
+    query = """
+    INSERT INTO `Actions` (`turn_id`, `action_type`, `full_details`, `public_details`)
+    VALUES (%s, 'play_meld', %s, %s)
+    """
+    execute_query(cursor, query, (turn_id, f"Played a {meld_description}", f"Played a {meld_description}"))
