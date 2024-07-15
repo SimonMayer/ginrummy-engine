@@ -26,8 +26,8 @@
       />
     </div>
     <div class="buttons-container">
-      <button @click="handlePlayMeldClick" :disabled="isPlayMeldButtonDisabled()">
-        Play meld
+      <button @click="handlePlaySetClick" :disabled="isPlaySetButtonDisabled()">
+        Play set
       </button>
       <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
         Discard
@@ -151,7 +151,7 @@ export default {
 
       return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || !this.hasOneSelectedCard();
     },
-    isPlayMeldButtonDisabled() {
+    isPlaySetButtonDisabled() {
       const selectedCards = this.getSelectedCards();
       const allCardsSelected = selectedCards.length === this.myHand.length;
       const allSameRank = selectedCards.every(card => card.cardData.rank === selectedCards[0].cardData.rank);
@@ -280,13 +280,13 @@ export default {
         }
       }
     },
-    async handlePlayMeldClick() {
+    async handlePlaySetClick() {
       if (this.getSelectedCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
         this.$emit('loading', true);
         try {
           const selectedCards = this.getSelectedCards();
           const cardIds = selectedCards.map(card => card.cardData.card_id);
-          await turnsService.playMeld(this.matchId, cardIds);
+          await turnsService.playMeld(this.matchId, cardIds, 'set');
           this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
         } catch (error) {
           this.$emit('error', 'Failed to play meld!', error);
