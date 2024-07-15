@@ -177,7 +177,7 @@ def init_match_action_routes(app):
 
             removal_error = hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
             if removal_error:
-                return removal_error
+                return jsonify(removal_error[0]), removal_error[1]
 
             discard_pile = discard_pile_service.get_discard_pile(cursor, round_id)
             if not discard_pile:

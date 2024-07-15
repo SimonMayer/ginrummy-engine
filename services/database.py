@@ -1,5 +1,4 @@
 import mysql.connector
-from flask import jsonify
 
 def execute_query(cursor, query, params):
     cursor.execute(query, params)
@@ -29,5 +28,5 @@ def close_resources(cursor, connection):
 def handle_error(connection, err, custom_messages=None):
     rollback_transaction(connection)
     if custom_messages and err.errno in custom_messages:
-        return jsonify({"error": custom_messages[err.errno]}), 400
-    return jsonify({"error": str(err)}), 500
+        return {"error": custom_messages[err.errno]}, 400
+    return {"error": str(err)}, 500

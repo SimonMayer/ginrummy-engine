@@ -1,4 +1,3 @@
-from flask import jsonify
 from services.database import execute_query, fetch_one, fetch_all
 
 def get_next_sequence(cursor, user_id, round_id):
@@ -43,7 +42,7 @@ def get_all_cards_in_hand(cursor, user_id, round_id):
 def remove_card_from_hand(cursor, user_id, round_id, card_id):
     hand_card = get_card_from_hand(cursor, user_id, round_id, card_id)
     if not hand_card:
-        return jsonify({"error": "Card not found in user's hand"}), 400
+        return {"error": "Card not found in user's hand"}, 400
 
     query = "DELETE FROM `Hand_Cards` WHERE `hand_card_id` = %s"
     execute_query(cursor, query, (hand_card[0],))

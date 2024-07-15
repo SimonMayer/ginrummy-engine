@@ -1,4 +1,3 @@
-from flask import jsonify
 from services.database import execute_query, fetch_one
 from services.cards import get_card_details
 

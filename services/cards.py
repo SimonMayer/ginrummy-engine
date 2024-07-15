@@ -1,4 +1,3 @@
-from flask import jsonify
 from services.database import fetch_one
 
 def get_card_details(cursor, card_id):
