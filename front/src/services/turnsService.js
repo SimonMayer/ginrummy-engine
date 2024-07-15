@@ -16,6 +16,9 @@ const turnsService = {
     },
     async discardCard(matchId, cardId) {
         await apiService.post(`/matches/${matchId}/actions/discard_card`, { card_id: cardId }, 'Failed to discard card!');
+    },
+    async playMeld(matchId, cardIds) {
+        await apiService.post(`/matches/${matchId}/actions/play_meld`, { card_ids: cardIds }, 'Failed to play meld!');
     }
 };
 

@@ -27,6 +27,9 @@
       />
     </div>
     <div class="buttons-container">
+      <button @click="handlePlayMeldClick" :disabled="isPlayMeldButtonDisabled()">
+        Play meld
+      </button>
       <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
         Discard
       </button>
@@ -48,6 +51,7 @@
 </template>
 
 <script>
+import configService from "@/services/configService";
 import StockPile from '@/components/StockPile.vue';
 import DiscardPile from '@/components/DiscardPile.vue';
 import MatchPlayer from '@/components/MatchPlayer.vue';
@@ -83,8 +87,11 @@ export default {
   },
   data() {
     return {
+      allowMeldsFromRotation: null,
+      minimumMeldSize: null,
       match: null,
       myHand: [],
+      rotationNumber: null,
       currentTurnUserId: null,
       currentTurnActions: [],
       sseService: null,
@@ -93,6 +100,7 @@ export default {
     };
   },
   async created() {
+    await this.loadConfig();
     await this.loadAllData();
   },
   beforeUnmount() {
@@ -112,16 +120,13 @@ export default {
     nonSelfPlayers() {
       const selfIndex = this.players.findIndex(player => player.user_id === this.signedInUserId);
       if (selfIndex === -1) {
-        // If self player is not found, return the original array processed as usual
         return this.players.map(this.transformPlayer);
       }
 
       const beforeSelf = this.players.slice(0, selfIndex);
       const afterSelf = this.players.slice(selfIndex + 1);
 
-      const reorderedPlayers = [...afterSelf, ...beforeSelf];
-
-      return reorderedPlayers.map(this.transformPlayer);
+      return [...afterSelf, ...beforeSelf].map(this.transformPlayer);
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
@@ -144,6 +149,18 @@ export default {
       }
 
       return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || !this.hasOneSelectedCard();
+    },
+    isPlayMeldButtonDisabled() {
+      const selectedCards = this.getSelectedCards();
+      const allCardsSelected = selectedCards.length === this.myHand.length;
+      const allSameRank = selectedCards.every(card => card.cardData.rank === selectedCards[0].cardData.rank);
+
+      return !this.isCurrentUserTurn ||
+          this.loading ||
+          !this.hasDrawAction ||
+          !(selectedCards.length >= this.minimumMeldSize) ||
+          !allSameRank ||
+          allCardsSelected;
     },
     cleanupSSE() {
       if (this.sseService) {
@@ -182,6 +199,7 @@ export default {
         this.currentTurnActions = data.actions || [];
         this.currentTurnId = data.turn_id;
         this.latestActionId = data.latest_action_id;
+        this.rotationNumber = data.rotation_number;
       }
     },
     async loadMyHand() {
@@ -252,6 +270,30 @@ export default {
         } finally {
           this.$emit('loading', false);
         }
+      }
+    },
+    async handlePlayMeldClick() {
+      if (this.getSelectedCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
+        this.$emit('loading', true);
+        try {
+          const selectedCards = this.getSelectedCards();
+          const cardIds = selectedCards.map(card => card.cardData.card_id);
+          await turnsService.playMeld(this.matchId, cardIds);
+          this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
+        } catch (error) {
+          this.$emit('error', 'Failed to play meld!', error);
+        } finally {
+          this.$emit('loading', false);
+        }
+      }
+    },
+    async loadConfig() {
+      try {
+        const config = await configService.getGameConfig();
+        this.allowMeldsFromRotation = config.allowMeldsFromRotation;
+        this.minimumMeldSize = config.minimumMeldSize;
+      } catch (error) {
+        this.handleError('Failed to fetch game configuration!', error);
       }
     },
     async loadAllData() {
