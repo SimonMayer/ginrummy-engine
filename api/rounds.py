@@ -53,19 +53,28 @@ def init_round_routes(app):
             )
             hands_data = cursor.fetchall()
             hands = {}
+            players = []
             for user_id, hand_id, size in hands_data:
-                 if user_id not in hands:
-                    hands[user_id] = {
+                hand_info = {
+                    "hand_id": hand_id,
+                    "user_id": user_id,
+                    "size": size
+                }
+                hands[user_id] = hand_info
+                players.append({
+                    "user_id": user_id,
+                    "hand": {
                         "hand_id": hand_id,
-                        "user_id": user_id,
                         "size": size
                     }
+                })
 
             result = {
                 "round_id": round_id,
                 "stock_pile_size": stock_pile_size,
                 "discard_pile": discard_pile_list,
-                "hands": hands
+                "hands": hands, # deprecated
+                "players": players
             }
 
             return jsonify(result), 200
