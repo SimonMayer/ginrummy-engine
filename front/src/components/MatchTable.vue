@@ -1,15 +1,14 @@
 <template>
   <div class="match-table">
     <div class="non-self-players-container">
-      <MatchPlayer
+      <NonSelfMatchPlayer
           v-for="player in nonSelfPlayers"
           :key="player.user_id"
           :ref="'player-' + player.user_id"
           :username="player.username"
-          :hand="[]"
           :hiddenCardCount="player.hiddenCardCount"
           :highlightPlayer="player.highlightPlayer"
-          :selectable="false"
+          :melds="player.melds"
           class="non-self-player"
       />
     </div>
@@ -35,15 +34,15 @@
       </button>
     </div>
     <div class="self-player-container">
-      <MatchPlayer
+      <SelfMatchPlayer
           v-if="selfPlayer"
           :key="selfPlayer.user_id"
           :ref="'player-self'"
           :username="selfPlayer.username"
           :hand="myHand"
-          :hiddenCardCount="0"
           :highlightPlayer="selfPlayer.highlightPlayer"
-          :selectable="isCurrentUserTurn"
+          :melds="selfPlayer.melds"
+          :selectable="isHandSelectable"
           class="self-player"
       />
     </div>
@@ -54,7 +53,8 @@
 import configService from "@/services/configService";
 import StockPile from '@/components/StockPile.vue';
 import DiscardPile from '@/components/DiscardPile.vue';
-import MatchPlayer from '@/components/MatchPlayer.vue';
+import SelfMatchPlayer from '@/components/SelfMatchPlayer.vue';
+import NonSelfMatchPlayer from '@/components/NonSelfMatchPlayer.vue';
 import turnsService from '@/services/turnsService';
 import matchesService from '@/services/matchesService';
 import roundsService from '@/services/roundsService';
@@ -65,7 +65,8 @@ export default {
   components: {
     StockPile,
     DiscardPile,
-    MatchPlayer,
+    SelfMatchPlayer,
+    NonSelfMatchPlayer
   },
   props: {
     matchId: {
@@ -110,29 +111,29 @@ export default {
     selfPlayer() {
       const player = this.players.find(player => player.user_id === this.signedInUserId);
       if (player) {
-        return {
-          ...player,
-          highlightPlayer: player.user_id === this.currentTurnUserId,
-        };
+        return this.transformPlayer(player);
       }
       return null;
     },
     nonSelfPlayers() {
       const selfIndex = this.players.findIndex(player => player.user_id === this.signedInUserId);
       if (selfIndex === -1) {
-        return this.players.map(this.transformPlayer);
+        return this.players.map(this.transformNonSelfPlayer);
       }
 
       const beforeSelf = this.players.slice(0, selfIndex);
       const afterSelf = this.players.slice(selfIndex + 1);
 
-      return [...afterSelf, ...beforeSelf].map(this.transformPlayer);
+      return [...afterSelf, ...beforeSelf].map(this.transformNonSelfPlayer);
     },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
     },
     hasDrawAction() {
       return this.currentTurnActions.some(action => action.action_type === 'draw');
+    },
+    isHandSelectable() {
+      return this.isCurrentUserTurn && this.hasDrawAction;
     },
     stockPileDisabled() {
       return !this.isCurrentUserTurn || this.loading || this.hasDrawAction;
@@ -170,8 +171,13 @@ export default {
     transformPlayer(player) {
       return {
         ...player,
-        hiddenCardCount: player.handSize,
         highlightPlayer: player.user_id === this.currentTurnUserId,
+      };
+    },
+    transformNonSelfPlayer(player) {
+      return {
+        ...this.transformPlayer(player),
+        hiddenCardCount: player.handSize,
       };
     },
     getSelectedCards() {
@@ -219,6 +225,7 @@ export default {
         this.players.forEach(player => {
           const playerData = players.find(p => p.user_id === player.user_id);
           player.handSize = playerData ? playerData.hand.size : 0;
+          player.melds = playerData.melds;
         });
         this.match.stock_pile_size = data.stock_pile_size || 0;
         this.match.discard_pile = data.discard_pile || [];

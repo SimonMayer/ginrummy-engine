@@ -1,0 +1,43 @@
+@mixin card-transform($rotate-y, $translate-y, $translate-z-multiplier) {
+  transform: rotateX(-55deg) translateX(calc(var(--card-width) / -5)) rotateY($rotate-y) translateY($translate-y) translateZ(calc(var(--card-height) * $translate-z-multiplier));
+}
+
+.player-item {
+  background-color: rgba(var(--secondary-color-rgb), 0.2);
+  color: var(--text-color);
+  padding: var(--base-padding);
+  margin: var(--base-margin) 0;
+  border: 1px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+
+  &.highlighted {
+    border: 2px solid var(--primary-color);
+    background-color: var(--tertiary-color);
+  }
+
+  .melds-container {
+    display: flex;
+    gap: var(--base-margin);
+    justify-content: space-between;
+  }
+
+  .hand {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0 var(--card-width);
+    perspective: calc(var(--card-height) * 5);
+
+    .card {
+      transition: transform 0.3s ease;
+
+      &.selectable {
+        cursor: pointer;
+      }
+
+      &:not(:first-child) {
+        margin-left: calc(var(--card-width) * -0.8);
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
+import services.melds as melds_service
 
 def init_round_routes(app):
     @app.route('/rounds/<int:round_id>', methods=['GET'])
@@ -54,12 +55,33 @@ def init_round_routes(app):
             hands_data = cursor.fetchall()
             players = []
             for user_id, hand_id, size in hands_data:
+                melds = melds_service.get_user_melds(cursor, user_id, round_id)
+                melds_list = []
+                for meld in melds:
+                    meld_id = meld[0]
+                    meld_type = meld[1]
+                    cards = melds_service.get_cards_for_meld(cursor, meld_id)
+                    cards_list = [
+                        {
+                            "card_id": card[0],
+                            "rank": card[1],
+                            "suit": card[2],
+                            "point_value": card[3]
+                        }
+                        for card in cards
+                    ]
+                    melds_list.append({
+                        "meld_id": meld_id,
+                        "meld_type": meld_type,
+                        "cards": cards_list
+                    })
                 players.append({
                     "user_id": user_id,
                     "hand": {
                         "hand_id": hand_id,
                         "size": size
-                    }
+                    },
+                    "melds": melds_list
                 })
 
             result = {
@@ -158,7 +180,7 @@ def init_round_routes(app):
 
                 # Append action details
                 for row in result:
-                    if row[4]:  # Ensure action_id is not None
+                    if (row[4]):  # Ensure action_id is not None
                         turn_details["actions"].append({
                             "action_id": row[4],
                             "action_type": row[5],

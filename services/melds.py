@@ -1,4 +1,21 @@
-from services.database import execute_query, fetch_one
+from services.database import execute_query, fetch_one, fetch_all
+
+def get_user_melds(cursor, user_id, round_id):
+    query = """
+    SELECT `meld_id`, `meld_type`
+    FROM `Melds`
+    WHERE `user_id` = %s AND `round_id` = %s
+    """
+    return fetch_all(cursor, query, (user_id, round_id))
+
+def get_cards_for_meld(cursor, meld_id):
+    query = """
+    SELECT `mc`.`card_id`, `c`.`rank`, `c`.`suit`, `c`.`point_value`
+    FROM `Meld_Cards` `mc`
+    INNER JOIN `Cards` `c` ON `mc`.`card_id` = `c`.`card_id`
+    WHERE `mc`.`meld_id` = %s
+    """
+    return fetch_all(cursor, query, (meld_id,))
 
 def create_meld(cursor, round_id, user_id, meld_type):
     query = """
