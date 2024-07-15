@@ -220,12 +220,11 @@ def init_match_action_routes(app):
         card_ids = request.json.get('card_ids')
         if not card_ids or not isinstance(card_ids, list):
             return jsonify({"error": "A list of card IDs is required"}), 400
-        if meld_type != 'set':
-            return jsonify({"error": "Invalid meld type"}), 400
 
         game_config = load_game_config()
         min_meld_size = game_config['minimumMeldSize']
         allow_melds_from_rotation = game_config['allowMeldsFromRotation']
+        run_orders = game_config.get('runOrders', [])
 
         database_config = load_database_config()
         connection = connect_to_database(database_config)
@@ -261,12 +260,31 @@ def init_match_action_routes(app):
 
             card_details = [cards_service.get_card_details(cursor, card_id) for card_id in card_ids]
             card_ranks = [card[0] for card in card_details]
-
-            if len(set(card_ranks)) != 1:
-                return jsonify({"error": "All cards in a set must be of the same rank"}), 400
+            card_suits = [card[1] for card in card_details]
 
             if len(card_ids) < min_meld_size:
                 return jsonify({"error": f"A meld must contain at least {min_meld_size} cards"}), 400
+
+            if meld_type == 'set':
+                if len(set(card_ranks)) != 1:
+                    return jsonify({"error": "All cards in a set must be of the same rank"}), 400
+                meld_description = f"set of '{card_ranks[0]}'s ({', '.join([card[1] for card in card_details])})"
+            elif meld_type == 'run':
+                if len(set(card_suits)) != 1:
+                    return jsonify({"error": "All cards in a run must be of the same suit"}), 400
+
+                valid_run = any(
+                    all(card_ranks[i] in order for i in range(len(card_ranks))) and
+                    sorted(card_ranks, key=lambda x: order.index(x)) == card_ranks
+                    for order in run_orders
+                )
+
+                if not valid_run:
+                    return jsonify({"error": "The cards do not form a valid run"}), 400
+
+                meld_description = f"run of '{', '.join(card_ranks)}' in suit '{card_suits[0]}'"
+            else:
+                return jsonify({"error": "Invalid meld type"}), 400
 
             meld_id = melds_service.create_meld(cursor, round_id, user_id, meld_type)
 
@@ -274,7 +292,6 @@ def init_match_action_routes(app):
                 hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
                 melds_service.add_card_to_meld(cursor, meld_id, card_id, user_id)
 
-            meld_description = f"set of '{card_ranks[0]}'s ({', '.join([card[1] for card in card_details])})"
             actions_service.record_play_meld_action(cursor, turn_id, meld_description)
 
             database_service.commit_transaction(connection)
