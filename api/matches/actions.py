@@ -213,13 +213,15 @@ def init_match_action_routes(app):
         finally:
             database_service.close_resources(cursor, connection)
 
-    @app.route('/matches/<int:match_id>/actions/play_meld', methods=['POST'])
+    @app.route('/matches/<int:match_id>/actions/play_meld/<string:meld_type>', methods=['POST'])
     @jwt_multi_source_auth_handler(permission_type='rest')
-    def play_meld(match_id):
+    def play_meld(match_id, meld_type):
         user_id = authentication_service.get_user_id_from_jwt_identity()
         card_ids = request.json.get('card_ids')
         if not card_ids or not isinstance(card_ids, list):
             return jsonify({"error": "A list of card IDs is required"}), 400
+        if meld_type != 'set':
+            return jsonify({"error": "Invalid meld type"}), 400
 
         game_config = load_game_config()
         min_meld_size = game_config['minimumMeldSize']
@@ -261,12 +263,12 @@ def init_match_action_routes(app):
             card_ranks = [card[0] for card in card_details]
 
             if len(set(card_ranks)) != 1:
-                return jsonify({"error": "All cards in the meld must be of the same rank"}), 400
+                return jsonify({"error": "All cards in a set must be of the same rank"}), 400
 
             if len(card_ids) < min_meld_size:
                 return jsonify({"error": f"A meld must contain at least {min_meld_size} cards"}), 400
 
-            meld_id = melds_service.create_meld(cursor, round_id, user_id, 'set')
+            meld_id = melds_service.create_meld(cursor, round_id, user_id, meld_type)
 
             for card_id in card_ids:
                 hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
