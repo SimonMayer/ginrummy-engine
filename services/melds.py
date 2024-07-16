@@ -10,7 +10,7 @@ def get_user_melds(cursor, user_id, round_id):
 
 def get_cards_for_meld(cursor, meld_id):
     query = """
-    SELECT `mc`.`card_id`, `c`.`rank`, `c`.`suit`, `c`.`point_value`
+    SELECT `mc`.`card_id`, `mc`.`user_id`, `c`.`rank`, `c`.`suit`, `c`.`point_value`
     FROM `Meld_Cards` `mc`
     INNER JOIN `Cards` `c` ON `mc`.`card_id` = `c`.`card_id`
     WHERE `mc`.`meld_id` = %s

@@ -44,9 +44,10 @@ def get_players_data(round_id):
                 cards_list = [
                     {
                         "card_id": card[0],
-                        "rank": card[1],
-                        "suit": card[2],
-                        "point_value": card[3]
+                        "user_id": card[1],
+                        "rank": card[2],
+                        "suit": card[3],
+                        "point_value": card[4]
                     }
                     for card in cards
                 ]
