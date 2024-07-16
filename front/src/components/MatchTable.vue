@@ -1,59 +1,77 @@
 <template>
-  <div class="match-table">
-    <div class="non-self-players-container">
-      <NonSelfMatchPlayer
-          v-for="player in nonSelfPlayers"
-          :key="player.user_id"
-          :ref="'player-' + player.user_id"
-          :username="player.username"
-          :hiddenCardCount="player.hiddenCardCount"
-          :highlightPlayer="player.highlightPlayer"
-          :melds="player.melds"
-          class="non-self-player"
-      />
+  <div class="match-table" v-if="match && match.discard_pile">
+    <div class="game-section full-width">
+      <div class="non-self-players-container">
+        <NonSelfMatchPlayer
+            v-for="player in nonSelfPlayers"
+            :key="player.user_id"
+            :ref="'player-' + player.user_id"
+            :username="player.username"
+            :score="player.score"
+            :hiddenCardCount="player.hiddenCardCount"
+            :highlightPlayer="player.highlightPlayer"
+            class="non-self-player"
+        />
+      </div>
     </div>
-    <div class="pile-container">
-      <StockPile
-          v-if="match && match.stock_pile_size !== undefined"
-          :size="match.stock_pile_size"
-          @click="handleStockPileClick"
-          :disabled="stockPileDisabled"
-      />
-      <DiscardPile
-          v-if="match && match.discard_pile"
-          :visibleCards="match.discard_pile"
-          @top-card-clicked="handleDiscardPileClick"
-      />
-    </div>
-    <div class="buttons-container">
-      <button @click="handlePlaySetClick" :disabled="isPlaySetButtonDisabled()">
-        Play set
-      </button>
-      <button @click="handlePlayRunClick" :disabled="isPlayRunButtonDisabled()">
-        Play run
-      </button>
-      <button @click="handleDiscardClick" :disabled="isDiscardButtonDisabled()">
-        Discard
-      </button>
-    </div>
-    <div class="self-player-container">
-      <SelfMatchPlayer
-          v-if="selfPlayer"
-          :key="selfPlayer.user_id"
-          :ref="'player-self'"
-          :username="selfPlayer.username"
-          :hand="myHand"
-          :highlightPlayer="selfPlayer.highlightPlayer"
-          :melds="selfPlayer.melds"
-          :selectable="isHandSelectable"
-          class="self-player"
-      />
+    <div class="game-section row">
+      <div class="game-column pile-container">
+        <StockPile
+            v-if="match && match.stock_pile_size !== undefined"
+            :size="match.stock_pile_size"
+            @click="handleStockPileClick"
+            :disabled="stockPileDisabled"
+        />
+        <DiscardPile
+            v-if="match && match.discard_pile"
+            :visibleCards="match.discard_pile"
+            @top-card-clicked="handleDiscardPileClick"
+            :disabled="discardPileDisabled"
+        />
+      </div>
+      <div class="game-column">
+        <div class="melds-container">
+          <PlayedMeld
+              v-for="meld in allMelds"
+              :key="meld.meld_id"
+              :id="meld.meld_id"
+              :type="meld.meld_type"
+              :cards="meld.cards"
+          />
+        </div>
+        <div class="buttons-container">
+          <button @click="handlePlaySetClick" :disabled="playSetButtonDisabled">
+            Play set
+          </button>
+          <button @click="handlePlayRunClick" :disabled="playRunButtonDisabled">
+            Play run
+          </button>
+          <button @click="handleDiscardClick" :disabled="discardButtonDisabled">
+            Discard
+          </button>
+        </div>
+        <div class="self-player-container">
+          <SelfMatchPlayer
+              v-if="selfPlayer"
+              :key="selfPlayer.user_id"
+              :ref="'player-self'"
+              :username="selfPlayer.username"
+              :score="selfPlayer.score"
+              :hand="myHand"
+              :highlightPlayer="selfPlayer.highlightPlayer"
+              :selectable="isHandSelectable"
+              class="self-player"
+              @update:selected="forceRefresh()"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import configService from "@/services/configService";
+import PlayedMeld from '@/components/PlayedMeld.vue';
 import StockPile from '@/components/StockPile.vue';
 import DiscardPile from '@/components/DiscardPile.vue';
 import SelfMatchPlayer from '@/components/SelfMatchPlayer.vue';
@@ -66,6 +84,7 @@ import SSEService from '@/services/sseService';
 export default {
   name: 'MatchTable',
   components: {
+    PlayedMeld,
     StockPile,
     DiscardPile,
     SelfMatchPlayer,
@@ -91,6 +110,7 @@ export default {
   },
   data() {
     return {
+      refreshValues: 0,
       allowMeldsFromRotation: null,
       minimumMeldSize: null,
       runOrders: [],
@@ -105,8 +125,10 @@ export default {
     };
   },
   async created() {
+    this.$emit('loading', true);
     await this.loadConfig();
     await this.loadAllData();
+    this.$emit('loading', false);
   },
   beforeUnmount() {
     this.cleanupSSE();
@@ -130,6 +152,11 @@ export default {
 
       return [...afterSelf, ...beforeSelf].map(this.transformNonSelfPlayer);
     },
+    allMelds() {
+      return this.players.reduce((allMelds, player) => {
+        return allMelds.concat(player.melds || []);
+      }, []);
+    },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
     },
@@ -141,21 +168,16 @@ export default {
     },
     stockPileDisabled() {
       return !this.isCurrentUserTurn || this.loading || this.hasDrawAction;
-    }
-  },
-  methods: {
-    hasOneSelectedCard() {
-      return this.getSelectedCardCount() === 1;
     },
-    isDiscardButtonDisabled() {
-      const signedInPlayer = this.$refs['player-self'];
-      if (signedInPlayer) {
-        signedInPlayer.hand; // causes a refresh — otherwise button seems to remain enabled
-      }
-
+    discardPileDisabled() {
+      return !this.isCurrentUserTurn || this.loading || this.hasDrawAction;
+    },
+    discardButtonDisabled() {
+      this.refreshValues; // forces a recompute when refreshValues is changed
       return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || !this.hasOneSelectedCard();
     },
-    isPlaySetButtonDisabled() {
+    playSetButtonDisabled() {
+      this.refreshValues; // forces a recompute when refreshValues is changed
       const selectedCards = this.getSelectedCards();
       const allCardsSelected = selectedCards.length === this.myHand.length;
       const allSameRank = selectedCards.every(card => card.cardData.rank === selectedCards[0].cardData.rank);
@@ -167,7 +189,8 @@ export default {
           !allSameRank ||
           allCardsSelected;
     },
-    isPlayRunButtonDisabled() {
+    playRunButtonDisabled() {
+      this.refreshValues; // forces a recompute when refreshValues is changed
       const selectedCards = this.getSelectedCards();
       const allCardsSelected = selectedCards.length === this.myHand.length;
       const allSameSuit = selectedCards.every(card => card.cardData.suit === selectedCards[0].cardData.suit);
@@ -180,6 +203,25 @@ export default {
           !allSameSuit ||
           allCardsSelected ||
           !isValidRun;
+    },
+    playerScores() {
+      return this.players.map(player => {
+        const score = !player.melds ? 0 : player.melds.reduce((totalScore, meld) => {
+          return totalScore + meld.cards.reduce((sum, card) => {
+            return card.user_id === player.user_id ? sum + card.point_value : sum;
+          }, 0);
+        }, 0);
+        return { user_id: player.user_id, score };
+      });
+    }
+  },
+  methods: {
+    hasOneSelectedCard() {
+      return this.getSelectedCardCount() === 1;
+    },
+    forceRefresh() {
+      // forces refresh of computed values
+      this.refreshValues++;
     },
     doSelectedCardsMakeValidRun() {
       const selectedCards = this.getSelectedCards();
@@ -196,9 +238,11 @@ export default {
       }
     },
     transformPlayer(player) {
+      const playerScore = this.playerScores.find(score => score.user_id === player.user_id);
       return {
         ...player,
         highlightPlayer: player.user_id === this.currentTurnUserId,
+        score: playerScore ? playerScore.score : 0,
       };
     },
     transformNonSelfPlayer(player) {
@@ -384,15 +428,60 @@ export default {
 .match-table {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: var(--base-padding);
+  align-items: stretch;
   gap: var(--base-margin);
+
+  .game-section{
+    &.full-width {
+      flex-basis: 100%;
+      padding: 10px;
+      text-align: center;
+    }
+
+    &.row {
+      display: flex;
+      width: 100%;
+
+      .column {
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+      }
+    }
+  }
 
   .pile-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     gap: var(--base-margin);
+    height: 100%;
+    position: relative;
+
+    .stock-pile-container, .discard-pile {
+      transform-origin: top left;
+      transform: rotate(90deg) translateY(calc(var(--card-height) * -1));
+    }
+
+    .discard-pile {
+      position: absolute;
+      top: calc((var(--card-width) * 1.5) + var(--base-margin));
+      left: calc(2 * var(--base-margin));
+    }
+  }
+
+  .game-column:not(.pile-container) {
+    flex: 1; // Take up remaining space
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--base-margin);
+  }
+
+  .melds-container {
+    display: flex;
+    gap: var(--base-margin);
+    justify-content: center;
   }
 
   .buttons-container {

@@ -1,14 +1,8 @@
 <template>
   <div class="player-item self-player" :class="{ 'highlighted': highlightPlayer }">
-    {{ username }}
-    <div class="melds-container">
-      <PlayedMeld
-          v-for="meld in melds"
-          :key="meld.meld_id"
-          :id="meld.meld_id"
-          :type="meld.meld_type"
-          :cards="meld.cards"
-      />
+    <div class="player-details">
+      <div class="username"><NamePlate :name="username" /></div>
+      <div class="score">Score: {{ score }}</div>
     </div>
     <div class="hand">
       <VisibleCard
@@ -26,20 +20,20 @@
 
 <script>
 import VisibleCard from '@/components/VisibleCard.vue';
-import PlayedMeld from '@/components/PlayedMeld.vue';
+import NamePlate from "@/components/NamePlate.vue";
 
 export default {
   name: 'SelfMatchPlayer',
   components: {
-    VisibleCard,
-    PlayedMeld
+    NamePlate,
+    VisibleCard
   },
   props: {
     username: String,
     hand: Array,
     highlightPlayer: Boolean,
     selectable: Boolean,
-    melds: Array
+    score: Number
   },
   data() {
     return {
@@ -55,6 +49,7 @@ export default {
     },
     handleSelected() {
       this.selectedCards = this.getSelectedCards().map(card => card.cardProp.card_id);
+      this.$emit('update:selected');
     },
     isSelected(card) {
       return this.selectedCards.includes(card.card_id);
@@ -69,8 +64,9 @@ export default {
 @import '@/assets/players';
 
 .hand {
-  height: calc(var(--card-height) * 0.9);
+  height: var(--card-height);
   margin: calc(var(--base-margin) * 2) 0 0 0;
+  padding: 0 var(--card-width);
 
   .card {
     @include card-transform(-40deg, 0deg, 0, 0.2);

@@ -15,17 +15,10 @@
     background-color: var(--tertiary-color);
   }
 
-  .melds-container {
-    display: flex;
-    gap: var(--base-margin);
-    justify-content: space-between;
-  }
-
   .hand {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    padding: 0 var(--card-width);
     perspective: calc(var(--card-height) * 5);
 
     .card {
@@ -38,6 +31,26 @@
       &:not(:first-child) {
         margin-left: calc(var(--card-width) * -0.8);
       }
+    }
+  }
+
+  .player-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--base-padding) 0;
+    margin: var(--base-margin) 0;
+
+    .username {
+      flex: 1;
+      text-align: left;
+      width: 160px;
+    }
+
+    .score {
+      flex: 1;
+      text-align: right;
+      width: 80px
     }
   }
 }

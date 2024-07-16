@@ -43,7 +43,7 @@ export default {
   },
   computed: {
     canStartMatch() {
-      return this.players.length >= this.minPlayers && this.players.length <= this.maxPlayers && !this.match.start_time;
+      return this.match.create_time && this.players.length >= this.minPlayers && this.players.length <= this.maxPlayers && !this.match.start_time;
     }
   },
   data() {

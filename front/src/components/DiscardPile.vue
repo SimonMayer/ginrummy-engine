@@ -4,8 +4,8 @@
         v-for="(card, index) in visibleCards"
         :key="card.card_id"
         :cardProp="card"
-        :class="{ clickable: isTopCard(index) }"
-        :clickable="isTopCard(index)"
+        :class="{ clickable: isCardClickable(index) }"
+        :clickable="isCardClickable(index)"
         @card-clicked="handleClick(index)"
     />
     <div v-if="isEmpty" class="empty-placeholder">
@@ -35,6 +35,10 @@ export default {
         ));
       },
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     isEmpty() {
@@ -45,8 +49,13 @@ export default {
     isTopCard(index) {
       return index === this.visibleCards.length - 1;
     },
+    isCardClickable(index) {
+      return !this.disabled && this.isTopCard(index);
+    },
     handleClick() {
-      this.$emit('top-card-clicked');
+      if (!this.disabled) {
+        this.$emit('top-card-clicked');
+      }
     },
   },
 };
@@ -59,7 +68,7 @@ export default {
 .discard-pile {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   padding: calc(var(--card-height) * 0.1) calc(var(--card-width) * 0.1);
   height: var(--card-height);

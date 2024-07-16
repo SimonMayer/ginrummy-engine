@@ -1,7 +1,6 @@
 <template>
   <div class="match-dashboard">
     <ErrorBox v-if="errorTitle" :title="errorTitle" :message="errorMessage" @close="clearErrorBox" />
-    <h1>Match ID: {{ matchId }}</h1>
     <LoadingIndicator :visible="loading" />
     <MatchContent
         :match="match"

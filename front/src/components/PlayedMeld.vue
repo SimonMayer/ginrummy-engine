@@ -40,7 +40,7 @@ export default {
 @import '@/assets/cards/variables.css';
 @mixin fan-shape($num-cards, $span, $offset-rotation) {
   @for $i from 1 through $num-cards {
-    $rotation: (($i - ($num-cards / 2)) * ($span / $num-cards) + $offset-rotation);
+    $rotation: (($i - calc($num-cards / 2)) * calc($span / $num-cards) + $offset-rotation);
     .card:nth-child(#{$i}) {
       transform: rotate($rotation);
     }
