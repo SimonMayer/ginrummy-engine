@@ -1,88 +1,22 @@
 from flask import request, jsonify
-import mysql.connector
-from utils.config_loader import load_database_config
-from utils.database_connector import connect_to_database
 from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
 import services.melds as melds_service
+import services.rounds as rounds_service
+import services.hands as hands_service
+import services.turns as turns_service
+import services.stock_pile as stock_pile_service
+import services.discard_pile as discard_pile_service
+import services.players as players_service
 
 def init_round_routes(app):
     @app.route('/rounds/<int:round_id>', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_round(round_id):
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
         try:
-            # Get the size of the stock pile
-            cursor.execute(
-                "SELECT COUNT(*) FROM Stock_Pile_Cards WHERE stock_pile_id = (SELECT stock_pile_id FROM Stock_Piles WHERE round_id = %s)",
-                (round_id,)
-            )
-            stock_pile_size = cursor.fetchone()[0]
-
-            # Get the sequenced list of cards in the discard pile
-            cursor.execute(
-                "SELECT c.card_id, c.rank, c.suit, c.point_value "
-                "FROM Discard_Pile_Cards dpc "
-                "JOIN Cards c ON dpc.card_id = c.card_id "
-                "WHERE dpc.discard_pile_id = (SELECT discard_pile_id FROM Discard_Piles WHERE round_id = %s) "
-                "ORDER BY dpc.sequence",
-                (round_id,)
-            )
-            discard_pile = cursor.fetchall()
-            discard_pile_list = [
-                {
-                    "card_id": card[0],
-                    "rank": card[1],
-                    "suit": card[2],
-                    "point_value": card[3]
-                }
-                for card in discard_pile
-            ]
-
-            # Get the hand data for each player
-            cursor.execute(
-                """
-                SELECT h.user_id, MAX(h.hand_id) AS hand_id, COUNT(hc.card_id) AS size
-                FROM Hands h
-                JOIN Hand_Cards hc ON h.hand_id = hc.hand_id
-                WHERE h.round_id = %s
-                GROUP BY h.user_id
-                """,
-                (round_id,)
-            )
-            hands_data = cursor.fetchall()
-            players = []
-            for user_id, hand_id, size in hands_data:
-                melds = melds_service.get_user_melds(cursor, user_id, round_id)
-                melds_list = []
-                for meld in melds:
-                    meld_id = meld[0]
-                    meld_type = meld[1]
-                    cards = melds_service.get_cards_for_meld(cursor, meld_id)
-                    cards_list = [
-                        {
-                            "card_id": card[0],
-                            "rank": card[1],
-                            "suit": card[2],
-                            "point_value": card[3]
-                        }
-                        for card in cards
-                    ]
-                    melds_list.append({
-                        "meld_id": meld_id,
-                        "meld_type": meld_type,
-                        "cards": cards_list
-                    })
-                players.append({
-                    "user_id": user_id,
-                    "hand": {
-                        "hand_id": hand_id,
-                        "size": size
-                    },
-                    "melds": melds_list
-                })
+            stock_pile_size = stock_pile_service.get_stock_pile_size(round_id)
+            discard_pile_list = discard_pile_service.get_discard_pile_list(round_id)
+            players = players_service.get_players_data(round_id)
 
             result = {
                 "round_id": round_id,
@@ -92,108 +26,25 @@ def init_round_routes(app):
             }
 
             return jsonify(result), 200
-        except mysql.connector.Error as err:
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-        finally:
-            cursor.close()
-            connection.close()
 
     @app.route('/rounds/<int:round_id>/my_hand', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_my_hand(round_id):
         user_id = authentication_service.get_user_id_from_jwt_identity()
 
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
-
         try:
-            # Execute SQL query to get the card details from the user's hand
-            cursor.execute(
-                """
-                SELECT c.card_id, c.rank, c.suit, c.point_value
-                FROM Hands h
-                JOIN Hand_Cards hc ON h.hand_id = hc.hand_id
-                JOIN Cards c ON hc.card_id = c.card_id
-                WHERE h.round_id = %s AND h.user_id = %s
-                """,
-                (round_id, user_id)
-            )
-            cards = cursor.fetchall()
-
-            hand_details = [
-                {
-                    "card_id": card[0],
-                    "rank": card[1],
-                    "suit": card[2],
-                    "point_value": card[3]
-                } for card in cards
-            ]
-
+            hand_details = hands_service.get_user_hand(round_id, user_id)
             return jsonify({"user_id": user_id, "round_id": round_id, "cards": hand_details}), 200
-
-        except mysql.connector.Error as err:
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-
-        finally:
-            cursor.close()
-            connection.close()
 
     @app.route('/rounds/<int:round_id>/current_turn', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_current_turn(round_id):
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
-
         try:
-            # Query to find the current turn for the specified round and its actions
-            cursor.execute("""
-                SELECT t.turn_id, t.user_id, t.rotation_number, t.start_time,
-                       a.action_id, a.action_type, a.public_details
-                FROM Turns t
-                LEFT JOIN Actions a ON t.turn_id = a.turn_id
-                WHERE t.round_id = %s AND t.end_time IS NULL
-                ORDER BY t.start_time DESC, a.action_id ASC
-            """, (round_id,))
-            result = cursor.fetchall()
-
-            # Query to find the latest action_id associated with the round
-            cursor.execute("""
-                SELECT MAX(a.action_id)
-                FROM Actions a
-                JOIN Turns t ON a.turn_id = t.turn_id
-                WHERE t.round_id = %s
-            """, (round_id,))
-            latest_action_id = cursor.fetchone()[0] # NULL if no result
-
-            if result:
-                # Extract turn details from the first row
-                turn_details = {
-                    "turn_id": result[0][0],
-                    "user_id": result[0][1],
-                    "rotation_number": result[0][2],
-                    "start_time": result[0][3].strftime('%Y-%m-%d %H:%M:%S'),
-                    "actions": [],
-                    "latest_action_id": latest_action_id
-                }
-
-                # Append action details
-                for row in result:
-                    if (row[4]):  # Ensure action_id is not None
-                        turn_details["actions"].append({
-                            "action_id": row[4],
-                            "action_type": row[5],
-                            "public_details": row[6]
-                        })
-
-                return jsonify(turn_details), 200
-            else:
-                return jsonify({"message": "No current turn found for this round"}), 404
-
-        except mysql.connector.Error as err:
+            turn_details = turns_service.get_current_turn_details(round_id)
+            return jsonify(turn_details), 200 if turn_details else 404
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-
-        finally:
-            cursor.close()
-            connection.close()

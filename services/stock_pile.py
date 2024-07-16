@@ -1,4 +1,6 @@
-from services.database import execute_query, fetch_one
+from utils.config_loader import load_database_config
+from utils.database_connector import connect_to_database
+from services.database import execute_query, fetch_one, close_resources
 
 def get_top_card(cursor, round_id):
     query = """
@@ -23,3 +25,15 @@ def add_cards(cursor, cards, round_id):
         VALUES (%s, %s, %s)
         """
         execute_query(cursor, query, (stock_pile_id, card[0], sequence))
+
+def get_stock_pile_size(round_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor()
+
+    try:
+        query = "SELECT COUNT(*) FROM `Stock_Pile_Cards` WHERE `stock_pile_id` = (SELECT `stock_pile_id` FROM `Stock_Piles` WHERE `round_id` = %s)"
+        stock_pile_size = fetch_one(cursor, query, (round_id,))[0]
+        return stock_pile_size
+    finally:
+        close_resources(cursor, connection)

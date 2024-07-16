@@ -1,4 +1,6 @@
-from services.database import execute_query, fetch_one
+from utils.config_loader import load_database_config
+from utils.database_connector import connect_to_database
+from services.database import execute_query, fetch_one, fetch_all, close_resources
 
 def get_discard_pile(cursor, round_id):
     query = "SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s FOR UPDATE"
@@ -42,3 +44,24 @@ def clear_discard_pile(cursor, round_id):
     WHERE `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)
     """
     execute_query(cursor, query, (round_id,))
+
+def get_discard_pile_list(round_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor()
+
+    try:
+        query = "SELECT `c`.`card_id`, `c`.`rank`, `c`.`suit`, `c`.`point_value` FROM `Discard_Pile_Cards` `dpc` JOIN `Cards` `c` ON `dpc`.`card_id` = `c`.`card_id` WHERE `dpc`.`discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s) ORDER BY `dpc`.`sequence`"
+        discard_pile = fetch_all(cursor, query, (round_id,))
+        discard_pile_list = [
+            {
+                "card_id": card[0],
+                "rank": card[1],
+                "suit": card[2],
+                "point_value": card[3]
+            }
+            for card in discard_pile
+        ]
+        return discard_pile_list
+    finally:
+        close_resources(cursor, connection)

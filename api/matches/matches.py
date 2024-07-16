@@ -1,145 +1,48 @@
 from flask import request, jsonify
 from datetime import datetime
-import mysql.connector
-from utils.config_loader import load_database_config, load_game_config
-from utils.database_connector import connect_to_database
 from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.authentication as authentication_service
-from services.rounds import create_round
+import services.matches as matches_service
+import services.rounds as rounds_service
 
 def init_match_routes(app):
     @app.route('/matches', methods=['POST'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def create_match():
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
         try:
-            cursor.execute(
-                "INSERT INTO Matches (created_by, create_time, start_time, end_time) VALUES (%s, %s, NULL, NULL)",
-                (user_id, datetime.now())
-            )
-            connection.commit()
-            match_id = cursor.lastrowid
+            match_id = matches_service.create_match(user_id)
             return jsonify({"message": "Match created successfully", "match_id": match_id}), 201
-        except mysql.connector.Error as err:
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-        finally:
-            cursor.close()
-            connection.close()
 
     @app.route('/matches', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_user_matches():
         user_id = authentication_service.get_user_id_from_jwt_identity()
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
         try:
-            cursor.execute(
-                "SELECT match_id, created_by, create_time, start_time, end_time FROM Matches WHERE created_by = %s",
-                (user_id,)
-            )
-            matches = cursor.fetchall()
-            formatted_matches = [
-                {
-                    "match_id": match[0],
-                    "created_by": match[1],
-                    "create_time": match[2].isoformat() if match[2] else None,
-                    "start_time": match[3].isoformat() if match[3] else None,
-                    "end_time": match[4].isoformat() if match[4] else None
-                }
-                for match in matches
-            ]
-            return jsonify(formatted_matches), 200
-        except mysql.connector.Error as err:
+            matches = matches_service.get_user_matches(user_id)
+            return jsonify(matches), 200
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-        finally:
-            cursor.close()
-            connection.close()
 
     @app.route('/matches/<int:match_id>', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_match(match_id):
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
         try:
-            cursor.execute(
-                "SELECT m.match_id, m.created_by, m.create_time, m.start_time, m.end_time, r.round_id AS current_round_id "
-                "FROM Matches m "
-                "LEFT JOIN Rounds r ON m.match_id = r.match_id AND r.end_time IS NULL "
-                "WHERE m.match_id = %s",
-                (match_id,)
-            )
-            match = cursor.fetchone()
+            match = matches_service.get_match(match_id)
             if match:
-                formatted_match = {
-                    "match_id": match[0],
-                    "created_by": match[1],
-                    "create_time": match[2].isoformat() if match[2] else None,
-                    "start_time": match[3].isoformat() if match[3] else None,
-                    "end_time": match[4].isoformat() if match[4] else None,
-                    "current_round_id": match[5]
-                }
-                return jsonify(formatted_match), 200
+                return jsonify(match), 200
             else:
                 return jsonify({"error": "Match not found"}), 404
-        except mysql.connector.Error as err:
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-        finally:
-            cursor.close()
-            connection.close()
 
     @app.route('/matches/<int:match_id>/start', methods=['POST'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def start_match(match_id):
-        database_config = load_database_config()
-        connection = connect_to_database(database_config)
-        cursor = connection.cursor()
         try:
-            # Check if the match has already started
-            cursor.execute(
-                "SELECT start_time FROM Matches WHERE match_id = %s",
-                (match_id,)
-            )
-            match = cursor.fetchone()
-            if not match:
-                return jsonify({"error": "Match not found"}), 404
-            if match[0] is not None:
-                return jsonify({"error": "Match has already started"}), 400
-
-            game_config = load_game_config()
-
-            # Get the number of players in the match
-            cursor.execute(
-                "SELECT user_id FROM Match_Players WHERE match_id = %s ORDER BY user_id",
-                (match_id,)
-            )
-            players = cursor.fetchall()
-            player_count = len(players)
-
-            # Check if the number of players is within the allowed range
-            min_players = game_config['players']['minimumAllowed']
-            max_players = game_config['players']['maximumAllowed']
-            if player_count < min_players or player_count > max_players:
-                return jsonify({"error": f"Number of players must be between {min_players} and {max_players}"}), 400
-
-            # Start the match and create the first round
-            current_time = datetime.now()
-            cursor.execute(
-                "UPDATE Matches SET start_time = %s WHERE match_id = %s",
-                (current_time, match_id)
-            )
-            connection.commit()
-
-            # Create the first round
-            create_round(match_id, players)
-
+            matches_service.start_match(match_id)
             return jsonify({"message": "Match started successfully"}), 200
-        except mysql.connector.Error as err:
+        except Exception as err:
             return jsonify({"error": str(err)}), 400
-        finally:
-            cursor.close()
-            connection.close()

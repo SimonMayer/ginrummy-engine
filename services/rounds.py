@@ -5,7 +5,6 @@ from utils.database_connector import connect_to_database
 from services.database import (
     execute_query,
     fetch_one,
-    fetch_all,
     start_transaction,
     commit_transaction,
     rollback_transaction,
@@ -27,7 +26,6 @@ def create_round(match_id, players):
         )
         round_id = cursor.lastrowid
 
-        # Create discard and stock piles
         cursor = execute_query(
             cursor,
             "INSERT INTO `Discard_Piles` (`round_id`) VALUES (%s)",
@@ -40,7 +38,7 @@ def create_round(match_id, players):
         )
         stock_pile_id = cursor.lastrowid
 
-        # Generate and shuffle cards
+        # todo load this from config
         ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
         suits = ['Spades', 'Hearts', 'Clubs', 'Diamonds']
         cards = [{'rank': rank, 'suit': suit} for rank in ranks for suit in suits]
@@ -49,7 +47,6 @@ def create_round(match_id, players):
         game_config = load_game_config()
         points_by_rank = game_config['pointsByRank']
 
-        # Add cards to the Cards table and get their ids
         for card in cards:
             point_value = points_by_rank.get(card['rank'], 0)
             cursor = execute_query(
@@ -58,9 +55,8 @@ def create_round(match_id, players):
                 (card['rank'], card['suit'], point_value)
             )
             card_id = cursor.lastrowid
-            card['card_id'] = card_id  # Store the card_id for later use
+            card['card_id'] = card_id
 
-        # Create hands for each player and distribute cards
         hand_size = game_config['handSize']
         for player in players:
             user_id = player[0]
@@ -79,7 +75,6 @@ def create_round(match_id, players):
                     (hand_id, card['card_id'], sequence + 1)
                 )
 
-        # Add the remaining shuffled cards to the stock pile
         for sequence, card in enumerate(cards, start=1):
             cursor = execute_query(
                 cursor,
@@ -87,7 +82,6 @@ def create_round(match_id, players):
                 (stock_pile_id, card['card_id'], sequence)
             )
 
-        # Select a random player to start the first turn
         first_player = random.choice(players)[0]
         cursor = execute_query(
             cursor,
@@ -98,6 +92,7 @@ def create_round(match_id, players):
         commit_transaction(connection)
         return round_id
     except mysql.connector.Error as err:
+        rollback_transaction(connection)
         handle_error(connection, err)
         raise
     finally:

@@ -1,4 +1,6 @@
-from services.database import execute_query, fetch_one
+from utils.config_loader import load_database_config
+from utils.database_connector import connect_to_database
+from services.database import fetch_all, close_resources, execute_query, fetch_one
 from services.cards import get_card_details
 
 def validate_no_draw_this_turn(cursor, turn_id):
@@ -49,3 +51,28 @@ def record_play_meld_action(cursor, turn_id, meld_description):
     VALUES (%s, 'play_meld', %s, %s)
     """
     execute_query(cursor, query, (turn_id, f"Played a {meld_description}", f"Played a {meld_description}"))
+
+def get_new_actions(match_id, latest_action_id=None):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor(buffered=True)
+
+    try:
+        query = """
+            SELECT `a`.`action_id`, `a`.`turn_id`, `a`.`action_type`, `a`.`public_details`
+            FROM `Actions` `a`
+            JOIN `Turns` `t` ON `a`.`turn_id` = `t`.`turn_id`
+            JOIN `Rounds` `r` ON `t`.`round_id` = `r`.`round_id`
+            WHERE `r`.`match_id` = %s
+        """
+        params = [match_id]
+
+        if latest_action_id is not None:
+            query += " AND `a`.`action_id` > %s"
+            params.append(latest_action_id)
+
+        query += " ORDER BY `a`.`action_id` ASC"
+        new_actions = fetch_all(cursor, query, params)
+        return new_actions
+    finally:
+        close_resources(cursor, connection)
