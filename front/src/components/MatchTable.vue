@@ -188,36 +188,36 @@ export default {
     },
     discardButtonDisabled() {
       this.refreshValues; // forces a recompute when refreshValues is changed
-      return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || this.selectedMeld || !this.hasOneSelectedCard();
+      return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || this.selectedMeld || !this.hasOneHandCardSelected();
     },
     playSetButtonDisabled() {
       this.refreshValues; // forces a recompute when refreshValues is changed
-      const selectedCards = this.getSelectedCards();
-      const allCardsSelected = selectedCards.length === this.myHand.length;
-      const allSameRank = selectedCards.every(card => card.cardData.rank === selectedCards[0].cardData.rank);
+      const selectedHandCards = this.getSelectedHandCards();
+      const allHandCardsSelected = selectedHandCards.length === this.myHand.length;
+      const allSameRank = selectedHandCards.every(card => card.cardData.rank === selectedHandCards[0].cardData.rank);
 
       return !this.isCurrentUserTurn ||
           this.loading ||
           !this.hasDrawAction ||
           this.selectedMeld ||
-          !(selectedCards.length >= this.minimumMeldSize) ||
+          !(selectedHandCards.length >= this.minimumMeldSize) ||
           !allSameRank ||
-          allCardsSelected;
+          allHandCardsSelected;
     },
     playRunButtonDisabled() {
       this.refreshValues; // forces a recompute when refreshValues is changed
-      const selectedCards = this.getSelectedCards();
-      const allCardsSelected = selectedCards.length === this.myHand.length;
-      const allSameSuit = selectedCards.every(card => card.cardData.suit === selectedCards[0].cardData.suit);
-      const isValidRun = this.doSelectedCardsMakeValidRun();
+      const selectedHandCards = this.getSelectedHandCards();
+      const allHandCardsSelected = selectedHandCards.length === this.myHand.length;
+      const allSameSuit = selectedHandCards.every(card => card.cardData.suit === selectedHandCards[0].cardData.suit);
+      const isValidRun = this.doSelectedHandCardsMakeValidRun();
 
       return !this.isCurrentUserTurn ||
           this.loading ||
           !this.hasDrawAction ||
           this.selectedMeld ||
-          !(selectedCards.length >= this.minimumMeldSize) ||
+          !(selectedHandCards.length >= this.minimumMeldSize) ||
           !allSameSuit ||
-          allCardsSelected ||
+          allHandCardsSelected ||
           !isValidRun;
     },
     extendMeldButtonDisabled() {
@@ -226,8 +226,8 @@ export default {
           this.loading ||
           !this.hasDrawAction ||
           !this.selectedMeld ||
-          this.getSelectedCards().length === 0 ||
-          this.getSelectedCards().length === this.myHand.length ||
+          this.getSelectedHandCards().length === 0 ||
+          this.getSelectedHandCards().length === this.myHand.length ||
           !this.isValidMeldExtension();
     },
     playerScores() {
@@ -249,16 +249,16 @@ export default {
     }
   },
   methods: {
-    hasOneSelectedCard() {
-      return this.getSelectedCardCount() === 1;
+    hasOneHandCardSelected() {
+      return this.getSelectedHandCardCount() === 1;
     },
     forceRefresh() {
       // forces refresh of computed values
       this.refreshValues++;
     },
-    doSelectedCardsMakeValidRun() {
-      const selectedCards = this.getSelectedCards();
-      const cardRanks = selectedCards.map(card => card.cardData.rank);
+    doSelectedHandCardsMakeValidRun() {
+      const selectedHandCards = this.getSelectedHandCards();
+      const cardRanks = selectedHandCards.map(card => card.cardData.rank);
 
       return this.runOrders.some(order => {
         const indices = cardRanks.map(rank => order.indexOf(rank)).sort((a, b) => a - b);
@@ -266,18 +266,18 @@ export default {
       });
     },
     isValidMeldExtension() {
-      const selectedCards = this.getSelectedCards();
-      const noCardsSelected = selectedCards.length === 0;
-      const allCardsSelected = selectedCards.length === this.myHand.length;
+      const selectedHandCards = this.getSelectedHandCards();
+      const noHandCardsSelected = selectedHandCards.length === 0;
+      const allHandCardsSelected = selectedHandCards.length === this.myHand.length;
 
-      if (!this.selectedMeld || noCardsSelected || allCardsSelected) return false;
+      if (!this.selectedMeld || noHandCardsSelected || allHandCardsSelected) return false;
 
       const meldCards = this.selectedMeld.cards.map(card => ({
         rank: card.rank,
         suit: card.suit
       }));
-      const handCards = selectedCards.map(card => card.cardData);
-      const allCards = [...meldCards, ...handCards];
+      const processedSelectedHandCards = selectedHandCards.map(card => card.cardData);
+      const allCards = [...meldCards, ...processedSelectedHandCards];
 
       const allSameRank = allCards.every(card => card.rank === allCards[0].rank);
       const allSameSuit = allCards.every(card => card.suit === allCards[0].suit);
@@ -308,7 +308,7 @@ export default {
         hiddenCardCount: player.handSize,
       };
     },
-    getSelectedCards() {
+    getSelectedHandCards() {
       const signedInPlayer = this.$refs['player-self'];
       if (!signedInPlayer) {
         return [];
@@ -316,8 +316,8 @@ export default {
 
       return signedInPlayer.getSelectedCards();
     },
-    getSelectedCardCount() {
-      return this.getSelectedCards().length;
+    getSelectedHandCardCount() {
+      return this.getSelectedHandCards().length;
     },
     handleMeldClick(meldId) {
       const meld = this.allMelds.find(meld => meld.meld_id === meldId);
@@ -401,10 +401,10 @@ export default {
       }
     },
     async handleDiscardClick() {
-      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.hasOneSelectedCard()) {
+      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.hasOneHandCardSelected()) {
         this.$emit('loading', true);
         try {
-          const selectedCard = this.getSelectedCards()[0];
+          const selectedCard = this.getSelectedHandCards()[0];
           const cardId = selectedCard.cardData.card_id;
 
           await turnsService.discardCard(this.matchId, cardId);
@@ -417,11 +417,11 @@ export default {
       }
     },
     async handlePlaySetClick() {
-      if (this.getSelectedCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
+      if (this.getSelectedHandCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
         this.$emit('loading', true);
         try {
-          const selectedCards = this.getSelectedCards();
-          const cardIds = selectedCards.map(card => card.cardData.card_id);
+          const selectedHandCards = this.getSelectedHandCards();
+          const cardIds = selectedHandCards.map(card => card.cardData.card_id);
           await turnsService.playMeld(this.matchId, cardIds, 'set');
           this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
         } catch (error) {
@@ -432,11 +432,11 @@ export default {
       }
     },
     async handlePlayRunClick() {
-      if (this.getSelectedCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
+      if (this.getSelectedHandCardCount() >= this.minimumMeldSize && this.rotationNumber >= this.allowMeldsFromRotation) {
         this.$emit('loading', true);
         try {
-          const selectedCards = this.getSelectedCards();
-          const cardIds = selectedCards.map(card => card.cardData.card_id);
+          const selectedHandCards = this.getSelectedHandCards();
+          const cardIds = selectedHandCards.map(card => card.cardData.card_id);
           await turnsService.playMeld(this.matchId, cardIds, 'run');
           this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
         } catch (error) {
@@ -447,11 +447,11 @@ export default {
       }
     },
     async handleExtendMeldClick() {
-      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.selectedMeld && this.getSelectedCards().length > 0) {
+      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.selectedMeld && this.getSelectedHandCards().length > 0) {
         this.$emit('loading', true);
         try {
-          const selectedCards = this.getSelectedCards();
-          const cardIds = selectedCards.map(card => card.cardData.card_id);
+          const selectedHandCards = this.getSelectedHandCards();
+          const cardIds = selectedHandCards.map(card => card.cardData.card_id);
           await turnsService.extendMeld(this.matchId, this.selectedMeld.meld_id, cardIds);
           this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
         } catch (error) {
