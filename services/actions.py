@@ -52,6 +52,15 @@ def record_play_meld_action(cursor, turn_id, meld_description):
     """
     execute_query(cursor, query, (turn_id, f"Played a {meld_description}", f"Played a {meld_description}"))
 
+def record_extend_meld_action(cursor, turn_id, meld_id, card_ids):
+    card_details = [get_card_details(cursor, card_id) for card_id in card_ids]
+    card_info = ", ".join([f"{rank} of {suit}" for rank, suit in card_details])
+    query = """
+    INSERT INTO `Actions` (`turn_id`, `action_type`, `full_details`, `public_details`)
+    VALUES (%s, 'extend_meld', CONCAT('Extended meld ', %s, ' with cards: ', %s), CONCAT('Extended meld with cards: ', %s))
+    """
+    execute_query(cursor, query, (turn_id, meld_id, card_info, card_info))
+
 def get_new_actions(match_id, latest_action_id=None):
     database_config = load_database_config()
     connection = connect_to_database(database_config)

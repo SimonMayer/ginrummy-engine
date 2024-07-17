@@ -40,7 +40,7 @@ def get_players_data(round_id):
             for meld in melds:
                 meld_id = meld[0]
                 meld_type = meld[1]
-                cards = melds_service.get_cards_for_meld(cursor, meld_id)
+                cards = melds_service.get_cards_for_meld(cursor, round_id, meld_id)
                 cards_list = [
                     {
                         "card_id": card[0],

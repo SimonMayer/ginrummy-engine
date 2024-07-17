@@ -79,7 +79,7 @@ def create_database_and_tables(connection, database_name):
                 CREATE TABLE IF NOT EXISTS `Actions` (
                     `action_id` INT AUTO_INCREMENT PRIMARY KEY,
                     `turn_id` INT NOT NULL,
-                    `action_type` ENUM('draw', 'play_meld', 'discard') NOT NULL,
+                    `action_type` ENUM('draw', 'play_meld', 'extend_meld', discard') NOT NULL,
                     `full_details` VARCHAR(255),
                     `public_details` VARCHAR(255),
                     FOREIGN KEY (`turn_id`) REFERENCES `Turns`(`turn_id`)
