@@ -1,5 +1,5 @@
 <template>
-  <div :class="['meld', type]">
+  <div :class="['meld', type, { 'selected': selected, 'selectable': selectable }]" @click="handleClick">
     <VisibleCard
         v-for="card in cards"
         :key="card.card_id"
@@ -30,6 +30,21 @@ export default {
     type: {
       type: String,
       required: true
+    },
+    selected: {
+      type: Boolean,
+      default: false
+    },
+    selectable: {
+      type: Boolean,
+      default: false
+    }
+  },
+  methods: {
+    handleClick() {
+      if (this.selectable) {
+        this.$emit('select:meld', this.id);
+      }
     }
   }
 };
@@ -52,6 +67,16 @@ export default {
   display: flex;
   justify-content: right;
   align-items: flex-start;
+
+  &.selected {
+    .card {
+      filter: var(--card-selected-filter);
+    }
+  }
+
+  &.selectable {
+    cursor: pointer;
+  }
 
   .card {
     position: absolute;

@@ -1,5 +1,8 @@
 <template>
-  <div class="player-item self-player" :class="{ 'highlighted': highlightPlayer }">
+  <div class="player-item self-player">
+    <div v-if="highlightPlayer" class="highlight-container">
+      <div :class="{ 'highlight': highlightPlayer }"></div>
+    </div>
     <div class="player-details">
       <div class="username"><NamePlate :name="username" /></div>
       <div class="score">Score: {{ score }}</div>
@@ -62,6 +65,10 @@ export default {
 @import '@/assets/globalVariables';
 @import '@/assets/cards/variables.css';
 @import '@/assets/players';
+
+.highlight-container {
+  justify-content: left;
+}
 
 .hand {
   height: var(--card-height);

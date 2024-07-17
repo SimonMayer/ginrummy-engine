@@ -40,7 +40,12 @@ def get_user_matches(user_id):
     try:
         cursor = execute_query(
             cursor,
-            "SELECT `match_id`, `created_by`, `create_time`, `start_time`, `end_time` FROM `Matches` WHERE `created_by` = %s",
+            """
+            SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`
+            FROM `Matches` `m`
+            JOIN `Match_Players` `mp` ON `m`.`match_id` = `mp`.`match_id`
+            WHERE `mp`.`user_id` = %s
+            """,
             (user_id,)
         )
         matches = fetch_all(cursor, None, None)

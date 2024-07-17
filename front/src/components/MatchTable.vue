@@ -37,6 +37,9 @@
               :id="meld.meld_id"
               :type="meld.meld_type"
               :cards="meld.cards"
+              :selected="selectedMeldId === meld.meld_id"
+              :selectable="isMeldSelectable"
+              @select:meld="handleMeldClick(meld.meld_id)"
           />
         </div>
         <div class="buttons-container">
@@ -122,6 +125,7 @@ export default {
       sseService: null,
       currentTurnId: null,
       latestActionId: null,
+      selectedMeld: null,
     };
   },
   async created() {
@@ -157,6 +161,9 @@ export default {
         return allMelds.concat(player.melds || []);
       }, []);
     },
+    selectedMeldId() {
+      return this.selectedMeld ? this.selectedMeld.meld_id : null;
+    },
     isCurrentUserTurn() {
       return this.currentTurnUserId === this.signedInUserId;
     },
@@ -166,6 +173,10 @@ export default {
     isHandSelectable() {
       return this.isCurrentUserTurn && this.hasDrawAction;
     },
+    isMeldSelectable() {
+      const selfPlayer = this.players.find(player => player.user_id === this.signedInUserId);
+      return this.isCurrentUserTurn && this.hasDrawAction && selfPlayer && selfPlayer.melds && selfPlayer.melds.length > 0;
+    },
     stockPileDisabled() {
       return !this.isCurrentUserTurn || this.loading || this.hasDrawAction;
     },
@@ -174,7 +185,7 @@ export default {
     },
     discardButtonDisabled() {
       this.refreshValues; // forces a recompute when refreshValues is changed
-      return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || !this.hasOneSelectedCard();
+      return !this.isCurrentUserTurn || this.loading || !this.hasDrawAction || this.selectedMeld || !this.hasOneSelectedCard();
     },
     playSetButtonDisabled() {
       this.refreshValues; // forces a recompute when refreshValues is changed
@@ -185,6 +196,7 @@ export default {
       return !this.isCurrentUserTurn ||
           this.loading ||
           !this.hasDrawAction ||
+          this.selectedMeld ||
           !(selectedCards.length >= this.minimumMeldSize) ||
           !allSameRank ||
           allCardsSelected;
@@ -199,6 +211,7 @@ export default {
       return !this.isCurrentUserTurn ||
           this.loading ||
           !this.hasDrawAction ||
+          this.selectedMeld ||
           !(selectedCards.length >= this.minimumMeldSize) ||
           !allSameSuit ||
           allCardsSelected ||
@@ -261,6 +274,14 @@ export default {
     },
     getSelectedCardCount() {
       return this.getSelectedCards().length;
+    },
+    handleMeldClick(meldId) {
+      const meld = this.allMelds.find(meld => meld.meld_id === meldId);
+      if (!meld || (this.selectedMeldId === meldId)) {
+        this.selectedMeld = null;
+      } else {
+        this.selectedMeld = meld;
+      }
     },
     async loadMatchDetails() {
       try {

@@ -9,7 +9,7 @@
     --corner-width: calc(var(--card-base-size) * 20);
     --card-corner-indentation-size: calc(var(--card-base-size) * 4);
     --card-pattern-indentation-size: calc(var(--card-base-size) * 20);
-    --card-selected-raise-distance: calc(var(--card-base-size) * 20);
+    --card-selected-filter: invert(80%) brightness(1.5) hue-rotate(180deg);
     --card-background-color: #fffef5;
     --card-edge-color: #eee;
     --card-suit-spades-color: #282828;

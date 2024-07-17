@@ -10,9 +10,17 @@
   border: 1px solid var(--secondary-color);
   border-radius: var(--border-radius);
 
-  &.highlighted {
-    border: 2px solid var(--primary-color);
-    background-color: var(--tertiary-color);
+  .highlight-container {
+    display: flex;
+    height: 22px;
+
+    .highlight {
+      width: 20px;
+      height: 20px;
+      background-color: var(--tertiary-color);
+      border: 1px solid var(--primary-color);
+      border-radius: 50%;
+    }
   }
 
   .hand {

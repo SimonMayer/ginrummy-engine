@@ -109,43 +109,47 @@ export default {
 @import '@/assets/cards/variables.css';
 @import '@/assets/cards/styles.css';
 
-.card-content {
-  position: relative;
-  height: var(--card-height);
-  border: 1px solid var(--card-edge-color);
-  border-radius: var(--card-border-radius);
-  background-color: var(--card-background-color);
-  text-align: center;
+.card {
+  user-select: none;
 
-  .top-left {
-    top: var(--card-corner-indentation-size);
-    left: 0;
+  &.selected {
+    filter: var(--card-selected-filter);
   }
 
-  .bottom-right {
-    bottom: var(--card-corner-indentation-size);
-    right: 0;
-    transform: rotate(180deg);
-  }
+  .card-content {
+    position: relative;
+    height: var(--card-height);
+    border: 1px solid var(--card-edge-color);
+    border-radius: var(--card-border-radius);
+    background-color: var(--card-background-color);
+    text-align: center;
 
-  &.spades {
-    color: var(--card-suit-spades-color);
-  }
+    .top-left {
+      top: var(--card-corner-indentation-size);
+      left: 0;
+    }
 
-  &.hearts {
-    color: var(--card-suit-hearts-color);
-  }
+    .bottom-right {
+      bottom: var(--card-corner-indentation-size);
+      right: 0;
+      transform: rotate(180deg);
+    }
 
-  &.clubs {
-    color: var(--card-suit-clubs-color);
-  }
+    &.spades {
+      color: var(--card-suit-spades-color);
+    }
 
-  &.diamonds {
-    color: var(--card-suit-diamonds-color);
-  }
+    &.hearts {
+      color: var(--card-suit-hearts-color);
+    }
 
-  .selected {
-    transform: translateY(calc(var(--card-selected-raise-distance) * -1));
+    &.clubs {
+      color: var(--card-suit-clubs-color);
+    }
+
+    &.diamonds {
+      color: var(--card-suit-diamonds-color);
+    }
   }
 }
 </style>

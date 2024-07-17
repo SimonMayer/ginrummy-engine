@@ -1,11 +1,14 @@
 <template>
-  <div class="player-item non-self-player" :class="{ 'highlighted': highlightPlayer }">
+  <div class="player-item non-self-player">
     <div class="hand">
       <HiddenCard v-for="n in hiddenCardCount" :key="n" class="card" />
     </div>
     <div class="player-details">
       <div class="username"><NamePlate :name="username" /></div>
       <div class="score">Score: {{ score }}</div>
+    </div>
+    <div class="highlight-container">
+      <div :class="{ 'highlight': highlightPlayer }"></div>
     </div>
   </div>
 </template>
@@ -36,6 +39,10 @@ export default {
 
 .non-self-player {
   margin: calc(var(--card-height) / 2) 0 0 0;
+
+  .highlight-container {
+    justify-content: right;
+  }
 
   .hand {
     height: 0;
