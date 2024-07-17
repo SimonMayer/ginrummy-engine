@@ -46,10 +46,6 @@ export default {
       type: Boolean,
       default: false
     },
-    clickable: {
-      type: Boolean,
-      default: false
-    },
     selectable: {
       type: Boolean,
       default: false
@@ -80,15 +76,20 @@ export default {
   },
   methods: {
     handleClick() {
-      if (this.clickable) {
-        this.$emit('card-clicked');
-      } else if (this.selectable) {
+      if (this.selectable) {
         this.toggleSelection();
       }
     },
+    emitUpdateSelected() {
+      this.$emit('update:selected', this.cardData.card_id, this.isSelected);
+    },
     toggleSelection() {
       this.isSelected = !this.isSelected;
-      this.$emit('update:selected', this.cardData.card_id, this.isSelected);
+      this.emitUpdateSelected();
+    },
+    unselect() {
+      this.isSelected = false;
+      this.emitUpdateSelected();
     },
     isCardSelected() {
       return this.isSelected;
@@ -111,6 +112,7 @@ export default {
 
 .card {
   user-select: none;
+  transition: transform 0.3s ease, filter 0.3s ease;
 
   &.selected {
     filter: var(--card-selected-filter);

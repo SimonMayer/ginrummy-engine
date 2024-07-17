@@ -34,6 +34,32 @@ def get_all_cards(cursor, round_id):
     """
     return fetch_all(cursor, query, (round_id,))
 
+def get_cards_upwards_from(cursor, round_id, discard_pile_card_ids):
+    # First query to find the minimum sequence of the provided card IDs
+    query_min_sequence = """
+    SELECT `dp`.`discard_pile_id`, `dpc`.`sequence` FROM `Discard_Pile_Cards` `dpc`
+    INNER JOIN `Discard_Piles` `dp` ON `dpc`.`discard_pile_id` = `dp`.`discard_pile_id`
+    WHERE `dp`.`round_id` = %s AND `dpc`.`card_id` IN ({})
+    ORDER BY `dpc`.`sequence` ASC LIMIT 1
+    """
+    formatted_query_min_sequence = query_min_sequence.format(','.join(['%s'] * len(discard_pile_card_ids)))
+    min_sequence_result = fetch_one(cursor, formatted_query_min_sequence, (round_id, *discard_pile_card_ids))
+
+    if not min_sequence_result:
+        return []
+
+    discard_pile_id = min_sequence_result[0]
+    min_sequence = min_sequence_result[1]
+
+    # Second query to get all cards with sequence >= min_sequence
+    query_cards = """
+    SELECT `card_id` FROM `Discard_Pile_Cards`
+    WHERE `discard_pile_id` = %s
+    AND `sequence` >= %s
+    ORDER BY `sequence` DESC FOR UPDATE;
+    """
+    return fetch_all(cursor, query_cards, (discard_pile_id, min_sequence))
+
 def remove_card(cursor, card_id, round_id):
     query = "DELETE FROM `Discard_Pile_Cards` WHERE `card_id` = %s AND `discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s)"
     execute_query(cursor, query, (card_id, round_id))

@@ -35,6 +35,17 @@ def record_draw_from_discard_pile_action(cursor, turn_id, card_id):
     """
     execute_query(cursor, query, (turn_id, card_rank, card_suit, card_rank, card_suit))
 
+def record_draw_multiple_from_discard_pile_action(cursor, turn_id, count, bottom_card_details):
+    bottom_card_rank, bottom_card_suit = bottom_card_details
+    full_details = f"{count} cards drawn, starting from {bottom_card_rank} of {bottom_card_suit}"
+    public_details = full_details
+
+    query = """
+    INSERT INTO `Actions` (`turn_id`, `action_type`, `full_details`, `public_details`)
+    VALUES (%s, 'draw', %s, %s)
+    """
+    execute_query(cursor, query, (turn_id, full_details, public_details))
+
 def record_discard_action(cursor, turn_id, card_id):
     card_details = get_card_details(cursor, card_id)
     card_rank, card_suit = card_details

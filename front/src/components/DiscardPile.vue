@@ -1,12 +1,13 @@
 <template>
   <div class="discard-pile">
     <VisibleCard
-        v-for="(card, index) in visibleCards"
+        ref="visibleCards"
+        v-for="card in visibleCards"
         :key="card.card_id"
         :cardProp="card"
-        :class="{ clickable: isCardClickable(index) }"
-        :clickable="isCardClickable(index)"
-        @card-clicked="handleClick(index)"
+        :class="{ selectable: isCardSelectable(card), selected: isSelected(card) }"
+        :selectable="isCardSelectable(card)"
+        @update:selected="handleSelected"
     />
     <div v-if="isEmpty" class="empty-placeholder">
       <div>Discarded cards will appear here</div>
@@ -16,12 +17,14 @@
 
 <script>
 import VisibleCard from '@/components/VisibleCard.vue';
+import visibleCardSelectionMixin from '@/mixins/visibleCardSelectionMixin';
 
 export default {
   name: 'DiscardPile',
   components: {
     VisibleCard,
   },
+  mixins: [visibleCardSelectionMixin],
   props: {
     visibleCards: {
       type: Array,
@@ -35,9 +38,9 @@ export default {
         ));
       },
     },
-    disabled: {
-      type: Boolean,
-      default: false,
+    selectableCards: {
+      type: Array,
+      default: () => [],
     },
   },
   computed: {
@@ -46,18 +49,10 @@ export default {
     }
   },
   methods: {
-    isTopCard(index) {
-      return index === this.visibleCards.length - 1;
-    },
-    isCardClickable(index) {
-      return !this.disabled && this.isTopCard(index);
-    },
-    handleClick() {
-      if (!this.disabled) {
-        this.$emit('top-card-clicked');
-      }
-    },
-  },
+    isCardSelectable(card) {
+      return this.selectableCards.includes(card);
+    }
+  }
 };
 </script>
 
@@ -73,26 +68,32 @@ export default {
   padding: calc(var(--card-height) * 0.1) calc(var(--card-width) * 0.1);
   height: var(--card-height);
 
-  .clickable {
+  .selectable {
     cursor: pointer;
   }
 
   @for $i from 1 through 52 {
     .card:nth-child(#{$i}) {
+      $rotate: rotate(0);
       @if $i == 1 {
-        transform: rotate(0.6deg);
+        $rotate: rotate(0.6deg);
       } @else if $i % 5 == 0 {
-        transform: rotate(-0.3deg);
+        $rotate: rotate(-0.3deg);
       } @else if $i % 3 == 0 {
-        transform: rotate(-1.2deg);
+        $rotate: rotate(-1.2deg);
       } @else if $i % 2 == 0 {
-        transform: rotate(-0.8deg);
+        $rotate: rotate(-0.8deg);
       } @else if $i % 2 != 0 {
-        transform: rotate(1deg);
+        $rotate: rotate(1deg);
       }
+      transform: $rotate;
 
       @if $i != 1 {
         margin-left: calc(var(--card-width) * -0.85);
+      }
+
+      &.selected {
+        transform: $rotate translateY(calc(var(--card-height) * -0.2));
       }
     }
   }
@@ -110,6 +111,7 @@ export default {
     color: var(--disabled-color);
 
     div {
+      transform: rotate(-90deg);
       margin: var(--base-margin);
     }
   }

@@ -35,6 +35,10 @@ def init_route(app):
             turn_id = turn[0]
             round_id = turn[2]
 
+            validation_error = actions_service.validate_draw_this_turn(cursor, turn_id)
+            if validation_error:
+                return jsonify(validation_error[0]), validation_error[1]
+
             user_melds = melds_service.get_user_melds(cursor, user_id, round_id)
             if not user_melds:
                 return jsonify({"error": "User must have played a meld this round to extend a meld"}), 400
