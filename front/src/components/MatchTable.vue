@@ -49,6 +49,9 @@
           <button @click="handlePlayRunClick" :disabled="playRunButtonDisabled">
             Play run
           </button>
+          <button @click="handleExtendMeldClick" :disabled="extendMeldButtonDisabled">
+            Extend meld
+          </button>
           <button @click="handleDiscardClick" :disabled="discardButtonDisabled">
             Discard
           </button>
@@ -217,14 +220,31 @@ export default {
           allCardsSelected ||
           !isValidRun;
     },
+    extendMeldButtonDisabled() {
+      this.refreshValues; // forces a recompute when refreshValues is changed
+      return !this.isCurrentUserTurn ||
+          this.loading ||
+          !this.hasDrawAction ||
+          !this.selectedMeld ||
+          this.getSelectedCards().length === 0 ||
+          this.getSelectedCards().length === this.myHand.length ||
+          !this.isValidMeldExtension();
+    },
     playerScores() {
+      const scores = {};
+
+      this.allMelds.forEach(meld => {
+        meld.cards.forEach(card => {
+          if (scores[card.user_id]) {
+            scores[card.user_id] += card.point_value;
+          } else {
+            scores[card.user_id] = card.point_value;
+          }
+        });
+      });
+
       return this.players.map(player => {
-        const score = !player.melds ? 0 : player.melds.reduce((totalScore, meld) => {
-          return totalScore + meld.cards.reduce((sum, card) => {
-            return card.user_id === player.user_id ? sum + card.point_value : sum;
-          }, 0);
-        }, 0);
-        return { user_id: player.user_id, score };
+        return { user_id: player.user_id, score: scores[player.user_id] || 0 };
       });
     }
   },
@@ -244,6 +264,30 @@ export default {
         const indices = cardRanks.map(rank => order.indexOf(rank)).sort((a, b) => a - b);
         return indices.every((index, i) => i === 0 || index === indices[i - 1] + 1);
       });
+    },
+    isValidMeldExtension() {
+      const selectedCards = this.getSelectedCards();
+      const noCardsSelected = selectedCards.length === 0;
+      const allCardsSelected = selectedCards.length === this.myHand.length;
+
+      if (!this.selectedMeld || noCardsSelected || allCardsSelected) return false;
+
+      const meldCards = this.selectedMeld.cards.map(card => ({
+        rank: card.rank,
+        suit: card.suit
+      }));
+      const handCards = selectedCards.map(card => card.cardData);
+      const allCards = [...meldCards, ...handCards];
+
+      const allSameRank = allCards.every(card => card.rank === allCards[0].rank);
+      const allSameSuit = allCards.every(card => card.suit === allCards[0].suit);
+      const isValidRun = this.runOrders.some(order => {
+        const ranks = allCards.map(card => card.rank);
+        const indices = ranks.map(rank => order.indexOf(rank)).sort((a, b) => a - b);
+        return indices.every((index, i) => i === 0 || index === indices[i - 1] + 1);
+      });
+
+      return allSameRank || (allSameSuit && isValidRun);
     },
     cleanupSSE() {
       if (this.sseService) {
@@ -399,6 +443,22 @@ export default {
           this.$emit('error', 'Failed to play meld!', error);
         } finally {
           this.$emit('loading', false);
+        }
+      }
+    },
+    async handleExtendMeldClick() {
+      if (this.isCurrentUserTurn && !this.loading && this.hasDrawAction && this.selectedMeld && this.getSelectedCards().length > 0) {
+        this.$emit('loading', true);
+        try {
+          const selectedCards = this.getSelectedCards();
+          const cardIds = selectedCards.map(card => card.cardData.card_id);
+          await turnsService.extendMeld(this.matchId, this.selectedMeld.meld_id, cardIds);
+          this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
+        } catch (error) {
+          this.$emit('error', 'Failed to extend meld!', error);
+        } finally {
+          this.$emit('loading', false);
+          this.forceRefresh();
         }
       }
     },

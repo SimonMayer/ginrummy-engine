@@ -19,6 +19,9 @@ const turnsService = {
     },
     async playMeld(matchId, cardIds, meldType) {
         await apiService.post(`/matches/${matchId}/actions/play_meld/${meldType}`, { card_ids: cardIds }, 'Failed to play meld!');
+    },
+    async extendMeld(matchId, meldId, cardIds) {
+        await apiService.post(`/matches/${matchId}/actions/extend_meld/${meldId}`, { card_ids: cardIds }, 'Failed to extend meld!');
     }
 };
 
