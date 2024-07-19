@@ -42,7 +42,7 @@ def init_route(app):
 
             hands_service.add_card_to_hand(cursor, card[0], user_id, round_id)
 
-            actions_service.record_draw_from_discard_pile_action(cursor, turn_id, card[0])
+            actions_service.record_draw_one_from_discard_pile_action(cursor, turn_id, card[0])
 
             database_service.commit_transaction(connection)
             return jsonify({"message": "Card drawn successfully from discard pile", "card_id": card[0]}), 200

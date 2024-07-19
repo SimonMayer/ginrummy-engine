@@ -1,7 +1,7 @@
 <template>
   <div :class="['meld', type, { 'selected': selected, 'selectable': selectable }]" @click="handleClick">
     <VisibleCard
-        v-for="card in cards"
+        v-for="card in sortedCards"
         :key="card.card_id"
         :cardProp="card"
         :selectable="false"
@@ -38,9 +38,37 @@ export default {
     selectable: {
       type: Boolean,
       default: false
+    },
+    runOrders: {
+      type: Array,
+      required: true
+    }
+  },
+  computed: {
+    sortedCards() {
+      const ranks = this.cards.map(card => card.rank);
+      for (let order of this.runOrders) {
+        const indices = ranks.map(rank => order.indexOf(rank));
+        if (this.isMatchingOrder(indices)) {
+          return [...this.cards].sort((a, b) => order.indexOf(a.rank) - order.indexOf(b.rank));
+        }
+      }
+      return this.cards;
     }
   },
   methods: {
+    isMatchingOrder(indices) {
+      if (indices.includes(-1)) {
+        return false;
+      }
+      const sortedIndices = [...indices].sort((a, b) => a - b);
+      for (let i = 1; i < sortedIndices.length; i++) {
+        if (sortedIndices[i] !== sortedIndices[i - 1] + 1) {
+          return false;
+        }
+      }
+      return true;
+    },
     handleClick() {
       if (this.selectable) {
         this.$emit('select:meld', this.id);

@@ -25,7 +25,7 @@ def record_draw_from_stock_pile_action(cursor, turn_id, card_id):
     """
     execute_query(cursor, query, (turn_id, card_rank, card_suit))
 
-def record_draw_from_discard_pile_action(cursor, turn_id, card_id):
+def record_draw_one_from_discard_pile_action(cursor, turn_id, card_id):
     card_details = get_card_details(cursor, card_id)
     card_rank, card_suit = card_details
 

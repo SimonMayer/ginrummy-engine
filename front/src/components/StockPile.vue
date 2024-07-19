@@ -111,6 +111,7 @@ export default {
     color: var(--disabled-color);
 
     div {
+      transform: rotate(-90deg);
       margin: var(--base-margin);
     }
   }
