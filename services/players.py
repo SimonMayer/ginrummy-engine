@@ -92,23 +92,21 @@ def get_players_for_match(match_id):
     connection = connect_to_database(database_config)
     cursor = connection.cursor()
     try:
-        query = """
-        SELECT `u`.`user_id`, `u`.`username`, COALESCE(SUM(`c`.`point_value`), 0) AS `score`
-        FROM `Users` `u`
-        JOIN `Match_Players` `mp` ON `u`.`user_id` = `mp`.`user_id`
-        LEFT JOIN `Rounds` `r` ON `mp`.`match_id` = `r`.`match_id`
-        LEFT JOIN `Melds` `m` ON `r`.`round_id` = `m`.`round_id`
-        LEFT JOIN `Meld_Cards` `mc` ON `m`.`meld_id` = `mc`.`meld_id` AND `u`.`user_id` = `mc`.`user_id`
-        LEFT JOIN `Cards` `c` ON `mc`.`card_id` = `c`.`card_id`
-        WHERE `mp`.`match_id` = %s
-        GROUP BY `u`.`user_id`, `u`.`username`
-        """
-        players = fetch_all(cursor, query, (match_id,))
+        cursor = execute_query(
+            cursor,
+            """
+            SELECT `Users`.`user_id`, `Users`.`username`
+            FROM `Match_Players`
+            JOIN `Users` ON `Match_Players`.`user_id` = `Users`.`user_id`
+            WHERE `Match_Players`.`match_id` = %s
+            """,
+            (match_id,)
+        )
+        players = fetch_all(cursor, None, None)
         formatted_players = [
             {
                 "user_id": player[0],
-                "username": player[1],
-                "score": player[2]
+                "username": player[1]
             }
             for player in players
         ]
