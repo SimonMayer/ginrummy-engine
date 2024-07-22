@@ -57,10 +57,10 @@ def init_route(app):
                 return jsonify({"error": "Meld not found"}), 400
 
             meld_type = melds_service.get_meld_type(cursor, meld_id)
+            meld_card_details = [cards_service.get_card_details(cursor, card[0]) for card in meld_cards]
+            meld_card_ranks = [card[0] for card in meld_card_details]
 
             if meld_type == 'run':
-                meld_card_details = [cards_service.get_card_details(cursor, card[0]) for card in meld_cards]
-                meld_card_ranks = [card[0] for card in meld_card_details]
                 meld_card_suits = [card[1] for card in meld_card_details]
 
                 valid_cards = []
@@ -78,9 +78,6 @@ def init_route(app):
                     return jsonify({"error": "The cards do not form a valid run"}), 400
 
             elif meld_type == 'set':
-                meld_card_details = [cards_service.get_card_details(cursor, card[0]) for card in meld_cards]
-                meld_card_ranks = [card[0] for card in meld_card_details]
-
                 valid_rank = meld_card_ranks[0]
                 for card_id in card_ids:
                     card_details = cards_service.get_card_details(cursor, card_id)

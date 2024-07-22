@@ -20,6 +20,8 @@ def init_route(app):
         data = request.json
         discard_pile_card_ids = data.get('discard_pile_card_ids')
         hand_card_ids = data.get('hand_card_ids', [])
+        meld_id = data.get('meld_id')
+        extend_meld = True if meld_id else False
 
         if not discard_pile_card_ids or not isinstance(discard_pile_card_ids, list) or len(discard_pile_card_ids) == 0:
             return jsonify({"error": "At least one discard pile card ID is required"}), 400
@@ -72,22 +74,56 @@ def init_route(app):
             min_meld_size = game_config['minimumMeldSize']
             run_orders = game_config.get('runOrders', [])
 
-            if len(combined_card_ids) < min_meld_size:
-                return jsonify({"error": f"A meld must contain at least {min_meld_size} cards"}), 400
+            if extend_meld:
+                meld_cards = melds_service.get_cards_for_meld(cursor, round_id, meld_id)
+                if not meld_cards:
+                    return jsonify({"error": "Meld not found"}), 400
 
-            if len(set(combined_card_ranks)) == 1:
-                # All cards have the same rank (set)
-                meld_description = f"set of '{combined_card_ranks[0]}'s"
-                meld_type = 'set'
-            elif len(set(combined_card_suits)) == 1 and melds_service.is_valid_run(combined_card_ranks, run_orders):
-                # All cards have the same suit and form a valid run
-                meld_description = f"run of '{', '.join(combined_card_ranks)}' in suit '{combined_card_suits[0]}'"
-                meld_type = 'run'
+                meld_type = melds_service.get_meld_type(cursor, meld_id)
+                meld_card_details = [cards_service.get_card_details(cursor, card[0]) for card in meld_cards]
+                meld_card_ranks = [card[0] for card in meld_card_details]
+
+                if meld_type == 'run':
+                    meld_card_suits = [card[1] for card in meld_card_details]
+
+                    valid_cards = []
+                    for card_id in combined_card_ids:
+                        card_details = cards_service.get_card_details(cursor, card_id)
+                        card_rank, card_suit = card_details
+                        if card_suit != meld_card_suits[0]:
+                            return jsonify({"error": "All cards in a run must be of the same suit"}), 400
+                        valid_cards.append((card_id, card_rank))
+
+                    meld_card_ranks.extend([card[1] for card in valid_cards])
+
+                    if not melds_service.is_valid_run(meld_card_ranks, run_orders):
+                        return jsonify({"error": "The cards do not form a valid run"}), 400
+
+                elif meld_type == 'set':
+                    valid_rank = meld_card_ranks[0]
+                    for card_id in combined_card_ids:
+                        card_details = cards_service.get_card_details(cursor, card_id)
+                        card_rank, card_suit = card_details
+                        if card_rank != valid_rank:
+                            return jsonify({"error": "All cards in a set must be of the same rank"}), 400
+
             else:
-                return jsonify({"error": "The cards do not form a valid run or set"}), 400
+                if len(combined_card_ids) < min_meld_size:
+                    return jsonify({"error": f"A meld must contain at least {min_meld_size} cards"}), 400
 
-            # Create meld
-            meld_id = melds_service.create_meld(cursor, round_id, user_id, meld_type)
+                if len(set(combined_card_ranks)) == 1:
+                    # All cards have the same rank (set)
+                    meld_description = f"set of '{combined_card_ranks[0]}'s"
+                    meld_type = 'set'
+                elif len(set(combined_card_suits)) == 1 and melds_service.is_valid_run(combined_card_ranks, run_orders):
+                    # All cards have the same suit and form a valid run
+                    meld_description = f"run of '{', '.join(combined_card_ranks)}' in suit '{combined_card_suits[0]}'"
+                    meld_type = 'run'
+                else:
+                    return jsonify({"error": "The cards do not form a valid run or set"}), 400
+
+                # Create meld
+                meld_id = melds_service.create_meld(cursor, round_id, user_id, meld_type)
 
             new_hand_card_ids = []
             # Process cards from discard pile
@@ -109,7 +145,12 @@ def init_route(app):
             bottom_card = upper_discard_pile_cards[-1]
             bottom_card_details = cards_service.get_card_details(cursor, bottom_card[0])
             actions_service.record_draw_multiple_from_discard_pile_action(cursor, turn_id, count, bottom_card_details)
-            actions_service.record_play_meld_action(cursor, turn_id, meld_description)
+
+            if extend_meld:
+                actions_service.record_extend_meld_action(cursor, turn_id, meld_id, combined_card_ids)
+            else:
+                actions_service.record_play_meld_action(cursor, turn_id, meld_description)
+
             database_service.commit_transaction(connection)
 
             return jsonify({
