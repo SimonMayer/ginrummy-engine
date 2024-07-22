@@ -169,6 +169,17 @@ def create_database_and_tables(connection, database_name):
                     UNIQUE (`card_id`)
                 );
                 """,
+                """
+                CREATE TABLE IF NOT EXISTS `Score_Changes` (
+                    `score_change_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `action_id` INT NOT NULL,
+                    `user_id` INT NOT NULL,
+                    `change_time` DATETIME NOT NULL,
+                    `score_change` INT NOT NULL,
+                    FOREIGN KEY (`action_id`) REFERENCES `Actions`(`action_id`),
+                    FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
+                );
+                """,
             ]
 
             for query in table_creations:

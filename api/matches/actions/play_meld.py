@@ -85,7 +85,7 @@ def init_route(app):
                 hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
                 melds_service.add_card_to_meld(cursor, meld_id, card_id, user_id)
 
-            actions_service.record_play_meld_action(cursor, turn_id, meld_description)
+            actions_service.record_play_meld_action(cursor, turn_id, user_id, meld_description, card_ids)
 
             database_service.commit_transaction(connection)
             return jsonify({"message": "Meld played successfully", "meld_id": meld_id}), 200

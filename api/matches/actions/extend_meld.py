@@ -66,7 +66,7 @@ def init_route(app):
                 valid_cards = []
                 for card_id in card_ids:
                     card_details = cards_service.get_card_details(cursor, card_id)
-                    card_rank, card_suit = card_details
+                    card_rank, card_suit, card_point_value = card_details
                     if card_suit != meld_card_suits[0]:
                         return jsonify({"error": "All cards in a run must be of the same suit"}), 400
                     valid_cards.append((card_id, card_rank))
@@ -81,7 +81,7 @@ def init_route(app):
                 valid_rank = meld_card_ranks[0]
                 for card_id in card_ids:
                     card_details = cards_service.get_card_details(cursor, card_id)
-                    card_rank, card_suit = card_details
+                    card_rank, card_suit, card_point_value = card_details
                     if card_rank != valid_rank:
                         return jsonify({"error": "All cards in a set must be of the same rank"}), 400
 
@@ -89,7 +89,7 @@ def init_route(app):
                 hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
                 melds_service.add_card_to_meld(cursor, meld_id, card_id, user_id)
 
-            actions_service.record_extend_meld_action(cursor, turn_id, meld_id, card_ids)
+            actions_service.record_extend_meld_action(cursor, turn_id, user_id, meld_id, card_ids)
 
             database_service.commit_transaction(connection)
             return jsonify({"message": "Meld extended successfully"}), 200

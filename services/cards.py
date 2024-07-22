@@ -3,7 +3,7 @@ from utils.database_connector import connect_to_database
 from services.database import fetch_one, close_resources
 
 def get_card_details(cursor, card_id):
-    query = "SELECT `rank`, `suit` FROM `Cards` WHERE `card_id` = %s"
+    query = "SELECT `rank`, `suit`, `point_value` FROM `Cards` WHERE `card_id` = %s"
     card_details = fetch_one(cursor, query, (card_id,))
     return card_details
 
