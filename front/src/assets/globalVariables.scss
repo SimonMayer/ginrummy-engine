@@ -1,15 +1,15 @@
 :root {
     --primary-color: #1B5E20;
-    --secondary-color: #233D4D;
-    --secondary-color-rgb: 35, 61, 77;
-    --tertiary-color: #7CA982;
-    --accent-color: #F7B32B;
+    --secondary-color: #331E38;
+    --secondary-color-rgb: 51, 30, 56;
+    --tertiary-color: #0AD3FF;
+    --accent-color: #91CB3E;
     --disabled-color: #B0BEC5;
     --text-color: #FFFFFF;
     --error-color: #9B1D20;
     --error-accent-color: #DA2C38;
-    --button-hover-color: #7CA982;
-    --button-active-color: #FE7F2D;
+    --button-hover-color: var(--tertiary-color);
+    --button-active-color: var(--accent-color);
     --button-disabled-background-color: #FFFFFF;
     --input-background-color: #F9F9F9;
     --font-family: 'Roboto', sans-serif;

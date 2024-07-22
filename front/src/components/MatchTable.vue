@@ -180,19 +180,6 @@ export default {
     drawMultipleFromDiscardPileButtonDisabled() {
       this.refreshValues; // forces a recompute when refreshValues is changed
       return !this.canDrawMultipleFromDiscardPile();
-    },
-    playerScores() {
-      const scores = {};
-
-      this.allMelds.forEach(meld => {
-        meld.cards.forEach(card => {
-          scores[card.user_id] = scores[card.user_id] ? scores[card.user_id] + card.point_value : card.point_value;
-        });
-      });
-
-      return this.players.map(player => {
-        return { user_id: player.user_id, score: scores[player.user_id] || 0 };
-      });
     }
   },
   methods: {
@@ -321,11 +308,9 @@ export default {
       }
     },
     transformPlayer(player) {
-      const playerScore = this.playerScores.find(score => score.user_id === player.user_id);
       return {
         ...player,
-        highlightPlayer: player.user_id === this.currentTurnUserId,
-        score: playerScore ? playerScore.score : 0,
+        highlightPlayer: player.user_id === this.currentTurnUserId
       };
     },
     transformNonSelfPlayer(player) {
@@ -427,6 +412,7 @@ export default {
           const playerData = players.find(p => p.user_id === player.user_id);
           player.handSize = playerData ? playerData.hand.size : 0;
           player.melds = playerData.melds;
+          player.score = playerData.score.total_score;
         });
         this.match.stock_pile_size = data.stock_pile_size || 0;
         this.match.discard_pile = data.discard_pile || [];

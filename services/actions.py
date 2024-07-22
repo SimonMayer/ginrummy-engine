@@ -65,7 +65,7 @@ def record_play_meld_action(cursor, turn_id, user_id, meld_description, card_ids
     cursor = execute_query(cursor, query, (turn_id, f"Played a {meld_description}", f"Played a {meld_description}"))
     action_id = cursor.lastrowid
 
-    total_points = sum(cards_service.cards_service.get_card_details(cursor, card_id)[2] for card_id in card_ids)
+    total_points = sum(cards_service.get_card_details(cursor, card_id)[2] for card_id in card_ids)
     scores_service.record_score_change(cursor, action_id, user_id, total_points)
 
 def record_extend_meld_action(cursor, turn_id, user_id, meld_id, card_ids):
