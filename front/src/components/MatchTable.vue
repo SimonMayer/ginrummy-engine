@@ -266,7 +266,6 @@ export default {
     },
     canDrawMultipleFromDiscardPile() {
       return this.canDrawMultiple() &&
-          !this.selectedMeld && // temporary, until meld extension is supported during draw multiple
           this.isRotationThatAllowsMelds() &&
           this.isAnyDiscardPileCardSelected() &&
           !this.isBottomSelectedDiscardPileCardAtTheTop() &&
@@ -305,7 +304,7 @@ export default {
       this.refreshValues++;
     },
     doSelectedCardsFormValidMeld() {
-      const allSelectedCards = this.getAllSelectedUnmeldedCards();
+      const allSelectedCards = this.getAllSelectedCards();
       return this.isEnoughCardsForMeld(allSelectedCards) &&
           (this.areAllCardsOfSameRank(allSelectedCards) || this.doCardsMakeValidRun(allSelectedCards));
     },
@@ -313,7 +312,7 @@ export default {
       if (!this.selectedMeld || this.hasNoHandCardsSelected() || this.hasAllHandCardsSelected()) {
         return false;
       }
-      const allCards = [...this.selectedMeld.cards, ...this.getSelectedHandCards()];
+      const allCards = [...this.getSelectedMeldCards(), ...this.getSelectedHandCards()];
       return this.areAllCardsOfSameRank(allCards) || this.doCardsMakeValidRun(allCards);
     },
     cleanupSSE() {
@@ -352,8 +351,11 @@ export default {
     getSelectedCards(refName) {
       return this.$refs[refName] ? this.$refs[refName].getSelectedCards() : [];
     },
-    getAllSelectedUnmeldedCards() {
-      return [...this.getSelectedHandCards(), ...this.getSelectedDiscardPileCards()];
+    getAllSelectedCards() {
+      return [...this.getSelectedMeldCards(), ...this.getSelectedHandCards(), ...this.getSelectedDiscardPileCards()];
+    },
+    getSelectedMeldCards() {
+      return this.selectedMeld ? this.selectedMeld.cards : [];
     },
     getSelectedDiscardPileCards() {
       return this.getSelectedCards('discard-pile').map(card => card.cardData);
@@ -382,6 +384,9 @@ export default {
     },
     unselectDiscardPileCards() {
       this.unselectCardsByRef('discard-pile');
+    },
+    unselectMeld() {
+      this.selectedMeld = null;
     },
     handleMeldClick(meldId) {
       const meld = this.allMelds.find(meld => meld.meld_id === meldId);
@@ -469,9 +474,15 @@ export default {
       await this.performAction(async () => {
         const handCardIds = this.getSelectedHandCards().map(card => card.card_id);
         const discardPileCardIds = this.getSelectedDiscardPileCards().map(card => card.card_id);
-        const newHandCards = await turnsService.drawMultipleFromDiscardPile(this.matchId, discardPileCardIds, handCardIds);
+        const newHandCards = await turnsService.drawMultipleFromDiscardPile(
+            this.matchId,
+            discardPileCardIds,
+            handCardIds,
+            this.selectedMeldId
+        );
         this.unselectDiscardPileCards();
         this.unselectHandCards();
+        this.unselectMeld();
         this.myHand = this.myHand.filter(handCard => !handCardIds.includes(handCard.card_id));
         newHandCards.forEach(newHandCard => {
           this.myHand.push(newHandCard);
@@ -511,7 +522,8 @@ export default {
       }
       await this.performAction(async () => {
         const cardIds = this.getSelectedHandCards().map(card => card.card_id);
-        await turnsService.extendMeld(this.matchId, this.selectedMeld.meld_id, cardIds);
+        await turnsService.extendMeld(this.matchId, this.selectedMeldId, cardIds);
+        this.unselectMeld();
         this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
       }, 'Failed to extend meld!');
     },

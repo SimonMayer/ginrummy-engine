@@ -14,10 +14,19 @@ const turnsService = {
         const cardData = await apiService.post(`/matches/${matchId}/actions/draw_one_from_discard_pile`, {}, 'Failed to draw from discard pile!');
         return await cardsService.getCard(cardData.card_id);
     },
-    async drawMultipleFromDiscardPile(matchId, discardPileCardIds, handCardIds) {
+    async drawMultipleFromDiscardPile(matchId, discardPileCardIds, handCardIds, meldId = null) {
+        const requestBody = {
+            discard_pile_card_ids: discardPileCardIds,
+            hand_card_ids: handCardIds
+        };
+
+        if (meldId) {
+            requestBody.meld_id = meldId;
+        }
+
         const data = await apiService.post(
             `/matches/${matchId}/actions/draw_multiple_from_discard_pile`,
-            {discard_pile_card_ids: discardPileCardIds, hand_card_ids: handCardIds},
+            requestBody,
             'Failed to draw from discard pile!'
         );
 

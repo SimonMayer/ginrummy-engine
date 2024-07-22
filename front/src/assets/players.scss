@@ -30,8 +30,6 @@
     perspective: calc(var(--card-height) * 5);
 
     .card {
-      transition: transform 0.3s ease;
-
       &.selectable {
         cursor: pointer;
       }

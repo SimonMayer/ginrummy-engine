@@ -109,7 +109,6 @@ export default {
   .card {
     position: absolute;
     transform-origin: bottom left;
-    transition: transform 0.3s;
   }
 
   &.run {
