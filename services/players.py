@@ -9,15 +9,12 @@ from services.database import (
     close_resources,
 )
 import services.melds as melds_service
+import services.scores as scores_service
 
 def get_all_players(cursor, match_id):
     query = "SELECT `user_id` FROM `Match_Players` WHERE `match_id` = %s ORDER BY `user_id`"
     players = fetch_all(cursor, query, (match_id,))
     return players
-from utils.config_loader import load_database_config
-from utils.database_connector import connect_to_database
-from services.database import fetch_all, close_resources
-import services.melds as melds_service
 
 def get_players_data(round_id):
     database_config = load_database_config()
@@ -56,13 +53,22 @@ def get_players_data(round_id):
                     "meld_type": meld_type,
                     "cards": cards_list
                 })
+
+            opening_balance = scores_service.get_opening_balance(cursor, user_id, round_id)
+            round_points = scores_service.get_round_points(cursor, user_id, round_id)
+
             players.append({
                 "user_id": user_id,
                 "hand": {
                     "hand_id": hand_id,
                     "size": size
                 },
-                "melds": melds_list
+                "melds": melds_list,
+                "score": {
+                    "opening_balance": opening_balance,
+                    "points_this_round": round_points,
+                    "total_score": opening_balance + round_points
+                }
             })
         return players
     finally:
