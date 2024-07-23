@@ -1,6 +1,7 @@
 from flask_jwt_extended import get_jwt_identity, create_access_token, create_refresh_token
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
+import mysql.connector
 from services.database import fetch_one, close_resources, handle_error
 import bcrypt
 

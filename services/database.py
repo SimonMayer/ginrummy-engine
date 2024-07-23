@@ -1,5 +1,3 @@
-import mysql.connector
-
 def execute_query(cursor, query, params):
     cursor.execute(query, params)
     return cursor

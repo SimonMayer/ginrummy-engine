@@ -10,7 +10,6 @@ from services.database import (
     rollback_transaction,
     close_resources,
 )
-
 import services.rounds as rounds_service
 
 def create_match(user_id):
@@ -38,17 +37,13 @@ def get_user_matches(user_id):
     connection = connect_to_database(database_config)
     cursor = connection.cursor()
     try:
-        cursor = execute_query(
-            cursor,
-            """
+        query = """
             SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`
             FROM `Matches` `m`
             JOIN `Match_Players` `mp` ON `m`.`match_id` = `mp`.`match_id`
             WHERE `mp`.`user_id` = %s
-            """,
-            (user_id,)
-        )
-        matches = fetch_all(cursor, None, None)
+            """
+        matches = fetch_all(cursor, query, (user_id,))
         formatted_matches = [
             {
                 "match_id": match[0],
@@ -68,17 +63,13 @@ def get_match(match_id):
     connection = connect_to_database(database_config)
     cursor = connection.cursor()
     try:
-        cursor = execute_query(
-            cursor,
-            """
+        query = """
             SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`, `r`.`round_id` AS `current_round_id`
             FROM `Matches` `m`
             LEFT JOIN `Rounds` `r` ON `m`.`match_id` = `r`.`match_id` AND `r`.`end_time` IS NULL
             WHERE `m`.`match_id` = %s
-            """,
-            (match_id,)
-        )
-        match = fetch_one(cursor, None, None)
+            """
+        match = fetch_one(cursor, query, (match_id,))
         if match:
             formatted_match = {
                 "match_id": match[0],
@@ -100,12 +91,8 @@ def start_match(match_id):
     cursor = connection.cursor(buffered=True)
     try:
         start_transaction(connection)
-        cursor = execute_query(
-            cursor,
-            "SELECT `start_time` FROM `Matches` WHERE `match_id` = %s",
-            (match_id,)
-        )
-        match = fetch_one(cursor, None, None)
+        match_query = "SELECT `start_time` FROM `Matches` WHERE `match_id` = %s"
+        match = fetch_one(cursor, match_query, (match_id,))
         if not match:
             raise ValueError("Match not found")
         if match[0] is not None:
@@ -113,12 +100,8 @@ def start_match(match_id):
 
         game_config = load_game_config()
 
-        cursor = execute_query(
-            cursor,
-            "SELECT `user_id` FROM `Match_Players` WHERE `match_id` = %s ORDER BY `user_id`",
-            (match_id,)
-        )
-        players = fetch_all(cursor, None, None)
+        players_query = "SELECT `user_id` FROM `Match_Players` WHERE `match_id` = %s ORDER BY `user_id`"
+        players = fetch_all(cursor, match_players_query, (match_id,))
         player_count = len(players)
 
         min_players = game_config['players']['minimumAllowed']
@@ -134,7 +117,8 @@ def start_match(match_id):
         )
         commit_transaction(connection)
 
-        rounds_service.create_round(match_id, players)
+        player_ids = [player[0] for player in players]
+        rounds_service.create_round(match_id, player_ids)
     except Exception as err:
         rollback_transaction(connection)
         raise err

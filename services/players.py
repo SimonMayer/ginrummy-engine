@@ -98,17 +98,13 @@ def get_players_for_match(match_id):
     connection = connect_to_database(database_config)
     cursor = connection.cursor()
     try:
-        cursor = execute_query(
-            cursor,
-            """
+        query = """
             SELECT `Users`.`user_id`, `Users`.`username`
             FROM `Match_Players`
             JOIN `Users` ON `Match_Players`.`user_id` = `Users`.`user_id`
             WHERE `Match_Players`.`match_id` = %s
-            """,
-            (match_id,)
-        )
-        players = fetch_all(cursor, None, None)
+            """
+        players = fetch_all(cursor, query, (match_id,))
         formatted_players = [
             {
                 "user_id": player[0],

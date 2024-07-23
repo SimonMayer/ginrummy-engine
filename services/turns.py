@@ -95,3 +95,17 @@ def get_current_turn_details(round_id):
             return None
     finally:
         close_resources(cursor, connection)
+
+def determine_first_player(match_id, player_ids, cursor):
+    previous_round_query = "SELECT `round_id` FROM `Rounds` WHERE `match_id` = %s AND `end_time` IS NOT NULL ORDER BY `start_time` DESC LIMIT 1"
+    previous_round = fetch_one(cursor, previous_round_query, (match_id,))
+
+    if previous_round:
+        first_player_query = "SELECT `user_id` FROM `Turns` WHERE `round_id` = %s ORDER BY `start_time` ASC LIMIT 1"
+        previous_first_player = fetch_one(cursor, first_player_query, (previous_round[0],))[0]
+        previous_first_index = player_ids.index(previous_first_player)
+        first_player = player_ids[(previous_first_index + 1) % len(player_ids)]
+    else:
+        first_player = random.choice(player_ids)
+
+    return first_player
