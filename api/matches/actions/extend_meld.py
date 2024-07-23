@@ -27,7 +27,7 @@ def init_route(app):
         try:
             database_service.start_transaction(connection)
 
-            turn = turns_service.get_current_turn(cursor, match_id)
+            turn = turns_service.get_current_turn(match_id)
             validation_error = turns_service.validate_user_turn(turn, user_id)
             if validation_error:
                 return jsonify(validation_error[0]), validation_error[1]

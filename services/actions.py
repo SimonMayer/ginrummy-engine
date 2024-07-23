@@ -89,6 +89,26 @@ def record_extend_meld_action(cursor, turn_id, user_id, meld_id, card_ids):
 
     return action_id
 
+def get_latest_action_id(match_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor(buffered=True, dictionary=True)
+
+    try:
+        query = """
+            SELECT MAX(`a`.`action_id`) as latest_action_id
+            FROM `Actions` `a`
+            JOIN `Turns` `t` ON `a`.`turn_id` = `t`.`turn_id`
+            JOIN `Rounds` `r` ON `t`.`round_id` = `r`.`round_id`
+            WHERE `r`.`match_id` = %s
+        """
+        result = fetch_one(cursor, query, (match_id,))
+        return int(result['latest_action_id']) if result and result['latest_action_id'] else None
+    except Exception as err:
+        handle_error(connection, err)
+    finally:
+        close_resources(cursor, connection)
+
 def get_new_actions(match_id, latest_action_id=None):
     database_config = load_database_config()
     connection = connect_to_database(database_config)

@@ -2,7 +2,11 @@ from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 from services.database import execute_query, fetch_all, fetch_one, close_resources
 
-def get_current_turn(cursor, match_id):
+def get_current_turn(match_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor()
+
     query = """
     SELECT `t`.`turn_id`, `t`.`user_id`, `t`.`round_id`, `t`.`rotation_number`
     FROM `Turns` `t`
