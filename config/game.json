@@ -6,6 +6,8 @@
     "minimumAllowed": 2,
     "maximumAllowed": 4
   },
+  "ranks": ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
+  "suits": ["Spades", "Hearts", "Clubs", "Diamonds"],
   "pointsByRank": {
     "A": 15,
     "2": 2,
