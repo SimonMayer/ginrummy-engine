@@ -24,7 +24,9 @@ def start_turn(cursor, round_id, next_user_id, next_rotation):
     INSERT INTO `Turns` (`round_id`, `user_id`, `rotation_number`, `start_time`)
     VALUES (%s, %s, %s, NOW())
     """
+
     execute_query(cursor, query, (round_id, next_user_id, next_rotation))
+    return cursor.lastrowid
 
 def end_turn(cursor, turn_id):
     query = "UPDATE `Turns` SET `end_time` = NOW() WHERE `turn_id` = %s"

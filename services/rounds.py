@@ -97,3 +97,7 @@ def create_round(match_id, players):
         raise
     finally:
         close_resources(cursor, connection)
+
+def end_round(cursor, round_id):
+    query = "UPDATE `Rounds` SET `end_time` = NOW() WHERE `round_id` = %s"
+    execute_query(cursor, query, (round_id,))

@@ -25,6 +25,7 @@ def record_draw_from_stock_pile_action(cursor, turn_id, card_id):
     VALUES (%s, 'draw', CONCAT('Drew ', %s, ' ', %s, ' from stock pile'), 'Drew 1 card from stock pile')
     """
     execute_query(cursor, query, (turn_id, card_rank, card_suit))
+    return cursor.lastrowid
 
 def record_draw_one_from_discard_pile_action(cursor, turn_id, card_id):
     card_details = cards_service.get_card_details(cursor, card_id)
@@ -35,6 +36,7 @@ def record_draw_one_from_discard_pile_action(cursor, turn_id, card_id):
     VALUES (%s, 'draw', CONCAT('Drew ', %s, ' ', %s, ' from discard pile'), CONCAT('Drew ', %s, ' ', %s, ' from discard pile'))
     """
     execute_query(cursor, query, (turn_id, card_rank, card_suit, card_rank, card_suit))
+    return cursor.lastrowid
 
 def record_draw_multiple_from_discard_pile_action(cursor, turn_id, count, bottom_card_details):
     bottom_card_rank, bottom_card_suit, bottom_card_point_value = bottom_card_details
@@ -46,6 +48,7 @@ def record_draw_multiple_from_discard_pile_action(cursor, turn_id, count, bottom
     VALUES (%s, 'draw', %s, %s)
     """
     execute_query(cursor, query, (turn_id, full_details, public_details))
+    return cursor.lastrowid
 
 def record_discard_action(cursor, turn_id, card_id):
     card_details = cards_service.get_card_details(cursor, card_id)
@@ -56,17 +59,20 @@ def record_discard_action(cursor, turn_id, card_id):
     VALUES (%s, 'discard', CONCAT('Discarded ', %s, ' ', %s), CONCAT('Discarded ', %s, ' ', %s))
     """
     execute_query(cursor, query, (turn_id, card_rank, card_suit, card_rank, card_suit))
+    return cursor.lastrowid
 
 def record_play_meld_action(cursor, turn_id, user_id, meld_description, card_ids):
     query = """
     INSERT INTO `Actions` (`turn_id`, `action_type`, `full_details`, `public_details`)
     VALUES (%s, 'play_meld', %s, %s)
     """
-    cursor = execute_query(cursor, query, (turn_id, f"Played a {meld_description}", f"Played a {meld_description}"))
+    execute_query(cursor, query, (turn_id, f"Played a {meld_description}", f"Played a {meld_description}"))
     action_id = cursor.lastrowid
 
     total_points = sum(cards_service.get_card_details(cursor, card_id)[2] for card_id in card_ids)
     scores_service.record_score_change(cursor, action_id, user_id, total_points)
+
+    return action_id
 
 def record_extend_meld_action(cursor, turn_id, user_id, meld_id, card_ids):
     card_details = [cards_service.get_card_details(cursor, card_id) for card_id in card_ids]
@@ -75,11 +81,13 @@ def record_extend_meld_action(cursor, turn_id, user_id, meld_id, card_ids):
     INSERT INTO `Actions` (`turn_id`, `action_type`, `full_details`, `public_details`)
     VALUES (%s, 'extend_meld', CONCAT('Extended meld ', %s, ' with cards: ', %s), CONCAT('Extended meld with cards: ', %s))
     """
-    cursor = execute_query(cursor, query, (turn_id, meld_id, card_info, card_info))
+    execute_query(cursor, query, (turn_id, meld_id, card_info, card_info))
     action_id = cursor.lastrowid
 
     total_points = sum(card[2] for card in card_details)
     scores_service.record_score_change(cursor, action_id, user_id, total_points)
+
+    return action_id
 
 def get_new_actions(match_id, latest_action_id=None):
     database_config = load_database_config()
