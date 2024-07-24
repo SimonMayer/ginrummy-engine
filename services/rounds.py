@@ -1,4 +1,3 @@
-from datetime import datetime
 import random
 from utils.config_loader import load_database_config, load_game_config
 from utils.database_connector import connect_to_database
@@ -12,6 +11,7 @@ from services.database import (
     close_resources,
     handle_error,
 )
+import services.actions as actions_service
 import services.turns as turns_service
 
 def get_current_round(match_id):
@@ -33,11 +33,10 @@ def create_round(match_id, player_ids):
         start_transaction(connection)
 
         first_player = turns_service.determine_first_player(match_id, player_ids, cursor)
-        current_time = datetime.now()
         execute_query(
             cursor,
-            "INSERT INTO `Rounds` (`match_id`, `start_time`) VALUES (%s, %s)",
-            (match_id, current_time)
+            "INSERT INTO `Rounds` (`match_id`, `start_time`) VALUES (%s, NOW())",
+            (match_id,)
         )
         round_id = cursor.lastrowid
 
@@ -96,11 +95,8 @@ def create_round(match_id, player_ids):
                 (stock_pile_id, card['card_id'], sequence)
             )
 
-        execute_query(
-            cursor,
-            "INSERT INTO `Turns` (`round_id`, `user_id`, `rotation_number`, `start_time`) VALUES (%s, %s, %s, %s)",
-            (round_id, first_player, 1, current_time)
-        )
+        turn_id = turns_service.start_turn(cursor, round_id, first_player, 1)
+        actions_service.record_start_round_action(cursor, turn_id)
 
         commit_transaction(connection)
         return round_id

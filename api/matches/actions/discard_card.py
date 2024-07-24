@@ -65,6 +65,7 @@ def init_route(app):
 
             if len(user_hand) == 1: # last card discarded
                 rounds_service.end_round(cursor, round_id)
+                actions_service.record_end_round_action(cursor, turn_id)
 
                 # Update scores for each player
                 for player in players_list:

@@ -14,15 +14,11 @@ def init_round_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_round(round_id):
         try:
-            stock_pile_size = stock_pile_service.get_stock_pile_size(round_id)
-            discard_pile_list = discard_pile_service.get_discard_pile_list(round_id)
-            players = players_service.get_players_data(round_id)
-
             result = {
                 "round_id": round_id,
-                "stock_pile_size": stock_pile_size,
-                "discard_pile": discard_pile_list,
-                "players": players
+                "stock_pile_size": stock_pile_service.get_stock_pile_size(round_id),
+                "discard_pile": discard_pile_service.get_discard_pile_list(round_id),
+                "players": players_service.get_players_data(round_id)
             }
 
             return jsonify(result), 200
