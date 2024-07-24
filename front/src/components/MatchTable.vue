@@ -1,5 +1,5 @@
 <template>
-  <div class="match-table" v-if="match && match.discard_pile">
+  <div class="match-table" v-if="match">
     <div class="game-section full-width">
       <div class="non-self-players-container">
         <NonSelfMatchPlayer
@@ -44,9 +44,16 @@
               @select:meld="handleMeldClick(meld.meld_id)"
           />
         </div>
-        <div class="buttons-container">
-          <button @click="handleDrawOneFromDiscardPileClick" :disabled="drawOneFromDiscardPileButtonDisabled">Draw one from discard pile</button>
-          <button @click="handleDrawMultipleFromDiscardPileClick" :disabled="drawMultipleFromDiscardPileButtonDisabled">Draw multiple from discard pile</button>
+        <div v-if="!currentRoundId" class="buttons-container">
+          <button @click="handleStartNewRound">Start new round</button>
+        </div>
+        <div v-if="currentRoundId" class="buttons-container">
+          <button @click="handleDrawOneFromDiscardPileClick" :disabled="drawOneFromDiscardPileButtonDisabled">
+            Draw one from discard pile
+          </button>
+          <button @click="handleDrawMultipleFromDiscardPileClick" :disabled="drawMultipleFromDiscardPileButtonDisabled">
+            Draw multiple from discard pile
+          </button>
           <button @click="handlePlaySetClick" :disabled="playSetButtonDisabled">Play set</button>
           <button @click="handlePlayRunClick" :disabled="playRunButtonDisabled">Play run</button>
           <button @click="handleExtendMeldClick" :disabled="extendMeldButtonDisabled">Extend meld</button>
@@ -104,6 +111,7 @@ export default {
       currentTurnUserId: null,
       currentTurnActions: [],
       sseService: null,
+      currentRoundId: null,
       currentTurnId: null,
       latestActionId: null,
       selectedMeld: null,
@@ -379,14 +387,16 @@ export default {
     },
     async loadMatchDetails() {
       try {
-        this.match = await matchesService.getMatchDetails(this.matchId);
+        const data = await matchesService.getMatchDetails(this.matchId);
+        this.match = data;
+        this.currentRoundId = data.current_round_id;
       } catch (error) {
         this.$emit('error', 'Failed to fetch match details!', error);
       }
     },
     async loadCurrentTurn() {
-      if (this.match.current_round_id) {
-        const data = await roundsService.getCurrentTurn(this.match.current_round_id);
+      if (this.currentRoundId) {
+        const data = await roundsService.getCurrentTurn(this.currentRoundId);
         this.currentTurnUserId = data.user_id;
         this.currentTurnActions = data.actions || [];
         this.currentTurnId = data.turn_id;
@@ -395,18 +405,22 @@ export default {
       }
     },
     async loadMyHand() {
-      if (this.match.current_round_id) {
+      if (this.currentRoundId) {
         try {
-          const data = await roundsService.getMyHand(this.match.current_round_id);
+          const data = await roundsService.getMyHand(this.currentRoundId);
           this.myHand = data.cards;
         } catch (error) {
           this.$emit('error', 'Failed to fetch your hand!', error);
         }
       }
     },
-    async loadRoundDataForPlayers() {
-      if (this.match.current_round_id) {
-        const data = await roundsService.getRoundDataForPlayers(this.match.current_round_id);
+    async loadCurrentRoundDataForPlayers() {
+      if (this.currentRoundId) {
+        this.loadRoundDataForPlayers(this.currentRoundId);
+      }
+    },
+    async loadRoundDataForPlayers(roundId) {
+        const data = await roundsService.getRoundDataForPlayers(roundId);
         const players = data.players;
         this.players.forEach(player => {
           const playerData = players.find(p => p.user_id === player.user_id);
@@ -416,7 +430,6 @@ export default {
         });
         this.match.stock_pile_size = data.stock_pile_size || 0;
         this.match.discard_pile = data.discard_pile || [];
-      }
     },
     async performAction(action, errorMessage) {
       this.$emit('loading', true);
@@ -513,6 +526,12 @@ export default {
         this.myHand = this.myHand.filter(card => !cardIds.includes(card.card_id));
       }, 'Failed to extend meld!');
     },
+    async handleStartNewRound() {
+      await this.performAction(async () => {
+        await roundsService.startRound(this.matchId);
+        await this.loadCurrentRoundData();
+      }, 'Failed to start new round!');
+    },
     handleError(title, error) {
       this.$emit('error', title, error);
     },
@@ -528,10 +547,13 @@ export default {
     },
     async loadAllData() {
       await this.loadMatchDetails();
+      await this.loadCurrentRoundData();
+      this.initializeSSE();
+    },
+    async loadCurrentRoundData() {
       await this.loadCurrentTurn();
       await this.loadMyHand();
-      await this.loadRoundDataForPlayers();
-      this.initializeSSE();
+      await this.loadCurrentRoundDataForPlayers();
     },
     initializeSSE() {
       const latestActionId = this.latestActionId === null ? '' : this.latestActionId;
@@ -541,9 +563,31 @@ export default {
         this.sseService = new SSEService(endpoint);
 
         this.sseService.connect(
-            () => {
-              this.loadCurrentTurn();
-              this.loadRoundDataForPlayers();
+            (data) => {
+              const newCurrentRoundId = data.current_status.round_id;
+              const newCurrentTurnId = data.current_status.turn_id;
+
+              this.latestActionId = data.action.action_id;
+
+              if (data.turn_id === this.currentTurnId) {
+                this.currentTurnActions.push(data.action);
+              }
+
+              if (newCurrentRoundId !== this.currentRoundId) {
+                this.currentRoundId = newCurrentRoundId;
+                if (newCurrentRoundId === null) {
+                  this.loadRoundDataForPlayers(data.round_id);
+                } else {
+                  this.loadCurrentRoundData();
+                }
+              } else if (newCurrentTurnId !== this.currentTurnId) {
+                this.currentTurnId = newCurrentTurnId;
+                this.loadCurrentTurn();
+                this.loadCurrentRoundDataForPlayers();
+              } else if (['draw', 'play_meld', 'extend_meld'].includes(data.action.action_type)) {
+                // load changes to discard pile, stock pile, and melds — currently these all require reload of round data
+                this.loadCurrentRoundDataForPlayers();
+              }
             },
             (error) => {
               console.error('SSE error:', error);

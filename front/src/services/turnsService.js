@@ -38,13 +38,13 @@ const turnsService = {
         return cards;
     },
     async discardCard(matchId, cardId) {
-        await apiService.post(`/matches/${matchId}/actions/discard_card`, { card_id: cardId }, 'Failed to discard card!');
+        return await apiService.post(`/matches/${matchId}/actions/discard_card`, { card_id: cardId }, 'Failed to discard card!');
     },
     async playMeld(matchId, cardIds, meldType) {
-        await apiService.post(`/matches/${matchId}/actions/play_meld/${meldType}`, { card_ids: cardIds }, 'Failed to play meld!');
+        return await apiService.post(`/matches/${matchId}/actions/play_meld/${meldType}`, { card_ids: cardIds }, 'Failed to play meld!');
     },
     async extendMeld(matchId, meldId, cardIds) {
-        await apiService.post(`/matches/${matchId}/actions/extend_meld/${meldId}`, { card_ids: cardIds }, 'Failed to extend meld!');
+        return await apiService.post(`/matches/${matchId}/actions/extend_meld/${meldId}`, { card_ids: cardIds }, 'Failed to extend meld!');
     }
 };
 
