@@ -25,7 +25,7 @@ def get_players_data(round_id):
         query = """
         SELECT `h`.`user_id`, MAX(`h`.`hand_id`) AS `hand_id`, COUNT(`hc`.`card_id`) AS `size`
         FROM `Hands` `h`
-        JOIN `Hand_Cards` `hc` ON `h`.`hand_id` = `hc`.`hand_id`
+        LEFT JOIN `Hand_Cards` `hc` ON `h`.`hand_id` = `hc`.`hand_id`
         WHERE `h`.`round_id` = %s
         GROUP BY `h`.`user_id`
         """

@@ -127,7 +127,7 @@ def init_route(app):
 
             new_hand_card_ids = []
             # Process cards from discard pile
-            for card in upper_discard_pile_cards:
+            for card in reversed(upper_discard_pile_cards):
                 discard_pile_service.remove_card(cursor, card[0], round_id)
                 if card[0] in discard_pile_card_ids:
                     melds_service.add_card_to_meld(cursor, meld_id, card[0], user_id)

@@ -128,11 +128,11 @@ def get_latest_action_id(match_id):
 def get_new_actions(match_id, latest_action_id=None):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor(buffered=True)
+    cursor = connection.cursor(buffered=True, dictionary=True)
 
     try:
         query = """
-            SELECT `a`.`action_id`, `a`.`turn_id`, `a`.`action_type`, `a`.`public_details`
+            SELECT `a`.`action_id`, `a`.`turn_id`, `a`.`action_type`, `a`.`public_details`, `r`.`round_id`
             FROM `Actions` `a`
             JOIN `Turns` `t` ON `a`.`turn_id` = `t`.`turn_id`
             JOIN `Rounds` `r` ON `t`.`round_id` = `r`.`round_id`
