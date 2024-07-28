@@ -1,3 +1,4 @@
+import random
 from utils.config_loader import load_database_config
 from utils.database_connector import connect_to_database
 from services.database import execute_query, fetch_all, fetch_one, close_resources
