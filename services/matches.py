@@ -100,7 +100,7 @@ def start_match(match_id):
 
         game_config = load_game_config()
 
-        players_query = "SELECT `user_id` FROM `Match_Players` WHERE `match_id` = %s ORDER BY `user_id`"
+        match_players_query = "SELECT `user_id` FROM `Match_Players` WHERE `match_id` = %s ORDER BY `user_id`"
         players = fetch_all(cursor, match_players_query, (match_id,))
         player_count = len(players)
 

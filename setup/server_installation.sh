@@ -57,7 +57,7 @@ mysql -e "FLUSH PRIVILEGES;"
 
 # Log in to MySQL and set root password
 mysql -u root <<MYSQL_SCRIPT
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_ROOT_PASSWORD';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY '$MYSQL_ROOT_PASSWORD';
 FLUSH PRIVILEGES;
 MYSQL_SCRIPT
 
@@ -99,7 +99,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install Dependencies
-pip install flask_cors flask_jwt_extended mysql-connector-python bcrypt
+pip install flask_cors flask_jwt_extended mysql-connector-python bcrypt gevent
 
 # Install Gunicorn
 pip install gunicorn
@@ -146,7 +146,7 @@ User=root
 Group=www-data
 WorkingDirectory=/root/ginrummy
 Environment=\"PATH=/root/ginrummy/venv/bin\"
-ExecStart=/root/ginrummy/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8000 wsgi:app
+ExecStart=/root/ginrummy/venv/bin/gunicorn --timeout 3600 --workers 3 --worker-class gevent --bind 127.0.0.1:8000 wsgi:app
 
 [Install]
 WantedBy=multi-user.target
@@ -203,7 +203,3 @@ rm /etc/nginx/sites-enabled/default
 
 # Restart Nginx
 systemctl restart nginx
-
-# Check the Status of the Services
-systemctl status ginrummy
-systemctl status nginx
