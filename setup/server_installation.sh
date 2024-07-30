@@ -106,7 +106,7 @@ if [ "$is_ssl_certificate_required" = true ]; then
 fi
 
 # Clone the Repository
-git clone git@github.com:SimonMayer/gin_rummy_2024.git /root/ginrummy-engine
+git clone git@github.com:SimonMayer/ginrummy-engine.git /root/ginrummy-engine
 
 # Navigate to the App Directory
 cd /root/ginrummy-engine
