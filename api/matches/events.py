@@ -1,6 +1,7 @@
 from flask import Blueprint, Response, request, stream_with_context
 import json
 import logging
+import sys
 import time
 from utils.decorators.jwt_custom_extensions import jwt_multi_source_auth_handler
 import services.actions as actions_service
@@ -44,6 +45,7 @@ def stream_events(match_id):
                             }
                         }
                         yield f'data: {json.dumps(action_data)}\n\n'
+                        sys.stdout.flush()
                 time.sleep(0.5)
 
         except Exception as err:
