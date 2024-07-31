@@ -56,12 +56,14 @@ apt update && apt upgrade -y
 # Install Python, pip, git, MySQL server, Nginx, and Certbot
 apt install python3 python3-pip python3-venv git nginx certbot python3-certbot-nginx expect -y
 
-# Add Swap Space
-fallocate -l 4G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
-echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+# Add Swap Space if it doesn't exist
+if [ ! -f /swapfile ]; then
+    fallocate -l 4G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+fi
 
 # Increase Swapiness
 echo vm.swappiness=60 | sudo tee -a /etc/sysctl.conf
@@ -105,11 +107,12 @@ if [ "$is_ssl_certificate_required" = true ]; then
     fi
 fi
 
-# Clone the Repository
-git clone git@github.com:SimonMayer/ginrummy-engine.git /root/ginrummy-engine
-
-# Navigate to the App Directory
-cd /root/ginrummy-engine
+# Clone the Repository or pull the latest changes
+if [ -d "/root/ginrummy-engine" ]; then
+    cd /root/ginrummy-engine && git pull
+else
+    git clone git@github.com:SimonMayer/ginrummy-engine.git /root/ginrummy-engine && cd /root/ginrummy-engine
+fi
 
 # Create a Virtual Environment
 python3 -m venv venv
