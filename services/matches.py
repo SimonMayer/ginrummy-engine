@@ -40,10 +40,11 @@ def get_user_matches(user_id):
         query = """
             SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`
             FROM `Matches` `m`
-            JOIN `Match_Players` `mp` ON `m`.`match_id` = `mp`.`match_id`
+            LEFT JOIN `Match_Players` `mp` ON `m`.`match_id` = `mp`.`match_id`
             WHERE `mp`.`user_id` = %s
+            OR `m`.`created_by` = %s
             """
-        matches = fetch_all(cursor, query, (user_id,))
+        matches = fetch_all(cursor, query, (user_id, user_id))
         formatted_matches = [
             {
                 "match_id": match[0],
