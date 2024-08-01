@@ -38,7 +38,7 @@ def get_user_matches(user_id):
     cursor = connection.cursor()
     try:
         query = """
-            SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`
+            SELECT DISTINCT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`
             FROM `Matches` `m`
             LEFT JOIN `Match_Players` `mp` ON `m`.`match_id` = `mp`.`match_id`
             WHERE `mp`.`user_id` = %s
