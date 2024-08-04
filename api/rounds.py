@@ -10,18 +10,33 @@ import services.discard_pile as discard_pile_service
 import services.players as players_service
 
 def init_round_routes(app):
-    @app.route('/rounds/<int:round_id>', methods=['GET'])
+    @app.route('/rounds/<int:round_id>/players', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
-    def get_round(round_id):
+    def get_round_players(round_id):
+        try:
+            players = players_service.get_players_data(round_id)
+            return jsonify(players), 200
+        except Exception as err:
+            return jsonify({"error": str(err)}), 400
+
+    @app.route('/rounds/<int:round_id>/stock_pile', methods=['GET'])
+    @jwt_multi_source_auth_handler(permission_type='rest')
+    def get_stock_pile(round_id):
         try:
             result = {
-                "round_id": round_id,
-                "stock_pile_size": stock_pile_service.get_stock_pile_size(round_id),
-                "discard_pile": discard_pile_service.get_discard_pile_list(round_id),
-                "players": players_service.get_players_data(round_id)
+                "size": stock_pile_service.get_stock_pile_size(round_id),
             }
 
             return jsonify(result), 200
+        except Exception as err:
+            return jsonify({"error": str(err)}), 400
+
+    @app.route('/rounds/<int:round_id>/discard_pile', methods=['GET'])
+    @jwt_multi_source_auth_handler(permission_type='rest')
+    def get_discard_pile(round_id):
+        try:
+            discard_pile = discard_pile_service.get_discard_pile_list(round_id)
+            return jsonify(discard_pile), 200
         except Exception as err:
             return jsonify({"error": str(err)}), 400
 

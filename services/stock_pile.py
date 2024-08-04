@@ -29,11 +29,11 @@ def add_cards(cursor, cards, round_id):
 def get_stock_pile_size(round_id):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
 
     try:
-        query = "SELECT COUNT(*) FROM `Stock_Pile_Cards` WHERE `stock_pile_id` = (SELECT `stock_pile_id` FROM `Stock_Piles` WHERE `round_id` = %s)"
-        stock_pile_size = fetch_one(cursor, query, (round_id,))[0]
+        query = "SELECT COUNT(*) AS `size` FROM `Stock_Pile_Cards` WHERE `stock_pile_id` = (SELECT `stock_pile_id` FROM `Stock_Piles` WHERE `round_id` = %s)"
+        stock_pile_size = fetch_one(cursor, query, (round_id,))['size']
         return stock_pile_size
     finally:
         close_resources(cursor, connection)

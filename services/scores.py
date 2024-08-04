@@ -3,7 +3,7 @@ from services.database import execute_query, fetch_one
 
 def get_opening_balance(cursor, user_id, round_id):
     query = """
-    SELECT SUM(`sc`.`score_change`)
+    SELECT SUM(`sc`.`score_change`) AS `opening_balance`
     FROM `Score_Changes` `sc`
     JOIN `Actions` `a` ON `sc`.`action_id` = `a`.`action_id`
     JOIN `Turns` `t` ON `a`.`turn_id` = `t`.`turn_id`
@@ -17,11 +17,11 @@ def get_opening_balance(cursor, user_id, round_id):
     )
     """
     result = fetch_one(cursor, query, (user_id, round_id, round_id))
-    return int(result[0]) if result[0] is not None else 0
+    return int(result['opening_balance']) if result['opening_balance'] is not None else 0
 
 def get_round_points(cursor, user_id, round_id):
     query = """
-    SELECT SUM(`sc`.`score_change`)
+    SELECT SUM(`sc`.`score_change`) AS `round_points`
     FROM `Score_Changes` `sc`
     JOIN `Actions` `a` ON `sc`.`action_id` = `a`.`action_id`
     JOIN `Turns` `t` ON `a`.`turn_id` = `t`.`turn_id`
@@ -29,7 +29,7 @@ def get_round_points(cursor, user_id, round_id):
     AND `t`.`round_id` = %s
     """
     result = fetch_one(cursor, query, (user_id, round_id))
-    return int(result[0]) if result[0] is not None else 0
+    return int(result['round_points']) if result['round_points'] is not None else 0
 
 def record_score_change(cursor, action_id, user_id, score_change):
     query = """

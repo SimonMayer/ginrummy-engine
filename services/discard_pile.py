@@ -74,20 +74,10 @@ def clear_discard_pile(cursor, round_id):
 def get_discard_pile_list(round_id):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
 
     try:
         query = "SELECT `c`.`card_id`, `c`.`rank`, `c`.`suit`, `c`.`point_value` FROM `Discard_Pile_Cards` `dpc` JOIN `Cards` `c` ON `dpc`.`card_id` = `c`.`card_id` WHERE `dpc`.`discard_pile_id` = (SELECT `discard_pile_id` FROM `Discard_Piles` WHERE `round_id` = %s) ORDER BY `dpc`.`sequence`"
-        discard_pile = fetch_all(cursor, query, (round_id,))
-        discard_pile_list = [
-            {
-                "card_id": card[0],
-                "rank": card[1],
-                "suit": card[2],
-                "point_value": card[3]
-            }
-            for card in discard_pile
-        ]
-        return discard_pile_list
+        return fetch_all(cursor, query, (round_id,))
     finally:
         close_resources(cursor, connection)

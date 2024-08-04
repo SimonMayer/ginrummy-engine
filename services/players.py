@@ -19,7 +19,7 @@ def get_all_players(cursor, match_id):
 def get_players_data(round_id):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
 
     try:
         query = """
@@ -31,27 +31,18 @@ def get_players_data(round_id):
         """
         hands_data = fetch_all(cursor, query, (round_id,))
         players = []
-        for user_id, hand_id, size in hands_data:
+        for hand in hands_data:
+            user_id = hand["user_id"]
+            hand_id = hand["hand_id"]
+            size = hand["size"]
             melds = melds_service.get_user_melds(cursor, user_id, round_id)
             melds_list = []
             for meld in melds:
-                meld_id = meld[0]
-                meld_type = meld[1]
-                cards = melds_service.get_cards_for_meld(cursor, round_id, meld_id)
-                cards_list = [
-                    {
-                        "card_id": card[0],
-                        "user_id": card[1],
-                        "rank": card[2],
-                        "suit": card[3],
-                        "point_value": card[4]
-                    }
-                    for card in cards
-                ]
+                meld_id = meld['meld_id']
                 melds_list.append({
                     "meld_id": meld_id,
-                    "meld_type": meld_type,
-                    "cards": cards_list
+                    "meld_type": meld['meld_type'],
+                    "cards": melds_service.get_cards_for_meld(cursor, round_id, meld_id)
                 })
 
             opening_balance = scores_service.get_opening_balance(cursor, user_id, round_id)
