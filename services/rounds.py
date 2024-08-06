@@ -70,6 +70,8 @@ def create_round(match_id, player_ids):
             card_id = cursor.lastrowid
             card['card_id'] = card_id
 
+        random.shuffle(cards) # ensure they're not dealt in card_id order
+
         hand_size = game_config['handSize']
         for player_id in player_ids:
             user_id = player_id
