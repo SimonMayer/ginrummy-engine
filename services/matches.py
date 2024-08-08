@@ -62,23 +62,30 @@ def get_user_matches(user_id):
 def get_match(match_id):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
     try:
         query = """
-            SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`, `r`.`round_id` AS `current_round_id`
+            SELECT `m`.`match_id`, `m`.`created_by`, `m`.`create_time`, `m`.`start_time`, `m`.`end_time`, `cr`.`round_id` AS `current_round_id`, `lr`.`latest_round_id`
             FROM `Matches` `m`
-            LEFT JOIN `Rounds` `r` ON `m`.`match_id` = `r`.`match_id` AND `r`.`end_time` IS NULL
+            LEFT JOIN `Rounds` `cr` ON `m`.`match_id` = `cr`.`match_id` AND `cr`.`end_time` IS NULL
+            LEFT JOIN
+                (
+                    SELECT `match_id`, MAX(`round_id`) AS `latest_round_id`
+                    FROM `Rounds`
+                    GROUP BY `match_id`
+                ) `lr` ON `m`.`match_id` = `lr`.`match_id`
             WHERE `m`.`match_id` = %s
             """
         match = fetch_one(cursor, query, (match_id,))
         if match:
             formatted_match = {
-                "match_id": match[0],
-                "created_by": match[1],
-                "create_time": match[2].isoformat() if match[2] else None,
-                "start_time": match[3].isoformat() if match[3] else None,
-                "end_time": match[4].isoformat() if match[4] else None,
-                "current_round_id": match[5]
+                "match_id": match['match_id'],
+                "created_by": match['created_by'],
+                "create_time": match['create_time'].isoformat() if match['create_time'] else None,
+                "start_time": match['start_time'].isoformat() if match['start_time'] else None,
+                "end_time": match['end_time'].isoformat() if match['end_time'] else None,
+                "current_round_id": match['current_round_id'],
+                "latest_round_id": match['latest_round_id']
             }
             return formatted_match
         else:
