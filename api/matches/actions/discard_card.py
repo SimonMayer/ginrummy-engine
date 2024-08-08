@@ -42,7 +42,8 @@ def init_route(app):
             if validation_error:
                 return jsonify(validation_error[0]), validation_error[1]
 
-            user_hand = hands_service.get_user_hand(round_id, user_id)
+            hand_id = hands_service.get_hand_id(round_id, user_id)
+            hand_cards = hands_service.get_hand_cards(hand_id)
 
             removal_error = hands_service.remove_card_from_hand(cursor, user_id, round_id, card_id)
             if removal_error:
@@ -63,7 +64,7 @@ def init_route(app):
 
             players_list = players_service.get_all_players(cursor, match_id)
 
-            if len(user_hand) == 1: # last card discarded
+            if len(hand_cards) == 1: # last card discarded
                 rounds_service.end_round(cursor, round_id)
                 actions_service.record_end_round_action(cursor, turn_id)
 
@@ -71,7 +72,8 @@ def init_route(app):
                 for player in players_list:
                     player_id = player[0]
                     if player_id != user_id:
-                        remaining_cards = hands_service.get_user_hand(round_id, player_id)
+                        hand_id = hands_service.get_hand_id(round_id, player_id)
+                        remaining_cards = hands_service.get_hand_cards(hand_id)
                         score_change = -sum(card['point_value'] for card in remaining_cards)
                         scores_service.record_score_change(cursor, action_id, player_id, score_change)
 

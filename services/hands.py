@@ -49,10 +49,22 @@ def remove_card_from_hand(cursor, user_id, round_id, card_id):
     execute_query(cursor, query, (hand_card[0],))
     return None
 
-def get_user_hand(round_id, user_id):
+def get_hand_id(round_id, user_id):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        query = "SELECT `h`.`hand_id` FROM `Hands` `h` WHERE `h`.`round_id` = %s AND `h`.`user_id` = %s"
+        result = fetch_one(cursor, query, (round_id, user_id))
+        return result['hand_id']
+    finally:
+        close_resources(cursor, connection)
+
+def get_hand_cards(hand_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor(dictionary=True)
 
     try:
         query = """
@@ -60,17 +72,8 @@ def get_user_hand(round_id, user_id):
         FROM `Hands` `h`
         JOIN `Hand_Cards` `hc` ON `h`.`hand_id` = `hc`.`hand_id`
         JOIN `Cards` `c` ON `hc`.`card_id` = `c`.`card_id`
-        WHERE `h`.`round_id` = %s AND `h`.`user_id` = %s
+        WHERE `h`.`hand_id` = %s
         """
-        cards = fetch_all(cursor, query, (round_id, user_id))
-        hand_details = [
-            {
-                "card_id": card[0],
-                "rank": card[1],
-                "suit": card[2],
-                "point_value": card[3]
-            } for card in cards
-        ]
-        return hand_details
+        return fetch_all(cursor, query, (hand_id,))
     finally:
         close_resources(cursor, connection)

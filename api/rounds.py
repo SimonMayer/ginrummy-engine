@@ -55,8 +55,15 @@ def init_round_routes(app):
         user_id = authentication_service.get_user_id_from_jwt_identity()
 
         try:
-            hand_details = hands_service.get_user_hand(round_id, user_id)
-            return jsonify({"user_id": user_id, "round_id": round_id, "cards": hand_details}), 200
+            hand_id = hands_service.get_hand_id(round_id, user_id)
+
+            data = {
+                "hand_id": hand_id,
+                "user_id": user_id,
+                "round_id": round_id,
+                "cards": hands_service.get_hand_cards(hand_id)
+            }
+            return jsonify(data), 200
         except Exception as err:
             return jsonify({"error": str(err)}), 400
 
