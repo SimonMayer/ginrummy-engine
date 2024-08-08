@@ -85,11 +85,23 @@ def get_match(match_id):
                 "start_time": match['start_time'].isoformat() if match['start_time'] else None,
                 "end_time": match['end_time'].isoformat() if match['end_time'] else None,
                 "current_round_id": match['current_round_id'],
-                "latest_round_id": match['latest_round_id']
+                "latest_round_id": match['latest_round_id'],
+                "all_round_ids": get_match_round_ids_list(match_id)
             }
             return formatted_match
         else:
             return None
+    finally:
+        close_resources(cursor, connection)
+
+def get_match_round_ids_list(match_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor(dictionary=True)
+    try:
+        query = "SELECT `round_id` FROM `Rounds` WHERE `match_id` = %s"
+        results = fetch_all(cursor, query, (match_id,))
+        return [row['round_id'] for row in results]
     finally:
         close_resources(cursor, connection)
 
