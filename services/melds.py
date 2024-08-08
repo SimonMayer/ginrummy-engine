@@ -1,4 +1,6 @@
-from services.database import execute_query, fetch_one, fetch_all
+from utils.config_loader import load_database_config
+from utils.database_connector import connect_to_database
+from services.database import execute_query, fetch_one, fetch_all, close_resources
 
 def is_valid_run(meld_card_ranks, run_orders):
     for order in run_orders:
@@ -7,6 +9,14 @@ def is_valid_run(meld_card_ranks, run_orders):
         if all((positions[i] - positions[i - 1]) % len(order) == 1 for i in range(1, len(positions))):
             return True
     return False
+
+def get_round_melds(cursor, round_id):
+    query = """
+    SELECT `meld_id`, `meld_type`
+    FROM `Melds`
+    WHERE `round_id` = %s
+    """
+    return fetch_all(cursor, query, (round_id,))
 
 def get_user_melds(cursor, user_id, round_id):
     query = """
@@ -45,3 +55,23 @@ def add_card_to_meld(cursor, meld_id, card_id, user_id):
     VALUES (%s, %s, %s)
     """
     execute_query(cursor, query, (meld_id, card_id, user_id))
+
+def get_melds_data_for_round(round_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        melds = get_round_melds(cursor, round_id)
+        melds_list = []
+        for meld in melds:
+            meld_id = meld['meld_id']
+            melds_list.append({
+                "meld_id": meld_id,
+                "meld_type": meld['meld_type'],
+                "cards": get_cards_for_meld(cursor, round_id, meld_id)
+            })
+
+        return melds_list
+    finally:
+        close_resources(cursor, connection)
