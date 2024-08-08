@@ -7,10 +7,10 @@ def init_card_routes(app):
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_card(card_id):
         try:
-            card_details = cards_service.get_card_object(card_id)
-            if not card_details:
+            card = cards_service.get_card_object(card_id)
+            if not card:
                 return jsonify({"error": "Card not found"}), 404
 
-            return jsonify(card_details), 200
+            return jsonify(card), 200
         except Exception as err:
             return jsonify({"error": str(err)}), 500

@@ -16,7 +16,7 @@ def validate_card_exists(cursor, card_id):
 def get_card_object(card_id):
     database_config = load_database_config()
     connection = connect_to_database(database_config)
-    cursor = connection.cursor(buffered=True)
+    cursor = connection.cursor(buffered=True, dictionary=True)
 
     try:
         query = "SELECT `card_id`, `rank`, `suit`, `point_value` FROM `Cards` WHERE `card_id` = %s"
@@ -24,14 +24,7 @@ def get_card_object(card_id):
         if not card:
             return None
 
-        card_details = {
-            "card_id": card[0],
-            "rank": card[1],
-            "suit": card[2],
-            "point_value": card[3]
-        }
-
-        return card_details
+        return card
     except Exception as e:
         raise e
     finally:

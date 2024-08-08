@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from api.auth import init_auth_routes
 from api.cards import init_card_routes
 from api.config import init_config_routes
+from api.hands import init_hand_routes
 from api.matches.matches import init_match_routes
 from api.matches.actions import init_match_action_routes
 from api.matches.players import init_match_player_routes
@@ -43,12 +44,13 @@ jwt = JWTManager(app)
 
 init_auth_routes(app)
 init_card_routes(app)
+init_config_routes(app)
+init_hand_routes(app)
 init_match_routes(app)
 init_match_action_routes(app)
 init_match_player_routes(app)
 init_round_routes(app)
 init_user_routes(app)
-init_config_routes(app)
 
 app.register_blueprint(events_blueprint, url_prefix='/')
 

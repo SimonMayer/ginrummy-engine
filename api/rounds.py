@@ -49,24 +49,6 @@ def init_round_routes(app):
         except Exception as err:
             return jsonify({"error": str(err)}), 400
 
-    @app.route('/rounds/<int:round_id>/my_hand', methods=['GET'])
-    @jwt_multi_source_auth_handler(permission_type='rest')
-    def get_my_hand(round_id):
-        user_id = authentication_service.get_user_id_from_jwt_identity()
-
-        try:
-            hand_id = hands_service.get_hand_id(round_id, user_id)
-
-            data = {
-                "hand_id": hand_id,
-                "user_id": user_id,
-                "round_id": round_id,
-                "cards": hands_service.get_hand_cards(hand_id)
-            }
-            return jsonify(data), 200
-        except Exception as err:
-            return jsonify({"error": str(err)}), 400
-
     @app.route('/rounds/<int:round_id>/current_turn', methods=['GET'])
     @jwt_multi_source_auth_handler(permission_type='rest')
     def get_current_turn(round_id):

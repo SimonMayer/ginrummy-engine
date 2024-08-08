@@ -77,3 +77,25 @@ def get_hand_cards(hand_id):
         return fetch_all(cursor, query, (hand_id,))
     finally:
         close_resources(cursor, connection)
+
+def get_hand_object(hand_id):
+    database_config = load_database_config()
+    connection = connect_to_database(database_config)
+    cursor = connection.cursor(buffered=True, dictionary=True)
+
+    try:
+        query = "SELECT `hand_id`, `round_id`, `user_id` FROM `Hands` WHERE `hand_id` = %s"
+        hand_data = fetch_one(cursor, query, (hand_id,))
+        if not hand_data:
+            return None
+
+        return {
+            "hand_id": hand_data['hand_id'],
+            "user_id": hand_data['user_id'],
+            "round_id": hand_data['round_id'],
+            "cards": get_hand_cards(hand_data['hand_id'])
+        }
+    except Exception as e:
+        raise e
+    finally:
+        close_resources(cursor, connection)
