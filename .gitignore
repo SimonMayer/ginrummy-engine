@@ -1,4 +1,5 @@
 config/database.json
+app.log.*
 
 .DS_Store
 .idea/
