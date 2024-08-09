@@ -9,6 +9,7 @@ from api.matches.matches import init_match_routes
 from api.matches.actions import init_match_action_routes
 from api.matches.players import init_match_player_routes
 from api.rounds import init_round_routes
+from api.turns import init_turn_routes
 from api.users import init_user_routes
 from api.matches.events import events_blueprint
 import logging
@@ -50,6 +51,7 @@ init_match_routes(app)
 init_match_action_routes(app)
 init_match_player_routes(app)
 init_round_routes(app)
+init_turn_routes(app)
 init_user_routes(app)
 
 app.register_blueprint(events_blueprint, url_prefix='/')
