@@ -30,15 +30,15 @@ def create_database_and_tables(connection, database_name):
             table_creations = [
                 """
                 CREATE TABLE IF NOT EXISTS `Users` (
-                    `user_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     `username` VARCHAR(255) UNIQUE NOT NULL,
                     `password_hash` VARCHAR(255) NOT NULL
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Matches` (
-                    `match_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `created_by` INT NOT NULL,
+                    `match_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `created_by` INT UNSIGNED NOT NULL,
                     `create_time` DATETIME NOT NULL,
                     `start_time` DATETIME,
                     `end_time` DATETIME,
@@ -47,8 +47,8 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Match_Players` (
-                    `match_id` INT NOT NULL,
-                    `user_id` INT NOT NULL,
+                    `match_id` INT UNSIGNED NOT NULL,
+                    `user_id` INT UNSIGNED NOT NULL,
                     PRIMARY KEY (`match_id`, `user_id`),
                     FOREIGN KEY (`match_id`) REFERENCES `Matches`(`match_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
@@ -56,8 +56,8 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Rounds` (
-                    `round_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `match_id` INT NOT NULL,
+                    `round_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `match_id` INT UNSIGNED NOT NULL,
                     `start_time` DATETIME NOT NULL,
                     `end_time` DATETIME,
                     FOREIGN KEY (`match_id`) REFERENCES `Matches`(`match_id`)
@@ -65,10 +65,10 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Turns` (
-                    `turn_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `round_id` INT NOT NULL,
-                    `user_id` INT NOT NULL,
-                    `rotation_number` INT NOT NULL,
+                    `turn_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `round_id` INT UNSIGNED NOT NULL,
+                    `user_id` INT UNSIGNED NOT NULL,
+                    `rotation_number` INT UNSIGNED NOT NULL,
                     `start_time` DATETIME NOT NULL,
                     `end_time` DATETIME,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
@@ -77,8 +77,8 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Actions` (
-                    `action_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `turn_id` INT NOT NULL,
+                    `action_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `turn_id` INT UNSIGNED NOT NULL,
                     `action_type` ENUM('round_start', 'draw', 'play_meld', 'extend_meld', 'discard', 'round_end') NOT NULL,
                     `full_details` VARCHAR(255),
                     `public_details` VARCHAR(255),
@@ -87,27 +87,27 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Cards` (
-                    `card_id` INT AUTO_INCREMENT PRIMARY KEY,
+                    `card_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     `rank` VARCHAR(10) NOT NULL,
                     `suit` VARCHAR(10) NOT NULL,
-                    `point_value` INT NOT NULL
+                    `point_value` INT UNSIGNED NOT NULL
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Hands` (
-                    `hand_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `round_id` INT NOT NULL,
-                    `user_id` INT NOT NULL,
+                    `hand_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `round_id` INT UNSIGNED NOT NULL,
+                    `user_id` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Hand_Cards` (
-                    `hand_card_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `hand_id` INT NOT NULL,
-                    `card_id` INT NOT NULL,
-                    `sequence` INT NOT NULL,
+                    `hand_card_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `hand_id` INT UNSIGNED NOT NULL,
+                    `card_id` INT UNSIGNED NOT NULL,
+                    `sequence` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`hand_id`) REFERENCES `Hands`(`hand_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`),
                     UNIQUE (`card_id`)
@@ -115,43 +115,43 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Stock_Piles` (
-                    `stock_pile_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `round_id` INT NOT NULL,
+                    `stock_pile_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `round_id` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`)
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Stock_Pile_Cards` (
-                    `stock_pile_card_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `stock_pile_id` INT NOT NULL,
-                    `card_id` INT NOT NULL,
-                    `sequence` INT NOT NULL,
+                    `stock_pile_card_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `stock_pile_id` INT UNSIGNED NOT NULL,
+                    `card_id` INT UNSIGNED NOT NULL,
+                    `sequence` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`stock_pile_id`) REFERENCES `Stock_Piles`(`stock_pile_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Discard_Piles` (
-                    `discard_pile_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `round_id` INT NOT NULL,
+                    `discard_pile_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `round_id` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`)
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Discard_Pile_Cards` (
-                    `discard_pile_card_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `discard_pile_id` INT NOT NULL,
-                    `card_id` INT NOT NULL,
-                    `sequence` INT NOT NULL,
+                    `discard_pile_card_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `discard_pile_id` INT UNSIGNED NOT NULL,
+                    `card_id` INT UNSIGNED NOT NULL,
+                    `sequence` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`discard_pile_id`) REFERENCES `Discard_Piles`(`discard_pile_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`)
                 );
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Melds` (
-                    `meld_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `round_id` INT NOT NULL,
-                    `user_id` INT NOT NULL,
+                    `meld_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `round_id` INT UNSIGNED NOT NULL,
+                    `user_id` INT UNSIGNED NOT NULL,
                     `meld_type` ENUM('run', 'set') NOT NULL,
                     FOREIGN KEY (`round_id`) REFERENCES `Rounds`(`round_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
@@ -159,10 +159,10 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Meld_Cards` (
-                    `meld_card_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `meld_id` INT NOT NULL,
-                    `card_id` INT NOT NULL,
-                    `user_id` INT NOT NULL,
+                    `meld_card_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `meld_id` INT UNSIGNED NOT NULL,
+                    `card_id` INT UNSIGNED NOT NULL,
+                    `user_id` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`meld_id`) REFERENCES `Melds`(`meld_id`),
                     FOREIGN KEY (`card_id`) REFERENCES `Cards`(`card_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`),
@@ -171,11 +171,11 @@ def create_database_and_tables(connection, database_name):
                 """,
                 """
                 CREATE TABLE IF NOT EXISTS `Score_Changes` (
-                    `score_change_id` INT AUTO_INCREMENT PRIMARY KEY,
-                    `action_id` INT NOT NULL,
-                    `user_id` INT NOT NULL,
+                    `score_change_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    `action_id` INT UNSIGNED NOT NULL,
+                    `user_id` INT UNSIGNED NOT NULL,
                     `change_time` DATETIME NOT NULL,
-                    `score_change` INT NOT NULL,
+                    `score_change` INT UNSIGNED NOT NULL,
                     FOREIGN KEY (`action_id`) REFERENCES `Actions`(`action_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
                 );
