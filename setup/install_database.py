@@ -175,7 +175,7 @@ def create_database_and_tables(connection, database_name):
                     `action_id` INT UNSIGNED NOT NULL,
                     `user_id` INT UNSIGNED NOT NULL,
                     `change_time` DATETIME NOT NULL,
-                    `score_change` INT UNSIGNED NOT NULL,
+                    `score_change` INT NOT NULL,
                     FOREIGN KEY (`action_id`) REFERENCES `Actions`(`action_id`),
                     FOREIGN KEY (`user_id`) REFERENCES `Users`(`user_id`)
                 );
