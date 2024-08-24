@@ -29,10 +29,6 @@ def stream_events(match_id):
         try:
             last_heartbeat_time = time.time()
             while True:
-                if request.environ.get('wsgi.input').closed:
-                    logging.info(f"Client disconnected from match_id: {match_id}")
-                    break
-
                 latest_available_action_id = actions_service.get_latest_action_id(match_id)
                 if latest_available_action_id and latest_available_action_id > latest_known_action_id:
                     new_actions = actions_service.get_new_actions(match_id, latest_known_action_id)
