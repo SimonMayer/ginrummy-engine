@@ -168,11 +168,14 @@ User=root
 Group=www-data
 WorkingDirectory=/root/ginrummy-engine
 Environment=\"PATH=/root/ginrummy-engine/venv/bin\"
-ExecStart=/root/ginrummy-engine/venv/bin/gunicorn --timeout 3600 --workers 3 --worker-class gevent --bind 127.0.0.1:8000 wsgi:app
+ExecStart=/root/ginrummy-engine/venv/bin/gunicorn --timeout 3600 --workers 3 --worker-class gevent --bind 127.0.0.1:8000 --access-logfile /var/log/gunicorn/access.log --error-logfile /var/log/gunicorn/error.log wsgi:app
 
 [Install]
 WantedBy=multi-user.target
 " > /etc/systemd/system/ginrummy-engine.service
+
+mkdir -p /var/log/gunicorn
+chown www-data:www-data /var/log/gunicorn
 
 # Reload systemd and Start Gunicorn Service
 systemctl daemon-reload
