@@ -71,7 +71,7 @@ This will:
 *   Install and configure the application database, including setting up the required tables and prompting you to create application users with secure passwords.
 *   Configure Gunicorn as a systemd service to run the Flask application, ensuring it starts on boot and is properly logged.
 *   Set up Nginx as a reverse proxy to manage incoming web traffic, handle SSL termination, and redirect HTTP traffic to HTTPS for improved security.
-*   Enable and start the configured services (Nginx and Gunicorn), ensuring your web application is fully operational and secure.
+*   Enable and start the configured services (Nginx and Gunicorn).
 
 
 Game Rules
